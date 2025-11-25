@@ -175,8 +175,9 @@ exports.handler = async (event, context) => {
         date_creation: new Date().toISOString()
       };
       
-      // Ajouter les documents si présents
+      // Ajouter les documents si présents (peuvent être en base64)
       if (data.documents && Array.isArray(data.documents)) {
+        // Les documents peuvent être en base64 (production) ou déjà formatés (local)
         demandeData.documents = JSON.stringify(data.documents);
       }
       

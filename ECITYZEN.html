@@ -5649,24 +5649,59 @@
                     }
                 });
                 
-                // Envoyer avec FormData
-                // Note: Les Netlify Functions ne supportent pas FormData pour les fichiers
-                // En production, on doit utiliser l'API PHP ou convertir en base64
+                // Envoyer avec FormData ou base64 selon l'environnement
                 let response;
+                let result;
+                
                 if (!API_BASE_URL) {
-                    // Production: Netlify Functions ne supporte pas les fichiers pour l'instant
-                    // Convertir les fichiers en base64 ou utiliser une solution alternative
-                    showNotification('L\'upload de fichiers nécessite un serveur PHP. Utilisez la version locale ou hébergez les APIs PHP séparément.', 'warning');
-                    throw new Error('Upload de fichiers non supporté en production Netlify');
+                    // Production: Convertir les fichiers en base64 et envoyer via JSON
+                    showNotification('Conversion des fichiers en cours...', 'info');
+                    
+                    const documents = [];
+                    for (let i = 0; i < documentInputs.length; i++) {
+                        const input = documentInputs[i];
+                        if (input.files && input.files.length > 0) {
+                            const file = input.files[0];
+                            const fileName = input.getAttribute('data-document-name');
+                            
+                            // Convertir en base64
+                            const base64 = await new Promise((resolve, reject) => {
+                                const reader = new FileReader();
+                                reader.onload = () => resolve(reader.result.split(',')[1]);
+                                reader.onerror = reject;
+                                reader.readAsDataURL(file);
+                            });
+                            
+                            documents.push({
+                                nom: fileName,
+                                fichier: base64,
+                                nom_fichier: file.name,
+                                taille: file.size,
+                                type: file.type
+                            });
+                        }
+                    }
+                    
+                    // Envoyer via Netlify Function avec les fichiers en base64
+                    const demandeData = {
+                        type: type,
+                        service: serviceName,
+                        motif: motif,
+                        cout: cout,
+                        documents: documents
+                    };
+                    
+                    result = await apiCall('demandes', 'POST', demandeData);
+                } else {
+                    // Local: Utiliser FormData normal
+                    response = await fetch(`${API_BASE_URL}/demandes.php`, {
+                        method: 'POST',
+                        credentials: 'include',
+                        body: formData
+                    });
+                    
+                    result = await response.json();
                 }
-                
-                response = await fetch(`${API_BASE_URL}/demandes.php`, {
-                    method: 'POST',
-                    credentials: 'include',
-                    body: formData
-                });
-                
-                const result = await response.json();
                 
                 if (!result.success) {
                     throw new Error(result.message || 'Erreur lors de la création de la demande');
@@ -7402,7 +7437,11 @@
             
             // Vérifier la connexion API seulement si on est sur un serveur web
             // Test simple de connexion à la base de données
-            fetch(`${API_BASE_URL}/login.php`, {
+            const testEndpoint = !API_BASE_URL 
+                ? '/.netlify/functions/login'
+                : `${API_BASE_URL}/login.php`;
+            
+            fetch(testEndpoint, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
