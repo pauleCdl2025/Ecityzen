@@ -3033,10 +3033,10 @@
     <script>
         // Configuration API
         // Si vous hébergez les APIs PHP sur un autre serveur, modifiez cette URL
-        // Sinon, l'application utilise Supabase directement
+        // Sinon, l'application utilise Supabase directement ou Netlify Functions
         const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
             ? 'api'  // Local: utiliser les APIs locales
-            : 'https://votre-serveur-api.com/api';  // Production: remplacer par votre URL d'APIs
+            : '/.netlify/functions';  // Production: utiliser Netlify Functions
         
         // Configuration Supabase
         const SUPABASE_URL = 'https://srbzvjrqbhtuyzlwdghn.supabase.co';
@@ -3089,8 +3089,17 @@
                 options.body = JSON.stringify(data);
             }
             
+            // Construire l'URL selon l'environnement
+            let url;
+            if (API_BASE_URL === '/.netlify/functions') {
+                // Netlify Functions: pas besoin de .php
+                url = `${API_BASE_URL}/${endpoint}`;
+            } else {
+                // API PHP locale: ajouter .php si nécessaire
+                url = `${API_BASE_URL}/${endpoint}${endpoint.includes('.php') ? '' : '.php'}`;
+            }
+            
             // Ajouter un paramètre de cache-busting pour les requêtes GET
-            let url = `${API_BASE_URL}/${endpoint}`;
             if (method === 'GET' && !url.includes('?')) {
                 url += `?_t=${Date.now()}`;
             } else if (method === 'GET' && url.includes('?')) {
@@ -3704,7 +3713,12 @@
             try {
                 showNotification('Connexion en cours...', 'info');
                 
-                const result = await apiCall('login.php', 'POST', {
+                // Utiliser Netlify Function si sur Netlify, sinon utiliser l'API PHP locale
+                const endpoint = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+                    ? 'login.php'  // Local: utiliser l'API PHP
+                    : 'login';     // Production: utiliser Netlify Function
+                
+                const result = await apiCall(endpoint, 'POST', {
                     telephone: telephone,
                     mot_de_passe: password
                 });
@@ -3793,7 +3807,15 @@
                     }
                     if (entreprise) registerData.entreprise = entreprise;
                 
-                const result = await apiCall('register.php', 'POST', registerData);
+                // Utiliser Netlify Function si sur Netlify, sinon utiliser l'API PHP locale
+                let result;
+                if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                    // Local: utiliser l'API PHP
+                    result = await apiCall('register.php', 'POST', registerData);
+                } else {
+                    // Production: utiliser Netlify Function (sans .php)
+                    result = await apiCall('register', 'POST', registerData);
+                }
                 
                 currentUser = result.data;
                 currentProfile = result.data.role;
@@ -7183,6 +7205,86 @@
             } catch (error) {
                 console.error('Erreur Supabase:', error);
                 return { success: false, error: error.message };
+            }
+        }
+        
+        // Fonction d'inscription avec Supabase
+        async function registerWithSupabase(registerData) {
+            if (!supabaseClient) {
+                initSupabase();
+            }
+            
+            if (!supabaseClient) {
+                throw new Error('Supabase non initialisé');
+            }
+            
+            try {
+                // Vérifier si le téléphone existe déjà
+                const { data: existingUsers, error: checkError } = await supabaseClient
+                    .from('utilisateurs')
+                    .select('id')
+                    .eq('telephone', registerData.telephone)
+                    .limit(1);
+                
+                if (checkError) throw checkError;
+                
+                if (existingUsers && existingUsers.length > 0) {
+                    throw new Error('Ce numéro de téléphone est déjà utilisé');
+                }
+                
+                // Hasher le mot de passe (on doit le faire côté serveur normalement, mais pour Supabase on peut utiliser une fonction Edge Function)
+                // Pour l'instant, on va utiliser une approche différente - créer l'utilisateur via l'API PHP si disponible
+                // Sinon, on peut utiliser Supabase Auth ou créer directement dans la table
+                
+                // Générer un email factice
+                const email = 'user_' + registerData.telephone.replace(/\D/g, '') + '@ecityzen.ga';
+                
+                // Préparer les données utilisateur
+                const userData = {
+                    nom: registerData.nom,
+                    email: email,
+                    telephone: registerData.telephone,
+                    role: registerData.role,
+                    mot_de_passe: registerData.mot_de_passe, // Note: En production, hash côté serveur
+                    statut: 'actif'
+                };
+                
+                if (registerData.localisation) userData.localisation = registerData.localisation;
+                if (registerData.latitude) userData.latitude = parseFloat(registerData.latitude);
+                if (registerData.longitude) userData.longitude = parseFloat(registerData.longitude);
+                if (registerData.entreprise) userData.entreprise = registerData.entreprise;
+                if (registerData.secteur) userData.secteur = registerData.secteur;
+                
+                // Insérer l'utilisateur
+                const { data: newUser, error: insertError } = await supabaseClient
+                    .from('utilisateurs')
+                    .insert(userData)
+                    .select()
+                    .single();
+                
+                if (insertError) {
+                    throw new Error(insertError.message || 'Erreur lors de la création du compte');
+                }
+                
+                // Formater la réponse comme l'API PHP
+                return {
+                    success: true,
+                    data: {
+                        id: newUser.id,
+                        name: newUser.nom,
+                        telephone: newUser.telephone,
+                        email: newUser.email,
+                        role: newUser.role,
+                        location: newUser.localisation || null,
+                        sector: newUser.secteur || null,
+                        business: newUser.entreprise || null
+                    },
+                    message: 'Compte créé avec succès'
+                };
+                
+            } catch (error) {
+                console.error('Erreur inscription Supabase:', error);
+                throw error;
             }
         }
         

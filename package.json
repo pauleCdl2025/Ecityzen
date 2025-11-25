@@ -19,7 +19,9 @@
   "author": "pauleCdl2025",
   "license": "MIT",
   "dependencies": {
-    "node-fetch": "^2.6.7"
+    "node-fetch": "^2.6.7",
+    "@supabase/supabase-js": "^2.39.0",
+    "bcryptjs": "^2.4.3"
   },
   "devDependencies": {}
 }
