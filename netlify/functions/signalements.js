@@ -87,6 +87,14 @@ exports.handler = async (event, context) => {
 
   // GET: Récupérer les signalements
   if (event.httpMethod === 'GET') {
+    // Pour GET, récupérer userId et userRole depuis query string
+    if (!userId && event.queryStringParameters?._user_id) {
+      userId = event.queryStringParameters._user_id;
+    }
+    if (!userRole && event.queryStringParameters?._user_role) {
+      userRole = event.queryStringParameters._user_role;
+    }
+    
     try {
       let query = supabase.from('signalements').select('*');
       

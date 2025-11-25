@@ -3515,7 +3515,11 @@
             
             // Charger l'adresse complète via notre API
             try {
-                const response = await fetch(`${API_BASE_URL}/geocode.php?lat=${lat}&lng=${lng}&_t=${Date.now()}`);
+                const geocodeUrl = !API_BASE_URL 
+                    ? `/.netlify/functions/geocode?lat=${lat}&lng=${lng}&_t=${Date.now()}`
+                    : `${API_BASE_URL}/geocode.php?lat=${lat}&lng=${lng}&_t=${Date.now()}`;
+                
+                const response = await fetch(geocodeUrl);
                 const result = await response.json();
                 
                 if (result.success && result.data) {
@@ -3688,7 +3692,11 @@
             
             // Charger l'adresse complète via notre API
             try {
-                const response = await fetch(`${API_BASE_URL}/geocode.php?lat=${lat}&lng=${lng}&_t=${Date.now()}`);
+                const geocodeUrl = !API_BASE_URL 
+                    ? `/.netlify/functions/geocode?lat=${lat}&lng=${lng}&_t=${Date.now()}`
+                    : `${API_BASE_URL}/geocode.php?lat=${lat}&lng=${lng}&_t=${Date.now()}`;
+                
+                const response = await fetch(geocodeUrl);
                 const result = await response.json();
                 
                 if (result.success && result.data) {

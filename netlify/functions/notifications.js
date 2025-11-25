@@ -41,6 +41,11 @@ exports.handler = async (event, context) => {
 
   // GET: Récupérer les notifications
   if (event.httpMethod === 'GET') {
+    // Pour GET, récupérer userId depuis query string
+    if (!userId && event.queryStringParameters?._user_id) {
+      userId = event.queryStringParameters._user_id;
+    }
+    
     if (!userId) {
       return {
         statusCode: 401,
