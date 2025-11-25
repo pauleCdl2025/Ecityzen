@@ -163,19 +163,8 @@ exports.handler = async (event, context) => {
         };
       }
       
-      // Assigner automatiquement à un agent
-      const { data: agents } = await supabase
-        .from('utilisateurs')
-        .select('id')
-        .eq('role', 'agent')
-        .eq('statut', 'actif')
-        .limit(10);
-      
-      let agentAssignéId = null;
-      if (agents && agents.length > 0) {
-        agentAssignéId = agents[Math.floor(Math.random() * agents.length)].id;
-      }
-      
+      // Ne pas assigner automatiquement - le manager assignera
+      // Les demandes arrivent d'abord chez le manager
       const demandeData = {
         utilisateur_id: userId,
         type: data.type,
@@ -183,7 +172,7 @@ exports.handler = async (event, context) => {
         motif: data.motif || null,
         montant: parseFloat(data.cout),
         statut: 'en_attente',
-        agent_assigné_id: agentAssignéId,
+        agent_assigné_id: null, // Le manager assignera
         date_creation: new Date().toISOString()
       };
       
@@ -247,23 +236,43 @@ exports.handler = async (event, context) => {
     try {
       const data = JSON.parse(event.body);
       
-      if (!data.id || !data.statut) {
+      if (!data.id) {
         return {
           statusCode: 400,
           headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
-          body: JSON.stringify({ success: false, message: 'Champs manquants' })
+          body: JSON.stringify({ success: false, message: 'ID manquant' })
         };
       }
       
-      const updateData = { statut: data.statut };
-      if (data.statut === 'valide') {
-        updateData.date_validation = new Date().toISOString();
+      const updateData = {};
+      
+      // Mettre à jour le statut si fourni
+      if (data.statut) {
+        updateData.statut = data.statut;
+        if (data.statut === 'valide') {
+          updateData.date_validation = new Date().toISOString();
+        }
+        if (data.statut === 'dossier_incomplet') {
+          updateData.date_modification = new Date().toISOString();
+        }
       }
+      
+      // Mettre à jour l'agent assigné si fourni (pour le manager)
+      if (data.agent_assigné_id !== undefined) {
+        updateData.agent_assigné_id = data.agent_assigné_id ? parseInt(data.agent_assigné_id) : null;
+      }
+      
+      // Mettre à jour le commentaire si fourni
       if (data.commentaire_agent) {
         updateData.commentaire_agent = data.commentaire_agent;
       }
-      if (data.statut === 'dossier_incomplet') {
-        updateData.date_modification = new Date().toISOString();
+      
+      if (Object.keys(updateData).length === 0) {
+        return {
+          statusCode: 400,
+          headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+          body: JSON.stringify({ success: false, message: 'Aucune donnée à mettre à jour' })
+        };
       }
       
       const { data: updated, error } = await supabase

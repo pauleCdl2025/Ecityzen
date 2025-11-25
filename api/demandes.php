@@ -153,13 +153,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             $demandeData['documents'] = json_encode($documents, JSON_UNESCAPED_UNICODE);
         }
         
-        // Assigner automatiquement à un agent disponible
-        $agentResult = supabaseCall('utilisateurs', 'GET', null, ['role' => 'agent', 'statut' => 'actif']);
-        if ($agentResult['success'] && !empty($agentResult['data'])) {
-            $agents = $agentResult['data'];
-            $randomAgent = $agents[array_rand($agents)];
-            $demandeData['agent_assigné_id'] = $randomAgent['id'];
-        }
+        // Ne pas assigner automatiquement - le manager assignera
+        // Les demandes arrivent d'abord chez le manager
+        $demandeData['agent_assigné_id'] = null;
         
         // Créer la demande dans Supabase
         $result = supabaseCall('demandes', 'POST', $demandeData);
@@ -198,15 +194,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     }
     
     try {
-        $updateData = ['statut' => $data['statut']];
-        if ($data['statut'] === 'valide') {
-            $updateData['date_validation'] = date('Y-m-d H:i:s');
+        $updateData = [];
+        
+        // Mettre à jour le statut si fourni
+        if (isset($data['statut'])) {
+            $updateData['statut'] = $data['statut'];
+            if ($data['statut'] === 'valide') {
+                $updateData['date_validation'] = date('Y-m-d H:i:s');
+            }
+            if ($data['statut'] === 'dossier_incomplet') {
+                $updateData['date_modification'] = date('Y-m-d H:i:s');
+            }
         }
+        
+        // Mettre à jour l'agent assigné si fourni (pour le manager)
+        if (isset($data['agent_assigné_id'])) {
+            $updateData['agent_assigné_id'] = intval($data['agent_assigné_id']);
+        }
+        
+        // Mettre à jour le commentaire si fourni
         if (isset($data['commentaire_agent']) && !empty($data['commentaire_agent'])) {
             $updateData['commentaire_agent'] = trim($data['commentaire_agent']);
         }
-        if ($data['statut'] === 'dossier_incomplet') {
-            $updateData['date_modification'] = date('Y-m-d H:i:s');
+        
+        if (empty($updateData)) {
+            sendJSONResponse(false, null, 'Aucune donnée à mettre à jour', 400);
         }
         
         $result = supabaseCall('demandes', 'PATCH', $updateData, ['id' => $data['id']]);

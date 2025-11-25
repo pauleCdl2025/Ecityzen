@@ -185,19 +185,8 @@ exports.handler = async (event, context) => {
         };
       }
       
-      // Assigner automatiquement à un agent disponible
-      const { data: agents } = await supabase
-        .from('utilisateurs')
-        .select('id')
-        .eq('role', 'agent')
-        .eq('statut', 'actif')
-        .limit(10);
-      
-      let agentAssignéId = null;
-      if (agents && agents.length > 0) {
-        agentAssignéId = agents[Math.floor(Math.random() * agents.length)].id;
-      }
-      
+      // Ne pas assigner automatiquement - le manager assignera
+      // Les signalements arrivent d'abord chez le manager
       const signalementData = {
         utilisateur_id: userId,
         type: data.type,
@@ -208,7 +197,7 @@ exports.handler = async (event, context) => {
         longitude: data.longitude ? parseFloat(data.longitude) : null,
         photo_url: data.photo || null,
         statut: 'en_attente',
-        agent_assigné_id: agentAssignéId,
+        agent_assigné_id: null, // Le manager assignera
         date_signalement: new Date().toISOString()
       };
       

@@ -1836,13 +1836,28 @@
             
             <!-- Navigation -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Assignation Demandes/Signalements -->
+                <div class="bg-white rounded-lg p-6 shadow">
+                    <h2 class="text-xl font-bold mb-4">Assignation</h2>
+                    <div class="space-y-4">
+                        <button onclick="assignerDemandes()" class="w-full bg-blue-500 text-white p-3 rounded hover:bg-blue-600 transition-colors">
+                            <i class="fas fa-file-alt mr-2"></i>Assigner Demandes
+                            <span id="managerDemandesNonAssignees" class="ml-2 bg-red-500 text-white px-2 py-1 rounded-full text-xs">0</span>
+                        </button>
+                        <button onclick="assignerSignalements()" class="w-full bg-green-500 text-white p-3 rounded hover:bg-green-600 transition-colors">
+                            <i class="fas fa-exclamation-triangle mr-2"></i>Assigner Signalements
+                            <span id="managerSignalementsNonAssignes" class="ml-2 bg-red-500 text-white px-2 py-1 rounded-full text-xs">0</span>
+                        </button>
+                        <button onclick="assignerTaches()" class="w-full bg-purple-500 text-white p-3 rounded hover:bg-purple-600 transition-colors">
+                            <i class="fas fa-tasks mr-2"></i>Assigner Tâches
+                        </button>
+                    </div>
+                </div>
+                
                 <!-- Gestion Équipes -->
                 <div class="bg-white rounded-lg p-6 shadow">
                     <h2 class="text-xl font-bold mb-4">Gestion Équipes</h2>
                     <div class="space-y-4">
-                        <button onclick="assignerTaches()" class="w-full bg-blue-500 text-white p-3 rounded">
-                            <i class="fas fa-tasks mr-2"></i>Assigner Tâches
-                        </button>
                         <button onclick="evaluationEquipe()" class="w-full bg-green-500 text-white p-3 rounded">
                             <i class="fas fa-star mr-2"></i>Évaluation Performance
                         </button>
@@ -3414,6 +3429,50 @@
                             <i class="fas fa-check mr-2"></i>Enregistrer
                         </button>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Assigner Demandes (Manager) -->
+    <div id="assignerDemandesModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" style="padding-top: 80px;">
+        <div class="bg-white rounded-xl shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="text-white p-6 rounded-t-xl" style="background-color: var(--gabon-blue);">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-2xl font-bold">
+                        <i class="fas fa-file-alt mr-2"></i>Assigner les Demandes
+                    </h2>
+                    <button onclick="closeModal('assignerDemandesModal')" class="text-white hover:text-gray-200 transition-colors">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="p-6">
+                <div id="assignerDemandesList" class="space-y-3">
+                    <p class="text-center text-gray-500 py-8">Chargement des demandes...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Assigner Signalements (Manager) -->
+    <div id="assignerSignalementsModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" style="padding-top: 80px;">
+        <div class="bg-white rounded-xl shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="text-white p-6 rounded-t-xl" style="background-color: var(--gabon-green);">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-2xl font-bold">
+                        <i class="fas fa-exclamation-triangle mr-2"></i>Assigner les Signalements
+                    </h2>
+                    <button onclick="closeModal('assignerSignalementsModal')" class="text-white hover:text-gray-200 transition-colors">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="p-6">
+                <div id="assignerSignalementsList" class="space-y-3">
+                    <p class="text-center text-gray-500 py-8">Chargement des signalements...</p>
                 </div>
             </div>
         </div>
@@ -5169,11 +5228,12 @@
                                     <i class="fas fa-clock mr-1"></i>${dateFormatee} à ${heureFormatee}
                                 </div>
                                 ${demande.motif ? `<div class="text-xs text-gray-600 mt-1 italic">${demande.motif.substring(0, 50)}${demande.motif.length > 50 ? '...' : ''}</div>` : ''}
+                                ${demande.commentaire_agent ? `<div class="text-xs text-red-600 mt-1"><i class="fas fa-exclamation-triangle mr-1"></i>${demande.commentaire_agent}</div>` : ''}
                             </div>
                             <div class="flex flex-col items-end gap-2 ml-4">
                                 <span class="px-2 py-1 ${statutClass} rounded text-xs">${statutText}</span>
-                                <button onclick="validerDemande(${demande.id})" class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm transition-colors whitespace-nowrap">
-                                    <i class="fas fa-check mr-1"></i>Valider
+                                <button onclick="voirDetailsDemande(${demande.id})" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm transition-colors whitespace-nowrap">
+                                    <i class="fas fa-eye mr-1"></i>Voir détails
                                 </button>
                             </div>
                         </div>
@@ -5537,6 +5597,29 @@
         
         // Charger les données manager
         async function loadManagerData() {
+            // Compter les demandes et signalements non assignés
+            try {
+                const [demandesResult, signalementsResult] = await Promise.all([
+                    apiCall('demandes.php').catch(() => ({ data: [] })),
+                    apiCall('signalements.php').catch(() => ({ data: [] }))
+                ]);
+                
+                const demandes = demandesResult.data || [];
+                const signalements = signalementsResult.data || [];
+                
+                const demandesNonAssignees = demandes.filter(d => !d.agent_assigné_id && d.statut === 'en_attente');
+                const signalementsNonAssignes = signalements.filter(s => !s.agent_assigné_id && s.statut === 'en_attente');
+                
+                // Mettre à jour les badges
+                const badgeDemandes = document.getElementById('managerDemandesNonAssignees');
+                const badgeSignalements = document.getElementById('managerSignalementsNonAssignes');
+                if (badgeDemandes) badgeDemandes.textContent = demandesNonAssignees.length;
+                if (badgeSignalements) badgeSignalements.textContent = signalementsNonAssignes.length;
+            } catch (error) {
+                console.error('Erreur comptage demandes/signalements:', error);
+            }
+            
+            // Continuer avec le chargement normal
             try {
                 const statsResult = await apiCall('stats.php');
                 if (statsResult && statsResult.data) {
@@ -6637,6 +6720,204 @@
         }
 
         // Fonctions managers
+        // Fonctions Manager - Assignation
+        async function assignerDemandes() {
+            const modal = document.getElementById('assignerDemandesModal');
+            modal.classList.remove('hidden');
+            await chargerDemandesNonAssignees();
+        }
+        
+        async function chargerDemandesNonAssignees() {
+            try {
+                const result = await apiCall('demandes.php').catch(() => ({ data: [] }));
+                const demandes = result.data || [];
+                const demandesNonAssignees = demandes.filter(d => !d.agent_assigné_id && d.statut === 'en_attente');
+                
+                // Mettre à jour le badge
+                document.getElementById('managerDemandesNonAssignees').textContent = demandesNonAssignees.length;
+                
+                const listContainer = document.getElementById('assignerDemandesList');
+                if (!listContainer) return;
+                
+                listContainer.innerHTML = '';
+                
+                if (demandesNonAssignees.length === 0) {
+                    listContainer.innerHTML = '<p class="text-center text-gray-500 py-8">Aucune demande en attente d\'assignation</p>';
+                    return;
+                }
+                
+                // Charger la liste des agents
+                const agentsResult = await apiCall('users.php').catch(() => ({ data: [] }));
+                const agents = (agentsResult.data || []).filter(u => u.role === 'agent' && u.statut === 'actif');
+                
+                demandesNonAssignees.forEach(demande => {
+                    const div = document.createElement('div');
+                    div.className = 'p-4 border rounded-lg bg-gray-50';
+                    
+                    const dateCreation = new Date(demande.date_creation);
+                    const dateFormatee = dateCreation.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                    const heureFormatee = dateCreation.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+                    
+                    div.innerHTML = `
+                        <div class="flex justify-between items-start">
+                            <div class="flex-1">
+                                <div class="font-semibold text-lg mb-1">${demande.service || demande.type || 'Demande'}</div>
+                                <div class="text-sm text-gray-600 mb-1">
+                                    <i class="fas fa-user mr-1"></i>${demande.utilisateur_nom || 'Utilisateur'}
+                                </div>
+                                <div class="text-sm text-gray-600 mb-1">
+                                    <i class="fas fa-hashtag mr-1"></i>${demande.numero_dossier || 'N/A'}
+                                </div>
+                                <div class="text-xs text-gray-500">
+                                    <i class="fas fa-clock mr-1"></i>${dateFormatee} à ${heureFormatee}
+                                </div>
+                                ${demande.motif ? `<div class="text-sm text-gray-600 mt-2"><i class="fas fa-info-circle mr-1"></i>${demande.motif}</div>` : ''}
+                            </div>
+                            <div class="ml-4 flex flex-col gap-2">
+                                <select id="agentSelect_${demande.id}" class="border border-gray-300 rounded-lg p-2 text-sm">
+                                    <option value="">Choisir un agent...</option>
+                                    ${agents.map(agent => `<option value="${agent.id}">${agent.name || agent.nom}</option>`).join('')}
+                                </select>
+                                <button onclick="assignerDemandeAgent(${demande.id})" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded text-sm transition-colors">
+                                    <i class="fas fa-check mr-1"></i>Assigner
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    listContainer.appendChild(div);
+                });
+            } catch (error) {
+                console.error('Erreur chargement demandes:', error);
+                showNotification('Erreur lors du chargement des demandes', 'error');
+            }
+        }
+        
+        async function assignerDemandeAgent(demandeId) {
+            const select = document.getElementById(`agentSelect_${demandeId}`);
+            const agentId = select.value;
+            
+            if (!agentId) {
+                showNotification('Veuillez sélectionner un agent', 'warning');
+                return;
+            }
+            
+            try {
+                const result = await apiCall('demandes.php', 'PUT', {
+                    id: parseInt(demandeId),
+                    agent_assigné_id: parseInt(agentId),
+                    statut: 'en_attente'
+                });
+                
+                if (result.success) {
+                    showNotification('Demande assignée avec succès', 'success');
+                    chargerDemandesNonAssignees();
+                    loadManagerData(); // Recharger les stats
+                }
+            } catch (error) {
+                showNotification('Erreur lors de l\'assignation: ' + error.message, 'error');
+            }
+        }
+        
+        async function assignerSignalements() {
+            const modal = document.getElementById('assignerSignalementsModal');
+            modal.classList.remove('hidden');
+            await chargerSignalementsNonAssignes();
+        }
+        
+        async function chargerSignalementsNonAssignes() {
+            try {
+                const result = await apiCall('signalements.php').catch(() => ({ data: [] }));
+                const signalements = result.data || [];
+                const signalementsNonAssignes = signalements.filter(s => !s.agent_assigné_id && s.statut === 'en_attente');
+                
+                // Mettre à jour le badge
+                document.getElementById('managerSignalementsNonAssignes').textContent = signalementsNonAssignes.length;
+                
+                const listContainer = document.getElementById('assignerSignalementsList');
+                if (!listContainer) return;
+                
+                listContainer.innerHTML = '';
+                
+                if (signalementsNonAssignes.length === 0) {
+                    listContainer.innerHTML = '<p class="text-center text-gray-500 py-8">Aucun signalement en attente d\'assignation</p>';
+                    return;
+                }
+                
+                // Charger la liste des agents
+                const agentsResult = await apiCall('users.php').catch(() => ({ data: [] }));
+                const agents = (agentsResult.data || []).filter(u => u.role === 'agent' && u.statut === 'actif');
+                
+                signalementsNonAssignes.forEach(signalement => {
+                    const div = document.createElement('div');
+                    div.className = 'p-4 border rounded-lg bg-gray-50';
+                    
+                    const dateCreation = new Date(signalement.date_signalement || signalement.date_creation);
+                    const dateFormatee = dateCreation.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                    const heureFormatee = dateCreation.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+                    
+                    const idFormate = signalement.id_formate || 'SIG' + new Date(signalement.date_creation).getFullYear() + '-' + String(signalement.id).padStart(6, '0');
+                    
+                    div.innerHTML = `
+                        <div class="flex justify-between items-start">
+                            <div class="flex-1">
+                                <div class="font-semibold text-lg mb-1">${signalement.sous_type || signalement.type || 'Signalement'}</div>
+                                <div class="text-sm text-gray-600 mb-1">
+                                    <i class="fas fa-user mr-1"></i>${signalement.utilisateur_nom || 'Utilisateur'}
+                                </div>
+                                <div class="text-sm text-gray-600 mb-1">
+                                    <i class="fas fa-hashtag mr-1"></i>${idFormate}
+                                </div>
+                                <div class="text-xs text-gray-500 mb-2">
+                                    <i class="fas fa-clock mr-1"></i>${dateFormatee} à ${heureFormatee}
+                                </div>
+                                <div class="text-sm text-gray-700">${signalement.description || ''}</div>
+                                ${signalement.localisation ? `<div class="text-xs text-gray-500 mt-1"><i class="fas fa-map-marker-alt mr-1"></i>${signalement.localisation}</div>` : ''}
+                            </div>
+                            <div class="ml-4 flex flex-col gap-2">
+                                <select id="agentSelectSig_${signalement.id}" class="border border-gray-300 rounded-lg p-2 text-sm">
+                                    <option value="">Choisir un agent...</option>
+                                    ${agents.map(agent => `<option value="${agent.id}">${agent.name || agent.nom}</option>`).join('')}
+                                </select>
+                                <button onclick="assignerSignalementAgent(${signalement.id})" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded text-sm transition-colors">
+                                    <i class="fas fa-check mr-1"></i>Assigner
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    listContainer.appendChild(div);
+                });
+            } catch (error) {
+                console.error('Erreur chargement signalements:', error);
+                showNotification('Erreur lors du chargement des signalements', 'error');
+            }
+        }
+        
+        async function assignerSignalementAgent(signalementId) {
+            const select = document.getElementById(`agentSelectSig_${signalementId}`);
+            const agentId = select.value;
+            
+            if (!agentId) {
+                showNotification('Veuillez sélectionner un agent', 'warning');
+                return;
+            }
+            
+            try {
+                const result = await apiCall('signalements.php', 'PUT', {
+                    id: parseInt(signalementId),
+                    agent_assigné_id: parseInt(agentId),
+                    statut: 'en_attente'
+                });
+                
+                if (result.success) {
+                    showNotification('Signalement assigné avec succès', 'success');
+                    chargerSignalementsNonAssignes();
+                    loadManagerData(); // Recharger les stats
+                }
+            } catch (error) {
+                showNotification('Erreur lors de l\'assignation: ' + error.message, 'error');
+            }
+        }
+        
         // Fonctions Manager - Ouvrir les modales
         function assignerTaches() {
             const modal = document.getElementById('assignerTachesModal');

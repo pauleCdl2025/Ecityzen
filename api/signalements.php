@@ -99,13 +99,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             'statut' => 'en_attente'
         ];
         
-        // Assigner automatiquement à un agent disponible
-        $agentResult = supabaseCall('utilisateurs', 'GET', null, ['role' => 'agent', 'statut' => 'actif']);
-        if ($agentResult['success'] && !empty($agentResult['data'])) {
-            $agents = $agentResult['data'];
-            $randomAgent = $agents[array_rand($agents)];
-            $signalementData['agent_assigné_id'] = $randomAgent['id'];
-        }
+        // Ne pas assigner automatiquement - le manager assignera
+        // Les signalements arrivent d'abord chez le manager
+        $signalementData['agent_assigné_id'] = null;
         
         // Créer le signalement dans Supabase
         $result = supabaseCall('signalements', 'POST', $signalementData);
@@ -146,15 +142,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     
     $data = json_decode(file_get_contents('php://input'), true);
     
-    if (!isset($data['id']) || !isset($data['statut'])) {
-        sendJSONResponse(false, null, 'Champs manquants: id, statut', 400);
+    if (!isset($data['id'])) {
+        sendJSONResponse(false, null, 'Champs manquants: id', 400);
     }
     
     try {
-        $updateData = ['statut' => $data['statut']];
-        if ($data['statut'] === 'resolu') {
-            $updateData['date_modification'] = date('Y-m-d H:i:s');
-            $updateData['date_resolution'] = date('Y-m-d H:i:s');
+        $updateData = [];
+        
+        // Mettre à jour le statut si fourni
+        if (isset($data['statut'])) {
+            $updateData['statut'] = $data['statut'];
+            if ($data['statut'] === 'resolu') {
+                $updateData['date_modification'] = date('Y-m-d H:i:s');
+                $updateData['date_resolution'] = date('Y-m-d H:i:s');
+            }
+        }
+        
+        // Mettre à jour l'agent assigné si fourni (pour le manager)
+        if (isset($data['agent_assigné_id'])) {
+            $updateData['agent_assigné_id'] = intval($data['agent_assigné_id']);
+        }
+        
+        if (empty($updateData)) {
+            sendJSONResponse(false, null, 'Aucune donnée à mettre à jour', 400);
         }
         
         $result = supabaseCall('signalements', 'PATCH', $updateData, ['id' => $data['id']]);
