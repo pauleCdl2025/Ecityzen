@@ -9,6 +9,7 @@ Thumbs.db
 .env
 .env.local
 config/local.php
+.env.netlify
 
 # Uploads (sauf structure)
 uploads/*
@@ -39,4 +40,9 @@ vendor/
 *.bak
 *.backup
 *_backup.sql
+
+# Netlify
+.netlify/
+dist/
+build/
 

@@ -1,0 +1,24 @@
+{
+  "name": "ecityzen-gabon",
+  "version": "1.0.0",
+  "description": "Application e-cityzen Gabon - Plateforme numérique pour la mairie",
+  "main": "ECITYZEN.html",
+  "scripts": {
+    "build": "echo 'No build step required for static site'"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pauleCdl2025/Ecityzen.git"
+  },
+  "keywords": [
+    "gabon",
+    "mairie",
+    "citoyen",
+    "administration"
+  ],
+  "author": "pauleCdl2025",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {}
+}
+
