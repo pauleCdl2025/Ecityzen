@@ -2,9 +2,15 @@
 
 [build]
   # Pas de build command car c'est un fichier HTML statique
-  # publish = "."
   command = ""
   publish = "."
+
+# Variables d'environnement (pour référence - utilisez l'interface Netlify pour les valeurs réelles)
+# Les valeurs sensibles doivent être ajoutées via l'interface Netlify
+[build.environment]
+  NODE_ENV = "production"
+  # SUPABASE_URL et SUPABASE_ANON_KEY doivent être ajoutées via l'interface Netlify
+  # Site settings > Environment variables
 
 [[redirects]]
   # Rediriger les API calls vers un autre serveur si nécessaire
