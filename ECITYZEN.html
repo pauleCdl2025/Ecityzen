@@ -3032,11 +3032,17 @@
 
     <script>
         // Configuration API
-        // Si vous hébergez les APIs PHP sur un autre serveur, modifiez cette URL
-        // Sinon, l'application utilise Supabase directement ou Netlify Functions
+        // IMPORTANT: Netlify ne peut pas exécuter du PHP
+        // Pour utiliser les APIs PHP en production, vous devez:
+        // 1. Héberger les APIs PHP sur un serveur séparé (ex: votre serveur WAMP, ou un service comme Railway, Render, etc.)
+        // 2. Modifier cette URL pour pointer vers votre serveur PHP
+        // 3. Configurer CORS sur votre serveur PHP pour autoriser les requêtes depuis votre domaine Netlify
         const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
             ? 'api'  // Local: utiliser les APIs locales
-            : '/.netlify/functions';  // Production: utiliser Netlify Functions
+            : '';  // Production: vide = désactiver les appels API PHP (seules login/register via Netlify Functions sont disponibles)
+        
+        // Si vous avez un serveur PHP en production, décommentez et remplissez cette ligne:
+        // const API_BASE_URL_PRODUCTION = 'https://votre-serveur-php.com/api';
         
         // Configuration Supabase
         const SUPABASE_URL = 'https://srbzvjrqbhtuyzlwdghn.supabase.co';
@@ -3091,11 +3097,18 @@
             
             // Construire l'URL selon l'environnement
             let url;
-            if (API_BASE_URL === '/.netlify/functions') {
-                // Netlify Functions: pas besoin de .php
-                url = `${API_BASE_URL}/${endpoint}`;
+            const endpointClean = endpoint.replace('.php', '');
+            
+            if (!API_BASE_URL) {
+                // Production sans serveur PHP: seules login et register via Netlify Functions
+                if (endpointClean === 'login' || endpointClean === 'register') {
+                    url = `/.netlify/functions/${endpointClean}`;
+                } else {
+                    // Les autres endpoints nécessitent un serveur PHP
+                    throw new Error(`L'endpoint ${endpointClean} nécessite un serveur PHP. Veuillez configurer un serveur PHP séparé.`);
+                }
             } else {
-                // API PHP locale: ajouter .php si nécessaire
+                // API PHP locale ou serveur PHP en production
                 url = `${API_BASE_URL}/${endpoint}${endpoint.includes('.php') ? '' : '.php'}`;
             }
             
@@ -3124,10 +3137,23 @@
                     }
                 }
                 
-                const result = await response.json();
+                // Gérer les erreurs de parsing JSON
+                let result;
+                try {
+                    const text = await response.text();
+                    result = text ? JSON.parse(text) : null;
+                } catch (parseError) {
+                    // Si la réponse n'est pas du JSON (probablement une page HTML d'erreur 404)
+                    if (response.status === 404) {
+                        const endpointClean = endpoint.replace('.php', '');
+                        throw new Error(`Endpoint ${endpointClean} non disponible. Pour utiliser cette fonctionnalité en production, vous devez héberger les APIs PHP sur un serveur séparé.`);
+                    }
+                    console.error('Erreur parsing JSON:', parseError);
+                    throw new Error('Réponse invalide du serveur');
+                }
                 
-                if (!result.success) {
-                    throw new Error(result.message || 'Erreur API');
+                if (!result || !result.success) {
+                    throw new Error(result?.message || 'Erreur API');
                 }
                 
                 return result;
@@ -3135,7 +3161,12 @@
                 // Ne pas afficher d'erreur si c'est une erreur 401 déjà gérée
                 if (error.message !== 'Non authentifié' && error.message !== 'Session expirée') {
                     console.error('Erreur API:', error);
-                    showNotification('Erreur de connexion: ' + error.message, 'error');
+                    // Ne pas afficher de notification pour les erreurs d'endpoints manquants si pas connecté
+                    if (error.message.includes('non disponible') && !currentUser) {
+                        // Silencieux pour éviter de polluer la console
+                    } else {
+                        showNotification('Erreur: ' + error.message, 'error');
+                    }
                 }
                 throw error;
             }
