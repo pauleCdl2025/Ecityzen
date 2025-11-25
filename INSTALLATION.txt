@@ -1,0 +1,118 @@
+═══════════════════════════════════════════════════════════════
+   e-cityzen GABON - Instructions d'Installation
+═══════════════════════════════════════════════════════════════
+
+⚠️ IMPORTANT : Ne pas ouvrir ECITYZEN.html directement !
+   Vous DEVEZ utiliser WAMP Server pour accéder à l'application.
+
+═══════════════════════════════════════════════════════════════
+   ÉTAPE 1 : Installer et démarrer WAMP
+═══════════════════════════════════════════════════════════════
+
+1. Téléchargez WAMP Server depuis : https://www.wampserver.com/
+2. Installez WAMP Server
+3. Démarrez WAMP (icône dans la barre des tâches)
+4. Vérifiez que l'icône est VERTE (Apache et MySQL démarrés)
+
+═══════════════════════════════════════════════════════════════
+   ÉTAPE 2 : Placer les fichiers
+═══════════════════════════════════════════════════════════════
+
+1. Copiez TOUT le dossier "Ecityzen" dans :
+   C:\wamp64\www\Ecityzen\
+   
+   Structure finale :
+   C:\wamp64\www\Ecityzen\
+   ├── ECITYZEN.html
+   ├── logoMarieAkanda.webp
+   ├── database.sql
+   ├── test_connection.php
+   ├── config/
+   │   └── database.php
+   └── api/
+       ├── login.php
+       ├── logout.php
+       ├── signalements.php
+       ├── demandes.php
+       ├── paiements.php
+       └── stats.php
+
+═══════════════════════════════════════════════════════════════
+   ÉTAPE 3 : Créer la base de données
+═══════════════════════════════════════════════════════════════
+
+1. Ouvrez votre navigateur
+2. Allez sur : http://localhost/phpmyadmin
+3. Cliquez sur "Nouvelle base de données" (ou "New")
+4. Nom : ecityzen_gabon
+5. Interclassement : utf8mb4_unicode_ci
+6. Cliquez sur "Créer" (ou "Create")
+7. Sélectionnez la base "ecityzen_gabon"
+8. Cliquez sur l'onglet "Importer" (ou "Import")
+9. Cliquez sur "Choisir un fichier"
+10. Sélectionnez : database.sql
+11. Cliquez sur "Exécuter" (ou "Go")
+
+═══════════════════════════════════════════════════════════════
+   ÉTAPE 4 : Tester la connexion
+═══════════════════════════════════════════════════════════════
+
+1. Ouvrez votre navigateur
+2. Allez sur : http://localhost/Ecityzen/test_connection.php
+3. Vérifiez que tous les tests sont verts (✓)
+
+═══════════════════════════════════════════════════════════════
+   ÉTAPE 5 : Accéder à l'application
+═══════════════════════════════════════════════════════════════
+
+✅ URL CORRECTE :
+   http://localhost/Ecityzen/ECITYZEN.html
+
+❌ NE PAS UTILISER :
+   file:///C:/Users/.../ECITYZEN.html
+   (Cela ne fonctionnera PAS !)
+
+═══════════════════════════════════════════════════════════════
+   UTILISATEURS DE DÉMONSTRATION
+═══════════════════════════════════════════════════════════════
+
+Tous les utilisateurs ont le mot de passe : password
+
+• Citoyen      : MBANG Pierre
+• Commerçant   : OBAME Marie
+• Agent         : NGOUA Marie
+• Manager       : MENGUE Paul
+• Super Admin   : MINTSA NGUEMA Claude
+
+═══════════════════════════════════════════════════════════════
+   DÉPANNAGE
+═══════════════════════════════════════════════════════════════
+
+❌ Erreur CORS ou "Failed to fetch"
+   → Vous ouvrez le fichier directement au lieu d'utiliser WAMP
+   → Utilisez : http://localhost/Ecityzen/ECITYZEN.html
+
+❌ Erreur "Erreur de connexion à la base de données"
+   → Vérifiez que MySQL est démarré dans WAMP (icône verte)
+   → Vérifiez que la base de données existe dans phpMyAdmin
+   → Vérifiez config/database.php
+
+❌ Page blanche ou erreur 404
+   → Vérifiez que les fichiers sont dans C:\wamp64\www\Ecityzen\
+   → Vérifiez que Apache est démarré dans WAMP
+   → Vérifiez l'URL : http://localhost/Ecityzen/ECITYZEN.html
+
+❌ "API non disponible"
+   → Vérifiez que WAMP est démarré
+   → Vérifiez que la base de données est créée et importée
+   → Testez : http://localhost/Ecityzen/test_connection.php
+
+═══════════════════════════════════════════════════════════════
+
+Pour toute question, vérifiez :
+1. Les logs PHP dans WAMP
+2. La console du navigateur (F12)
+3. Les logs MySQL dans phpMyAdmin
+
+═══════════════════════════════════════════════════════════════
+

@@ -1,0 +1,207 @@
+<?php
+/**
+ * Configuration Supabase
+ * e-cityzen Gabon
+ */
+
+define('SUPABASE_URL', 'https://srbzvjrqbhtuyzlwdghn.supabase.co');
+define('SUPABASE_KEY', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNyYnp2anJxYmh0dXl6bHdkZ2huIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQwNTg3NzQsImV4cCI6MjA3OTYzNDc3NH0.5KOkXAANWV_WLWPx02ozeC_xPCINd6boVtm3ia9iSmM');
+define('SUPABASE_TABLE_PREFIX', '');
+
+/**
+ * Appel API Supabase
+ */
+function supabaseCall($table, $method = 'GET', $data = null, $filters = [], $options = []) {
+    $url = SUPABASE_URL . '/rest/v1/' . $table;
+    
+    $ch = curl_init();
+    
+    $headers = [
+        'apikey: ' . SUPABASE_KEY,
+        'Authorization: Bearer ' . SUPABASE_KEY,
+        'Content-Type: application/json',
+        'Prefer: return=representation'
+    ];
+    
+    // Ajouter les options de select si spécifiées
+    $queryParams = [];
+    
+    if (isset($options['select'])) {
+        $queryParams[] = 'select=' . urlencode($options['select']);
+    }
+    
+    if (isset($options['order'])) {
+        if (is_array($options['order'])) {
+            // Format: ['field' => 'desc'] ou ['date_creation' => 'desc', 'id' => 'asc']
+            foreach ($options['order'] as $field => $direction) {
+                $direction = strtolower($direction) === 'desc' ? 'desc' : 'asc';
+                $queryParams[] = 'order=' . urlencode($field . '.' . $direction);
+            }
+        } else {
+            // Format simple: 'field.desc'
+            $queryParams[] = 'order=' . urlencode($options['order']);
+        }
+    }
+    
+    if (isset($options['limit'])) {
+        $queryParams[] = 'limit=' . intval($options['limit']);
+    }
+    
+    // Ajouter les filtres pour GET
+    if ($method === 'GET' && !empty($filters)) {
+        foreach ($filters as $key => $value) {
+            if ($value !== null) {
+                $queryParams[] = $key . '=eq.' . urlencode($value);
+            }
+        }
+    }
+    
+    // Pour PUT/PATCH/DELETE, ajouter les filtres dans l'URL
+    if (in_array($method, ['PUT', 'PATCH', 'DELETE']) && !empty($filters)) {
+        foreach ($filters as $key => $value) {
+            if ($value !== null) {
+                $queryParams[] = $key . '=eq.' . urlencode($value);
+            }
+        }
+    }
+    
+    if (!empty($queryParams)) {
+        $url .= '?' . implode('&', $queryParams);
+    }
+    
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+    
+    switch ($method) {
+        case 'POST':
+            curl_setopt($ch, CURLOPT_POST, true);
+            if ($data) {
+                curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+            }
+            break;
+            
+        case 'PUT':
+        case 'PATCH':
+            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
+            if ($data) {
+                curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+            }
+            break;
+            
+        case 'DELETE':
+            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'DELETE');
+            break;
+    }
+    
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $error = curl_error($ch);
+    curl_close($ch);
+    
+    if ($error) {
+        error_log("Erreur cURL Supabase: " . $error);
+        return [
+            'success' => false,
+            'error' => $error
+        ];
+    }
+    
+    $result = json_decode($response, true);
+    
+    if ($httpCode >= 200 && $httpCode < 300) {
+        // Pour les requêtes qui retournent un tableau vide, retourner un tableau
+        if (is_array($result) && empty($result)) {
+            return [
+                'success' => true,
+                'data' => []
+            ];
+        }
+        return [
+            'success' => true,
+            'data' => $result
+        ];
+    } else {
+        error_log("Erreur Supabase HTTP $httpCode: " . $response);
+        $errorMessage = 'Erreur Supabase';
+        if (is_array($result) && isset($result['message'])) {
+            $errorMessage = $result['message'];
+        } elseif (is_string($result)) {
+            $errorMessage = $result;
+        }
+        return [
+            'success' => false,
+            'error' => $errorMessage,
+            'code' => $httpCode
+        ];
+    }
+}
+
+/**
+ * Enrichir les données avec les noms d'utilisateurs
+ */
+function enrichWithUserNames($items, $userIdField = 'utilisateur_id', $agentIdField = 'agent_assigné_id') {
+    if (empty($items)) {
+        return $items;
+    }
+    
+    // Collecter tous les IDs d'utilisateurs uniques
+    $userIds = [];
+    foreach ($items as $item) {
+        if (isset($item[$userIdField]) && $item[$userIdField]) {
+            $userIds[$item[$userIdField]] = true;
+        }
+        if (isset($item[$agentIdField]) && $item[$agentIdField]) {
+            $userIds[$item[$agentIdField]] = true;
+        }
+    }
+    
+    $userIds = array_keys($userIds);
+    
+    if (empty($userIds)) {
+        return $items;
+    }
+    
+    // Récupérer les noms des utilisateurs
+    $users = [];
+    foreach ($userIds as $userId) {
+        $result = supabaseCall('utilisateurs', 'GET', null, ['id' => $userId]);
+        if ($result['success'] && !empty($result['data'])) {
+            $users[$userId] = $result['data'][0]['nom'];
+        }
+    }
+    
+    // Enrichir les items
+    foreach ($items as &$item) {
+        if (isset($item[$userIdField]) && isset($users[$item[$userIdField]])) {
+            $item['utilisateur_nom'] = $users[$item[$userIdField]];
+        }
+        if (isset($item[$agentIdField]) && isset($users[$item[$agentIdField]])) {
+            $item['agent_nom'] = $users[$item[$agentIdField]];
+        }
+    }
+    
+    return $items;
+}
+
+/**
+ * Réponse JSON standardisée (compatible avec l'existant)
+ */
+function sendJSONResponse($success, $data = null, $message = '', $code = 200) {
+    http_response_code($code);
+    header('Content-Type: application/json; charset=utf-8');
+    
+    $response = [
+        'success' => $success,
+        'message' => $message
+    ];
+    
+    if ($data !== null) {
+        $response['data'] = $data;
+    }
+    
+    echo json_encode($response, JSON_UNESCAPED_UNICODE);
+    exit;
+}
+

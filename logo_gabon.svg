@@ -1,0 +1,193 @@
+<svg width="300" height="360" viewBox="0 0 300 360" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFD700;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#D4AF37;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#B8860B;stop-opacity:1" />
+    </linearGradient>
+    <filter id="shadow">
+      <feDropShadow dx="1" dy="1" stdDeviation="1" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+  
+  <!-- Mural Crown (7 battlements) -->
+  <g id="crown">
+    <rect x="110" y="20" width="80" height="25" fill="url(#goldGradient)" filter="url(#shadow)"/>
+    <rect x="115" y="15" width="10" height="5" fill="url(#goldGradient)"/>
+    <rect x="128" y="15" width="10" height="5" fill="url(#goldGradient)"/>
+    <rect x="141" y="15" width="10" height="5" fill="url(#goldGradient)"/>
+    <rect x="154" y="15" width="10" height="5" fill="url(#goldGradient)"/>
+    <rect x="167" y="15" width="10" height="5" fill="url(#goldGradient)"/>
+    <rect x="180" y="15" width="10" height="5" fill="url(#goldGradient)"/>
+    <rect x="193" y="15" width="10" height="5" fill="url(#goldGradient)"/>
+  </g>
+  
+  <!-- Shield (Heater style) -->
+  <g id="shield">
+    <path d="M 100 50 L 150 45 L 200 50 L 200 200 L 150 210 L 100 200 Z" fill="#f8f8f8" stroke="#333" stroke-width="1.5"/>
+    
+    <!-- Top Section - Black with white rope knot -->
+    <path d="M 100 50 L 150 45 L 200 50 L 200 110 L 100 110 Z" fill="#000000"/>
+    <!-- Rope knot (figure-eight style) -->
+    <g transform="translate(150, 75)">
+      <path d="M -20 -10 Q -25 -15 -20 -20 Q -15 -15 -10 -20 Q -5 -15 0 -20 Q 5 -15 10 -20 Q 15 -15 20 -20 Q 25 -15 20 -10 Q 15 -5 10 -10 Q 5 -5 0 -10 Q -5 -5 -10 -10 Q -15 -5 -20 -10 Z" 
+            stroke="white" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <path d="M -20 10 Q -25 15 -20 20 Q -15 15 -10 20 Q -5 15 0 20 Q 5 15 10 20 Q 15 15 20 20 Q 25 15 20 10 Q 15 5 10 10 Q 5 5 0 10 Q -5 5 -10 10 Q -15 5 -20 10 Z" 
+            stroke="white" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <circle cx="0" cy="0" r="3" fill="white"/>
+    </g>
+    
+    <!-- Middle Section - Blue with golden sun -->
+    <path d="M 100 110 L 200 110 L 200 160 L 100 160 Z" fill="#003DA5"/>
+    <!-- Golden Sun -->
+    <circle cx="150" cy="135" r="22" fill="url(#goldGradient)"/>
+    <circle cx="150" cy="135" r="18" fill="#FFD700"/>
+    <!-- Sun rays (16 rays) -->
+    <g stroke="url(#goldGradient)" stroke-width="3" stroke-linecap="round">
+      <line x1="150" y1="108" x2="150" y2="95"/>
+      <line x1="150" y1="162" x2="150" y2="175"/>
+      <line x1="108" y1="135" x2="95" y2="135"/>
+      <line x1="192" y1="135" x2="205" y2="135"/>
+      <line x1="125" y1="108" x2="115" y2="98"/>
+      <line x1="175" y1="108" x2="185" y2="98"/>
+      <line x1="125" y1="162" x2="115" y2="172"/>
+      <line x1="175" y1="162" x2="185" y2="172"/>
+      <line x1="108" y1="125" x2="98" y2="115"/>
+      <line x1="192" y1="125" x2="202" y2="115"/>
+      <line x1="108" y1="145" x2="98" y2="155"/>
+      <line x1="192" y1="145" x2="202" y2="155"/>
+      <line x1="135" y1="108" x2="128" y2="100"/>
+      <line x1="165" y1="108" x2="172" y2="100"/>
+      <line x1="135" y1="162" x2="128" y2="170"/>
+      <line x1="165" y1="162" x2="172" y2="170"/>
+    </g>
+    
+    <!-- Bottom Section - Green with wavy lines -->
+    <path d="M 100 160 L 200 160 L 200 200 L 100 200 Z" fill="#009639"/>
+    <!-- Three wavy horizontal lines -->
+    <path d="M 100 170 Q 110 165 120 170 T 140 170 T 160 170 T 180 170 T 200 170" 
+          stroke="white" stroke-width="3" fill="none"/>
+    <path d="M 100 180 Q 110 175 120 180 T 140 180 T 160 180 T 180 180 T 200 180" 
+          stroke="#009639" stroke-width="3" fill="none"/>
+    <path d="M 100 190 Q 110 185 120 190 T 140 190 T 160 190 T 180 190 T 200 190" 
+          stroke="white" stroke-width="3" fill="none"/>
+  </g>
+  
+  <!-- Left Sea-Panther -->
+  <g id="sea-panther-left" transform="translate(30, 80)">
+    <!-- Upper body (panther) -->
+    <ellipse cx="0" cy="25" rx="22" ry="35" fill="url(#goldGradient)"/>
+    <!-- Head -->
+    <ellipse cx="-8" cy="5" r="16" fill="url(#goldGradient)"/>
+    <!-- Mane -->
+    <path d="M -22 0 Q -28 -8 -24 -15 Q -20 -12 -16 -8" fill="url(#goldGradient)"/>
+    <path d="M -18 3 Q -24 -5 -20 -12 Q -16 -9 -12 -5" fill="url(#goldGradient)"/>
+    <path d="M -14 6 Q -20 -2 -16 -9 Q -12 -6 -8 -2" fill="url(#goldGradient)"/>
+    <!-- Open mouth -->
+    <path d="M -2 10 Q 0 12 2 10" stroke="#333" stroke-width="2" fill="none"/>
+    <ellipse cx="0" cy="12" rx="5" ry="6" fill="#DC143C"/>
+    <!-- Tongue -->
+    <ellipse cx="1" cy="14" rx="3" ry="6" fill="#DC143C"/>
+    <!-- Teeth -->
+    <line x1="-2" y1="10" x2="-1" y2="8" stroke="white" stroke-width="1.5"/>
+    <line x1="2" y1="10" x2="1" y2="8" stroke="white" stroke-width="1.5"/>
+    <!-- Eyes -->
+    <circle cx="-6" cy="6" r="2" fill="#333"/>
+    <circle cx="-4" cy="5" r="1" fill="white"/>
+    <!-- Front paws -->
+    <ellipse cx="-15" cy="20" rx="6" ry="10" fill="url(#goldGradient)"/>
+    <ellipse cx="10" cy="20" rx="6" ry="10" fill="url(#goldGradient)"/>
+    <!-- Claws (red) -->
+    <circle cx="-18" cy="22" r="1.5" fill="#DC143C"/>
+    <circle cx="-15" cy="24" r="1.5" fill="#DC143C"/>
+    <circle cx="-12" cy="22" r="1.5" fill="#DC143C"/>
+    <circle cx="13" cy="22" r="1.5" fill="#DC143C"/>
+    <circle cx="10" cy="24" r="1.5" fill="#DC143C"/>
+    <circle cx="7" cy="22" r="1.5" fill="#DC143C"/>
+    <!-- Lower body (fish tail) -->
+    <path d="M 18 45 Q 30 55 25 70 Q 20 65 15 60" 
+          stroke="url(#goldGradient)" stroke-width="8" fill="none" stroke-linecap="round"/>
+    <path d="M 15 60 Q 10 65 5 70 Q 0 65 -5 70" 
+          stroke="url(#goldGradient)" stroke-width="8" fill="none" stroke-linecap="round"/>
+    <!-- Tail fin -->
+    <path d="M 5 70 Q 8 75 5 80 Q 2 75 5 70" fill="url(#goldGradient)"/>
+  </g>
+  
+  <!-- Right Sea-Panther (mirrored) -->
+  <g id="sea-panther-right" transform="translate(270, 80) scale(-1, 1)">
+    <!-- Upper body (panther) -->
+    <ellipse cx="0" cy="25" rx="22" ry="35" fill="url(#goldGradient)"/>
+    <!-- Head -->
+    <ellipse cx="-8" cy="5" r="16" fill="url(#goldGradient)"/>
+    <!-- Mane -->
+    <path d="M -22 0 Q -28 -8 -24 -15 Q -20 -12 -16 -8" fill="url(#goldGradient)"/>
+    <path d="M -18 3 Q -24 -5 -20 -12 Q -16 -9 -12 -5" fill="url(#goldGradient)"/>
+    <path d="M -14 6 Q -20 -2 -16 -9 Q -12 -6 -8 -2" fill="url(#goldGradient)"/>
+    <!-- Open mouth -->
+    <path d="M -2 10 Q 0 12 2 10" stroke="#333" stroke-width="2" fill="none"/>
+    <ellipse cx="0" cy="12" rx="5" ry="6" fill="#DC143C"/>
+    <!-- Tongue -->
+    <ellipse cx="1" cy="14" rx="3" ry="6" fill="#DC143C"/>
+    <!-- Teeth -->
+    <line x1="-2" y1="10" x2="-1" y2="8" stroke="white" stroke-width="1.5"/>
+    <line x1="2" y1="10" x2="1" y2="8" stroke="white" stroke-width="1.5"/>
+    <!-- Eyes -->
+    <circle cx="-6" cy="6" r="2" fill="#333"/>
+    <circle cx="-4" cy="5" r="1" fill="white"/>
+    <!-- Front paws -->
+    <ellipse cx="-15" cy="20" rx="6" ry="10" fill="url(#goldGradient)"/>
+    <ellipse cx="10" cy="20" rx="6" ry="10" fill="url(#goldGradient)"/>
+    <!-- Claws (red) -->
+    <circle cx="-18" cy="22" r="1.5" fill="#DC143C"/>
+    <circle cx="-15" cy="24" r="1.5" fill="#DC143C"/>
+    <circle cx="-12" cy="22" r="1.5" fill="#DC143C"/>
+    <circle cx="13" cy="22" r="1.5" fill="#DC143C"/>
+    <circle cx="10" cy="24" r="1.5" fill="#DC143C"/>
+    <circle cx="7" cy="22" r="1.5" fill="#DC143C"/>
+    <!-- Lower body (fish tail) -->
+    <path d="M 18 45 Q 30 55 25 70 Q 20 65 15 60" 
+          stroke="url(#goldGradient)" stroke-width="8" fill="none" stroke-linecap="round"/>
+    <path d="M 15 60 Q 10 65 5 70 Q 0 65 -5 70" 
+          stroke="url(#goldGradient)" stroke-width="8" fill="none" stroke-linecap="round"/>
+    <!-- Tail fin -->
+    <path d="M 5 70 Q 8 75 5 80 Q 2 75 5 70" fill="url(#goldGradient)"/>
+  </g>
+  
+  <!-- Left Spear with Flag -->
+  <line x1="55" y1="70" x2="55" y2="160" stroke="white" stroke-width="5" stroke-linecap="round"/>
+  <line x1="55" y1="70" x2="55" y2="160" stroke="url(#goldGradient)" stroke-width="3" stroke-linecap="round"/>
+  <!-- Flag (Green, Yellow, Blue) -->
+  <rect x="48" y="65" width="14" height="16" fill="#009639"/>
+  <rect x="48" y="81" width="14" height="16" fill="#FFD700"/>
+  <rect x="48" y="97" width="14" height="16" fill="#003DA5"/>
+  <!-- Flag wavy effect -->
+  <path d="M 48 73 Q 52 71 55 73 T 62 73" stroke="#009639" stroke-width="1" fill="none" opacity="0.5"/>
+  <path d="M 48 89 Q 52 87 55 89 T 62 89" stroke="#FFD700" stroke-width="1" fill="none" opacity="0.5"/>
+  <path d="M 48 105 Q 52 103 55 105 T 62 105" stroke="#003DA5" stroke-width="1" fill="none" opacity="0.5"/>
+  
+  <!-- Right Spear with Flag -->
+  <line x1="245" y1="70" x2="245" y2="160" stroke="white" stroke-width="5" stroke-linecap="round"/>
+  <line x1="245" y1="70" x2="245" y2="160" stroke="url(#goldGradient)" stroke-width="3" stroke-linecap="round"/>
+  <!-- Flag (Green, Yellow, Blue) -->
+  <rect x="238" y="65" width="14" height="16" fill="#009639"/>
+  <rect x="238" y="81" width="14" height="16" fill="#FFD700"/>
+  <rect x="238" y="97" width="14" height="16" fill="#003DA5"/>
+  <!-- Flag wavy effect -->
+  <path d="M 238 73 Q 242 71 245 73 T 252 73" stroke="#009639" stroke-width="1" fill="none" opacity="0.5"/>
+  <path d="M 238 89 Q 242 87 245 89 T 252 89" stroke="#FFD700" stroke-width="1" fill="none" opacity="0.5"/>
+  <path d="M 238 105 Q 242 103 245 105 T 252 105" stroke="#003DA5" stroke-width="1" fill="none" opacity="0.5"/>
+  
+  <!-- Motto Scroll -->
+  <path d="M 40 250 Q 60 240 80 245 Q 100 250 120 245 Q 140 250 160 245 Q 180 250 200 245 Q 220 250 240 245 Q 260 240 280 250" 
+        stroke="white" stroke-width="20" fill="white" stroke-linecap="round"/>
+  <path d="M 40 250 Q 60 240 80 245 Q 100 250 120 245 Q 140 250 160 245 Q 180 250 200 245 Q 220 250 240 245 Q 260 240 280 250" 
+        stroke="#f0f0f0" stroke-width="18" fill="none" stroke-linecap="round"/>
+  
+  <!-- Motto Text -->
+  <text x="150" y="248" font-family="'Times New Roman', 'Georgia', serif" font-size="14" font-weight="bold" 
+        text-anchor="middle" fill="#000000" letter-spacing="1px">
+    <tspan x="60" dy="0">LIBERTAS</tspan>
+    <tspan x="150" dy="0">EX AMICITIA</tspan>
+    <tspan x="240" dy="0">NASCITUR</tspan>
+  </text>
+</svg>

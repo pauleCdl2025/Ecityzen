@@ -1,0 +1,15 @@
+# Protection des fichiers uploadés
+# Autoriser l'accès uniquement aux fichiers nécessaires
+<FilesMatch "\.(pdf|jpg|jpeg|png|doc|docx)$">
+    Order Allow,Deny
+    Allow from all
+</FilesMatch>
+
+# Empêcher l'exécution de scripts PHP dans ce dossier
+<FilesMatch "\.php$">
+    Order Deny,Allow
+    Deny from all
+</FilesMatch>
+
+
+

@@ -1,0 +1,42 @@
+# Fichiers système
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# Environnement et configuration locale
+.env
+.env.local
+config/local.php
+
+# Uploads (sauf structure)
+uploads/*
+!uploads/.htaccess
+!uploads/demandes/.htaccess
+
+# Logs
+*.log
+logs/
+
+# Cache
+cache/
+tmp/
+
+# IDE
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Node modules (si utilisé)
+node_modules/
+
+# Composer
+vendor/
+
+# Fichiers de sauvegarde
+*.bak
+*.backup
+*_backup.sql
+
