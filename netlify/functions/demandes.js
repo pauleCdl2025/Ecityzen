@@ -259,6 +259,12 @@ exports.handler = async (event, context) => {
       if (data.statut === 'valide') {
         updateData.date_validation = new Date().toISOString();
       }
+      if (data.commentaire_agent) {
+        updateData.commentaire_agent = data.commentaire_agent;
+      }
+      if (data.statut === 'dossier_incomplet') {
+        updateData.date_modification = new Date().toISOString();
+      }
       
       const { data: updated, error } = await supabase
         .from('demandes')

@@ -202,6 +202,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         if ($data['statut'] === 'valide') {
             $updateData['date_validation'] = date('Y-m-d H:i:s');
         }
+        if (isset($data['commentaire_agent']) && !empty($data['commentaire_agent'])) {
+            $updateData['commentaire_agent'] = trim($data['commentaire_agent']);
+        }
+        if ($data['statut'] === 'dossier_incomplet') {
+            $updateData['date_modification'] = date('Y-m-d H:i:s');
+        }
         
         $result = supabaseCall('demandes', 'PATCH', $updateData, ['id' => $data['id']]);
         

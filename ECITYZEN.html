@@ -2954,6 +2954,471 @@
         </div>
     </div>
 
+    <!-- Modal Assigner Tâches (Manager) -->
+    <div id="assignerTachesModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="text-white p-6 rounded-t-xl" style="background-color: var(--gabon-blue);">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-2xl font-bold">
+                        <i class="fas fa-tasks mr-2"></i>Assigner des Tâches
+                    </h2>
+                    <button onclick="closeModal('assignerTachesModal')" class="text-white hover:text-gray-200 transition-colors">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="p-6">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Sélectionner un agent</label>
+                    <select id="tacheAgentSelect" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500">
+                        <option value="">Choisir un agent...</option>
+                    </select>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Titre de la tâche</label>
+                    <input type="text" id="tacheTitre" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500" placeholder="Ex: Vérifier l'état de la route principale">
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                    <textarea id="tacheDescription" rows="4" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500" placeholder="Détails de la tâche..."></textarea>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Date limite</label>
+                    <input type="date" id="tacheDateLimite" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500">
+                </div>
+                
+                <div class="flex gap-3 pt-4">
+                    <button type="button" onclick="closeModal('assignerTachesModal')" class="flex-1 bg-gray-500 hover:bg-gray-600 text-white p-3 rounded-lg font-semibold transition-colors">
+                        Annuler
+                    </button>
+                    <button type="button" onclick="creerTache()" class="flex-1 text-white p-3 rounded-lg font-semibold transition-opacity hover:opacity-90" style="background-color: var(--gabon-blue);">
+                        <i class="fas fa-check mr-2"></i>Assigner
+                    </button>
+                </div>
+                
+                <div class="mt-6 border-t pt-4">
+                    <h3 class="font-semibold text-lg mb-3">Tâches assignées récemment</h3>
+                    <div id="tachesList" class="space-y-2">
+                        <p class="text-center text-gray-500 py-4">Aucune tâche assignée</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Évaluation Équipe (Manager) -->
+    <div id="evaluationEquipeModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-xl shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="text-white p-6 rounded-t-xl" style="background-color: var(--gabon-green);">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-2xl font-bold">
+                        <i class="fas fa-star mr-2"></i>Évaluation Performance Équipe
+                    </h2>
+                    <button onclick="closeModal('evaluationEquipeModal')" class="text-white hover:text-gray-200 transition-colors">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="p-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div class="bg-blue-50 p-4 rounded-lg text-center">
+                        <div class="text-3xl font-bold text-blue-600" id="evalAgentsTotal">0</div>
+                        <div class="text-sm text-gray-600 mt-1">Agents actifs</div>
+                    </div>
+                    <div class="bg-green-50 p-4 rounded-lg text-center">
+                        <div class="text-3xl font-bold text-green-600" id="evalMoyenne">0</div>
+                        <div class="text-sm text-gray-600 mt-1">Note moyenne</div>
+                    </div>
+                    <div class="bg-yellow-50 p-4 rounded-lg text-center">
+                        <div class="text-3xl font-bold text-yellow-600" id="evalMissionsCompletees">0</div>
+                        <div class="text-sm text-gray-600 mt-1">Missions complétées</div>
+                    </div>
+                </div>
+                
+                <div id="evaluationAgentsList" class="space-y-3">
+                    <p class="text-center text-gray-500 py-4">Chargement des agents...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Planification Équipe (Manager) -->
+    <div id="planificationEquipeModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="text-white p-6 rounded-t-xl" style="background-color: var(--gabon-purple);">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-2xl font-bold">
+                        <i class="fas fa-calendar mr-2"></i>Planning Équipes
+                    </h2>
+                    <button onclick="closeModal('planificationEquipeModal')" class="text-white hover:text-gray-200 transition-colors">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="p-6">
+                <div class="mb-4 flex gap-3">
+                    <input type="date" id="planningDateDebut" class="border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-purple-500">
+                    <span class="self-center">à</span>
+                    <input type="date" id="planningDateFin" class="border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-purple-500">
+                    <button onclick="chargerPlanning()" class="bg-purple-500 hover:bg-purple-600 text-white px-6 py-3 rounded-lg font-semibold transition-colors">
+                        <i class="fas fa-search mr-2"></i>Charger
+                    </button>
+                </div>
+                
+                <div id="planningCalendrier" class="space-y-4">
+                    <p class="text-center text-gray-500 py-8">Sélectionnez une période pour voir le planning</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Générer Rapport (Manager) -->
+    <div id="genererRapportModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="text-white p-6 rounded-t-xl" style="background-color: var(--gabon-red);">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-2xl font-bold">
+                        <i class="fas fa-chart-bar mr-2"></i>Générer un Rapport
+                    </h2>
+                    <button onclick="closeModal('genererRapportModal')" class="text-white hover:text-gray-200 transition-colors">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="p-6 space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Type de rapport</label>
+                    <select id="rapportType" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-red-500">
+                        <option value="mensuel">Rapport mensuel</option>
+                        <option value="trimestriel">Rapport trimestriel</option>
+                        <option value="annuel">Rapport annuel</option>
+                        <option value="personnalise">Personnalisé</option>
+                    </select>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Période début</label>
+                        <input type="date" id="rapportDateDebut" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-red-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Période fin</label>
+                        <input type="date" id="rapportDateFin" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-red-500">
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Sections à inclure</label>
+                    <div class="space-y-2">
+                        <label class="flex items-center">
+                            <input type="checkbox" name="rapportSections" value="demandes" class="mr-2" checked>
+                            <span>Demandes administratives</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" name="rapportSections" value="signalements" class="mr-2" checked>
+                            <span>Signalements</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" name="rapportSections" value="paiements" class="mr-2" checked>
+                            <span>Paiements</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" name="rapportSections" value="performance" class="mr-2">
+                            <span>Performance équipe</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="flex gap-3 pt-4">
+                    <button type="button" onclick="closeModal('genererRapportModal')" class="flex-1 bg-gray-500 hover:bg-gray-600 text-white p-3 rounded-lg font-semibold transition-colors">
+                        Annuler
+                    </button>
+                    <button type="button" onclick="genererRapportPDF()" class="flex-1 text-white p-3 rounded-lg font-semibold transition-opacity hover:opacity-90" style="background-color: var(--gabon-red);">
+                        <i class="fas fa-file-pdf mr-2"></i>Générer PDF
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Analyse Performance (Manager) -->
+    <div id="analysePerformanceModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-xl shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="text-white p-6 rounded-t-xl" style="background-color: var(--gabon-orange);">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-2xl font-bold">
+                        <i class="fas fa-analytics mr-2"></i>Analyse Performance
+                    </h2>
+                    <button onclick="closeModal('analysePerformanceModal')" class="text-white hover:text-gray-200 transition-colors">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h3 class="font-semibold text-gray-700 mb-3">Temps de traitement moyen</h3>
+                        <canvas id="performanceChartTemps" height="200"></canvas>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h3 class="font-semibold text-gray-700 mb-3">Taux de résolution</h3>
+                        <canvas id="performanceChartResolution" height="200"></canvas>
+                    </div>
+                </div>
+                
+                <div id="performanceDetails" class="space-y-3">
+                    <p class="text-center text-gray-500 py-4">Chargement des données...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Prévisions IA (Manager) -->
+    <div id="previsionsTendancesModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="text-white p-6 rounded-t-xl" style="background-color: var(--gabon-indigo);">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-2xl font-bold">
+                        <i class="fas fa-crystal-ball mr-2"></i>Prévisions IA
+                    </h2>
+                    <button onclick="closeModal('previsionsTendancesModal')" class="text-white hover:text-gray-200 transition-colors">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="p-6">
+                <div class="mb-6">
+                    <h3 class="font-semibold text-lg mb-4">Prévisions pour les 3 prochains mois</h3>
+                    <div id="previsionsList" class="space-y-4">
+                        <div class="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-500">
+                            <div class="font-semibold text-blue-800">Mars 2025</div>
+                            <div class="text-sm text-gray-600 mt-1">Pic de demandes prévu: +34%</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h3 class="font-semibold text-gray-700 mb-3">Graphique des tendances</h3>
+                    <canvas id="previsionsChart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Gestion Marchés (Manager) -->
+    <div id="gestionMarchesModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-xl shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="text-white p-6 rounded-t-xl" style="background-color: var(--gabon-green);">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-2xl font-bold">
+                        <i class="fas fa-store mr-2"></i>Gestion Marchés
+                    </h2>
+                    <button onclick="closeModal('gestionMarchesModal')" class="text-white hover:text-gray-200 transition-colors">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="p-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div class="bg-green-50 p-4 rounded-lg text-center">
+                        <div class="text-3xl font-bold text-green-600" id="marchesTotal">0</div>
+                        <div class="text-sm text-gray-600 mt-1">Marchés actifs</div>
+                    </div>
+                    <div class="bg-blue-50 p-4 rounded-lg text-center">
+                        <div class="text-3xl font-bold text-blue-600" id="marchesOccupation">0%</div>
+                        <div class="text-sm text-gray-600 mt-1">Taux occupation</div>
+                    </div>
+                    <div class="bg-purple-50 p-4 rounded-lg text-center">
+                        <div class="text-3xl font-bold text-purple-600" id="marchesRecettes">0</div>
+                        <div class="text-sm text-gray-600 mt-1">Recettes (FCFA)</div>
+                    </div>
+                </div>
+                
+                <div id="marchesList" class="space-y-3">
+                    <p class="text-center text-gray-500 py-4">Chargement des marchés...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Contrôle Qualité (Manager) -->
+    <div id="controleQualiteModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="text-white p-6 rounded-t-xl" style="background-color: var(--gabon-blue);">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-2xl font-bold">
+                        <i class="fas fa-check-circle mr-2"></i>Contrôle Qualité
+                    </h2>
+                    <button onclick="closeModal('controleQualiteModal')" class="text-white hover:text-gray-200 transition-colors">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="p-6">
+                <div class="mb-4">
+                    <button onclick="programmerControle()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold transition-colors">
+                        <i class="fas fa-plus mr-2"></i>Programmer un contrôle
+                    </button>
+                </div>
+                
+                <div id="controlesList" class="space-y-3">
+                    <p class="text-center text-gray-500 py-4">Aucun contrôle programmé</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Planification Tournées (Manager) -->
+    <div id="planificationTourneesModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-xl shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="text-white p-6 rounded-t-xl" style="background-color: var(--gabon-purple);">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-2xl font-bold">
+                        <i class="fas fa-route mr-2"></i>Planification Tournées
+                    </h2>
+                    <button onclick="closeModal('planificationTourneesModal')" class="text-white hover:text-gray-200 transition-colors">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="p-6">
+                <div class="mb-4">
+                    <div id="tourneesMap" style="height: 300px; margin-bottom: 15px;" class="rounded-lg border"></div>
+                </div>
+                
+                <div id="tourneesList" class="space-y-3">
+                    <p class="text-center text-gray-500 py-4">Chargement des tournées...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Traiter Demandes (Agent) -->
+    <div id="traiterDemandesModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" style="padding-top: 80px;">
+        <div class="bg-white rounded-xl shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="text-white p-6 rounded-t-xl" style="background-color: var(--gabon-blue);">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-2xl font-bold">
+                        <i class="fas fa-tasks mr-2"></i>Traiter les Demandes
+                    </h2>
+                    <button onclick="closeModal('traiterDemandesModal')" class="text-white hover:text-gray-200 transition-colors">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="p-6">
+                <div id="traiterDemandesList" class="space-y-3">
+                    <p class="text-center text-gray-500 py-8">Chargement des demandes...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Détails Demande Agent -->
+    <div id="detailsDemandeAgentModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" style="padding-top: 80px;">
+        <div class="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="text-white p-6 rounded-t-xl" style="background-color: var(--gabon-blue);">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h2 class="text-2xl font-bold">
+                            <i class="fas fa-file-alt mr-2"></i>Détails de la Demande
+                        </h2>
+                        <p class="text-sm opacity-90 mt-1" id="detailsDemandeId">#ID</p>
+                    </div>
+                    <button onclick="closeModal('detailsDemandeAgentModal')" class="text-white hover:text-gray-200 transition-colors">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="p-6 space-y-6">
+                <!-- Informations générales -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <label class="text-sm font-medium text-gray-600">Service</label>
+                        <p class="text-lg font-semibold" id="detailsDemandeService">-</p>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <label class="text-sm font-medium text-gray-600">Utilisateur</label>
+                        <p class="text-lg font-semibold" id="detailsDemandeUtilisateur">-</p>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <label class="text-sm font-medium text-gray-600">Date de création</label>
+                        <p class="text-lg font-semibold" id="detailsDemandeDate">-</p>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <label class="text-sm font-medium text-gray-600">Montant</label>
+                        <p class="text-lg font-semibold" id="detailsDemandeMontant">-</p>
+                    </div>
+                </div>
+                
+                <!-- Motif -->
+                <div>
+                    <label class="text-sm font-medium text-gray-600">Motif / Utilisation</label>
+                    <p class="bg-gray-50 p-3 rounded-lg mt-2" id="detailsDemandeMotif">-</p>
+                </div>
+                
+                <!-- Documents requis -->
+                <div id="detailsDemandeDocumentsRequis"></div>
+                
+                <!-- Documents fournis -->
+                <div>
+                    <label class="text-sm font-medium text-gray-700 mb-3 block">
+                        <i class="fas fa-file-upload mr-2"></i>Documents fournis par l'utilisateur
+                    </label>
+                    <div id="detailsDemandeDocuments" class="space-y-3">
+                        <p class="text-center text-gray-500 py-4">Chargement des documents...</p>
+                    </div>
+                </div>
+                
+                <!-- Évaluation du dossier -->
+                <div class="border-t pt-4">
+                    <h3 class="font-semibold text-lg mb-4">Évaluation du dossier</h3>
+                    
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Statut</label>
+                        <select id="detailsDemandeStatut" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500">
+                            <option value="en_attente">En attente</option>
+                            <option value="en_traitement">En traitement</option>
+                            <option value="dossier_incomplet">Dossier incomplet</option>
+                            <option value="valide">Dossier complet - Valider</option>
+                            <option value="rejete">Rejeté</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Commentaire / Ce qui manque (si dossier incomplet)
+                        </label>
+                        <textarea id="detailsDemandeCommentaire" rows="4" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500" placeholder="Indiquez ce qui manque ou vos observations..."></textarea>
+                    </div>
+                    
+                    <div class="flex gap-3 pt-4">
+                        <button type="button" onclick="closeModal('detailsDemandeAgentModal')" class="flex-1 bg-gray-500 hover:bg-gray-600 text-white p-3 rounded-lg font-semibold transition-colors">
+                            Annuler
+                        </button>
+                        <button type="button" onclick="validerDossierDemande()" class="flex-1 text-white p-3 rounded-lg font-semibold transition-opacity hover:opacity-90" style="background-color: var(--gabon-blue);">
+                            <i class="fas fa-check mr-2"></i>Enregistrer
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Dashboard Chef de Quartier -->
     <div id="chefQuartierDashboard" class="hidden web-view">
         <div class="container mx-auto p-4 space-y-6">
@@ -5796,7 +6261,248 @@
 
         // Fonctions agents
         function traiterDemandes() {
-            showNotification('12 demandes assignées - Queue de traitement chargée', 'info');
+            const modal = document.getElementById('traiterDemandesModal');
+            modal.classList.remove('hidden');
+            chargerDemandesAgent();
+        }
+        
+        async function chargerDemandesAgent() {
+            try {
+                const result = await apiCall('demandes.php').catch(() => ({ data: [] }));
+                const demandes = result.data || [];
+                const demandesAgent = demandes.filter(d => d.agent_assigné_id == currentUser.id || !d.agent_assigné_id);
+                
+                const listContainer = document.getElementById('traiterDemandesList');
+                if (!listContainer) return;
+                
+                listContainer.innerHTML = '';
+                
+                if (demandesAgent.length === 0) {
+                    listContainer.innerHTML = '<p class="text-center text-gray-500 py-8">Aucune demande à traiter</p>';
+                    return;
+                }
+                
+                demandesAgent.forEach(demande => {
+                    const div = document.createElement('div');
+                    div.className = 'p-4 border rounded-lg hover:bg-gray-50 transition-colors cursor-pointer';
+                    
+                    const dateCreation = new Date(demande.date_creation);
+                    const dateFormatee = dateCreation.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                    const heureFormatee = dateCreation.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+                    
+                    const statutClass = demande.statut === 'en_attente' ? 'bg-yellow-100 text-yellow-800' : 
+                                       demande.statut === 'en_traitement' ? 'bg-blue-100 text-blue-800' : 
+                                       demande.statut === 'dossier_incomplet' ? 'bg-red-100 text-red-800' :
+                                       'bg-gray-100 text-gray-800';
+                    const statutText = demande.statut === 'en_attente' ? 'En attente' : 
+                                      demande.statut === 'en_traitement' ? 'En traitement' : 
+                                      demande.statut === 'dossier_incomplet' ? 'Dossier incomplet' :
+                                      demande.statut;
+                    
+                    div.innerHTML = `
+                        <div class="flex justify-between items-start">
+                            <div class="flex-1">
+                                <div class="font-semibold text-lg mb-1">${demande.service || demande.type || 'Demande'}</div>
+                                <div class="text-sm text-gray-600 mb-1">
+                                    <i class="fas fa-user mr-1"></i>${demande.utilisateur_nom || 'Utilisateur'}
+                                </div>
+                                <div class="text-sm text-gray-600 mb-1">
+                                    <i class="fas fa-hashtag mr-1"></i>${demande.numero_dossier || 'N/A'}
+                                </div>
+                                <div class="text-xs text-gray-500">
+                                    <i class="fas fa-clock mr-1"></i>${dateFormatee} à ${heureFormatee}
+                                </div>
+                                ${demande.motif ? `<div class="text-sm text-gray-600 mt-2"><i class="fas fa-info-circle mr-1"></i>${demande.motif}</div>` : ''}
+                            </div>
+                            <div class="ml-4 flex flex-col items-end gap-2">
+                                <span class="px-3 py-1 ${statutClass} rounded text-sm font-medium">${statutText}</span>
+                                <button onclick="voirDetailsDemande(${demande.id})" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded text-sm transition-colors">
+                                    <i class="fas fa-eye mr-1"></i>Voir détails
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    listContainer.appendChild(div);
+                });
+            } catch (error) {
+                console.error('Erreur chargement demandes:', error);
+                showNotification('Erreur lors du chargement des demandes', 'error');
+            }
+        }
+        
+        async function voirDetailsDemande(demandeId) {
+            try {
+                const result = await apiCall('demandes.php').catch(() => ({ data: [] }));
+                const demandes = result.data || [];
+                const demande = demandes.find(d => d.id == demandeId);
+                
+                if (!demande) {
+                    showNotification('Demande non trouvée', 'error');
+                    return;
+                }
+                
+                // Ouvrir la modale de détails
+                const modal = document.getElementById('detailsDemandeAgentModal');
+                modal.classList.remove('hidden');
+                
+                // Remplir les informations
+                document.getElementById('detailsDemandeId').textContent = demande.numero_dossier || 'N/A';
+                document.getElementById('detailsDemandeService').textContent = demande.service || demande.type || 'N/A';
+                document.getElementById('detailsDemandeUtilisateur').textContent = demande.utilisateur_nom || 'N/A';
+                document.getElementById('detailsDemandeMotif').textContent = demande.motif || 'Non renseigné';
+                document.getElementById('detailsDemandeMontant').textContent = parseFloat(demande.montant || demande.cout || 0).toLocaleString() + ' FCFA';
+                
+                const dateCreation = new Date(demande.date_creation);
+                document.getElementById('detailsDemandeDate').textContent = dateCreation.toLocaleDateString('fr-FR', { 
+                    day: '2-digit', 
+                    month: '2-digit', 
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                
+                // Afficher le statut
+                const statutSelect = document.getElementById('detailsDemandeStatut');
+                statutSelect.value = demande.statut || 'en_attente';
+                
+                // Stocker l'ID de la demande
+                modal.dataset.demandeId = demandeId;
+                
+                // Charger les documents
+                chargerDocumentsDemande(demande);
+                
+                // Charger les documents requis pour ce service
+                chargerDocumentsRequis(demande.type, demande.service);
+                
+            } catch (error) {
+                console.error('Erreur chargement détails:', error);
+                showNotification('Erreur lors du chargement des détails', 'error');
+            }
+        }
+        
+        function chargerDocumentsDemande(demande) {
+            const container = document.getElementById('detailsDemandeDocuments');
+            container.innerHTML = '';
+            
+            let documents = [];
+            if (demande.documents) {
+                if (typeof demande.documents === 'string') {
+                    try {
+                        documents = JSON.parse(demande.documents);
+                    } catch (e) {
+                        documents = [];
+                    }
+                } else if (Array.isArray(demande.documents)) {
+                    documents = demande.documents;
+                }
+            }
+            
+            if (documents.length === 0) {
+                container.innerHTML = '<p class="text-center text-gray-500 py-4">Aucun document fourni</p>';
+                return;
+            }
+            
+            documents.forEach((doc, index) => {
+                const div = document.createElement('div');
+                div.className = 'p-3 border rounded-lg bg-gray-50';
+                div.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1">
+                            <div class="font-medium">${doc.nom || doc.document_name || 'Document ' + (index + 1)}</div>
+                            ${doc.fichier ? `
+                                <div class="mt-2">
+                                    ${doc.fichier.startsWith('data:image') || doc.fichier.startsWith('/') || doc.fichier.startsWith('http') ? 
+                                        `<img src="${doc.fichier}" alt="${doc.nom}" class="max-w-full h-auto rounded border" style="max-height: 200px;" onerror="this.style.display='none'">` :
+                                        doc.fichier.length > 100 ? 
+                                            `<a href="data:application/pdf;base64,${doc.fichier}" target="_blank" class="text-blue-600 hover:underline">
+                                                <i class="fas fa-file-pdf mr-1"></i>Voir le document (PDF)
+                                            </a>` :
+                                            `<span class="text-gray-600">Fichier: ${doc.nom_fichier || 'document'}</span>`
+                                    }
+                                </div>
+                            ` : ''}
+                            ${doc.taille ? `<div class="text-xs text-gray-500 mt-1">Taille: ${(doc.taille / 1024).toFixed(2)} KB</div>` : ''}
+                        </div>
+                        <div class="ml-4">
+                            <label class="flex items-center">
+                                <input type="checkbox" class="mr-2 document-verifie" data-doc-index="${index}" ${doc.verifie ? 'checked' : ''}>
+                                <span class="text-sm">Vérifié</span>
+                            </label>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+        
+        function chargerDocumentsRequis(type, service) {
+            if (!type || !servicesAdmin[type]) return;
+            
+            const services = servicesAdmin[type].services || [];
+            const serviceIndex = services.indexOf(service);
+            if (serviceIndex === -1) return;
+            
+            const documentsRequis = servicesAdmin[type].documents || [];
+            const docRequis = documentsRequis[serviceIndex];
+            
+            const container = document.getElementById('detailsDemandeDocumentsRequis');
+            if (docRequis) {
+                container.innerHTML = `
+                    <div class="bg-blue-50 p-3 rounded-lg border-l-4 border-blue-500">
+                        <div class="font-semibold text-blue-800 mb-2">Documents requis:</div>
+                        <div class="text-sm text-gray-700">${docRequis}</div>
+                    </div>
+                `;
+            } else {
+                container.innerHTML = '';
+            }
+        }
+        
+        async function validerDossierDemande() {
+            const modal = document.getElementById('detailsDemandeAgentModal');
+            const demandeId = modal.dataset.demandeId;
+            const statut = document.getElementById('detailsDemandeStatut').value;
+            const commentaire = document.getElementById('detailsDemandeCommentaire').value;
+            
+            if (!demandeId) {
+                showNotification('Erreur: ID demande manquant', 'error');
+                return;
+            }
+            
+            try {
+                const updateData = {
+                    id: parseInt(demandeId),
+                    statut: statut
+                };
+                
+                if (commentaire) {
+                    updateData.commentaire_agent = commentaire;
+                }
+                
+                // Vérifier les documents vérifiés
+                const documentsVerifies = Array.from(document.querySelectorAll('.document-verifie:checked')).map(cb => parseInt(cb.dataset.docIndex));
+                
+                // Mettre à jour la demande
+                const result = await apiCall('demandes.php', 'PUT', updateData);
+                
+                if (result.success) {
+                    if (statut === 'dossier_incomplet') {
+                        showNotification('Dossier marqué comme incomplet. L\'utilisateur sera notifié.', 'warning');
+                    } else if (statut === 'en_traitement') {
+                        showNotification('Demande mise en traitement', 'success');
+                    } else if (statut === 'valide') {
+                        showNotification('Demande validée avec succès', 'success');
+                    }
+                    
+                    closeModal('detailsDemandeAgentModal');
+                    chargerDemandesAgent();
+                    if (currentProfile === 'agent') {
+                        loadAgentData();
+                    }
+                }
+            } catch (error) {
+                showNotification('Erreur lors de la mise à jour: ' + error.message, 'error');
+            }
         }
         
         async function validerDemande(id) {
@@ -5931,43 +6637,329 @@
         }
 
         // Fonctions managers
+        // Fonctions Manager - Ouvrir les modales
         function assignerTaches() {
-            showNotification('Interface drag & drop chargée - 25 agents disponibles', 'info');
+            const modal = document.getElementById('assignerTachesModal');
+            modal.classList.remove('hidden');
+            chargerAgentsPourTaches();
         }
         
         function evaluationEquipe() {
-            showNotification('Formulaires d\'évaluation générés pour 25 agents', 'info');
+            const modal = document.getElementById('evaluationEquipeModal');
+            modal.classList.remove('hidden');
+            chargerEvaluationEquipe();
         }
         
         function planificationEquipe() {
-            showNotification('Calendrier équipes chargé - 3 semaines planifiées', 'info');
+            const modal = document.getElementById('planificationEquipeModal');
+            modal.classList.remove('hidden');
+            // Initialiser avec la période actuelle
+            const aujourdhui = new Date();
+            const finMois = new Date(aujourdhui.getFullYear(), aujourdhui.getMonth() + 1, 0);
+            document.getElementById('planningDateDebut').value = aujourdhui.toISOString().split('T')[0];
+            document.getElementById('planningDateFin').value = finMois.toISOString().split('T')[0];
         }
         
         function genererRapport() {
-            showNotification('Génération rapport mensuel en cours...', 'info');
-            setTimeout(() => {
-                showNotification('Rapport "Janvier 2025" généré (PDF, 47 pages)', 'success');
-            }, 3000);
+            const modal = document.getElementById('genererRapportModal');
+            modal.classList.remove('hidden');
+            // Initialiser avec le mois actuel
+            const aujourdhui = new Date();
+            const debutMois = new Date(aujourdhui.getFullYear(), aujourdhui.getMonth(), 1);
+            const finMois = new Date(aujourdhui.getFullYear(), aujourdhui.getMonth() + 1, 0);
+            document.getElementById('rapportDateDebut').value = debutMois.toISOString().split('T')[0];
+            document.getElementById('rapportDateFin').value = finMois.toISOString().split('T')[0];
         }
         
         function analysePerformance() {
-            showNotification('Analytics temps réel chargées - KPI actualisés', 'info');
+            const modal = document.getElementById('analysePerformanceModal');
+            modal.classList.remove('hidden');
+            chargerAnalysePerformance();
         }
         
         function previsionsTendances() {
-            showNotification('IA prédictive: Pic demandes mars (+34%)', 'info');
+            const modal = document.getElementById('previsionsTendancesModal');
+            modal.classList.remove('hidden');
+            chargerPrevisions();
         }
         
         function gestionMarches() {
-            showNotification('15 marchés - Taux occupation 89% - 1,109 emplacements occupés', 'info');
+            const modal = document.getElementById('gestionMarchesModal');
+            modal.classList.remove('hidden');
+            chargerMarches();
         }
         
         function controleQualite() {
-            showNotification('23 contrôles programmés - 8 agents terrain actifs', 'info');
+            const modal = document.getElementById('controleQualiteModal');
+            modal.classList.remove('hidden');
+            chargerControles();
         }
         
         function planificationTournees() {
-            showNotification('Optimisation GPS des tournées - 15 marchés', 'info');
+            const modal = document.getElementById('planificationTourneesModal');
+            modal.classList.remove('hidden');
+            chargerTournees();
+        }
+        
+        // Fonctions helper pour charger les données dans les modales
+        async function chargerAgentsPourTaches() {
+            try {
+                const result = await apiCall('users.php').catch(() => ({ data: [] }));
+                const agents = (result.data || []).filter(u => u.role === 'agent' && u.statut === 'actif');
+                const select = document.getElementById('tacheAgentSelect');
+                select.innerHTML = '<option value="">Choisir un agent...</option>';
+                agents.forEach(agent => {
+                    const option = document.createElement('option');
+                    option.value = agent.id;
+                    option.textContent = agent.name || agent.nom;
+                    select.appendChild(option);
+                });
+                
+                // Charger les tâches récentes
+                chargerTachesRecentes();
+            } catch (error) {
+                console.error('Erreur chargement agents:', error);
+            }
+        }
+        
+        async function chargerTachesRecentes() {
+            try {
+                const result = await apiCall('missions.php').catch(() => ({ data: [] }));
+                const missions = result.data || [];
+                const list = document.getElementById('tachesList');
+                if (missions.length === 0) {
+                    list.innerHTML = '<p class="text-center text-gray-500 py-4">Aucune tâche assignée</p>';
+                    return;
+                }
+                list.innerHTML = missions.slice(0, 5).map(m => `
+                    <div class="bg-gray-50 p-3 rounded-lg">
+                        <div class="font-medium">${m.titre || 'Mission'}</div>
+                        <div class="text-sm text-gray-600">Agent: ${m.agent_nom || 'N/A'}</div>
+                        <div class="text-xs text-gray-500">${m.date_mission ? new Date(m.date_mission).toLocaleDateString() : ''}</div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Erreur chargement tâches:', error);
+            }
+        }
+        
+        async function creerTache() {
+            const agentId = document.getElementById('tacheAgentSelect').value;
+            const titre = document.getElementById('tacheTitre').value;
+            const description = document.getElementById('tacheDescription').value;
+            const dateLimite = document.getElementById('tacheDateLimite').value;
+            
+            if (!agentId || !titre || !description) {
+                showNotification('Veuillez remplir tous les champs obligatoires', 'error');
+                return;
+            }
+            
+            try {
+                const result = await apiCall('missions.php', 'POST', {
+                    agent_id: parseInt(agentId),
+                    titre: titre,
+                    description: description,
+                    date_mission: dateLimite || null,
+                    statut: 'assignee'
+                });
+                
+                showNotification('Tâche assignée avec succès', 'success');
+                closeModal('assignerTachesModal');
+                chargerTachesRecentes();
+            } catch (error) {
+                showNotification('Erreur lors de l\'assignation: ' + error.message, 'error');
+            }
+        }
+        
+        async function chargerEvaluationEquipe() {
+            try {
+                const [usersResult, missionsResult] = await Promise.all([
+                    apiCall('users.php').catch(() => ({ data: [] })),
+                    apiCall('missions.php').catch(() => ({ data: [] }))
+                ]);
+                
+                const agents = (usersResult.data || []).filter(u => u.role === 'agent');
+                const missions = missionsResult.data || [];
+                
+                document.getElementById('evalAgentsTotal').textContent = agents.length;
+                
+                const completees = missions.filter(m => m.statut === 'termine' || m.statut === 'complete').length;
+                document.getElementById('evalMissionsCompletees').textContent = completees;
+                
+                const moyenne = agents.length > 0 ? Math.round((completees / agents.length) * 10) / 10 : 0;
+                document.getElementById('evalMoyenne').textContent = moyenne;
+                
+                const list = document.getElementById('evaluationAgentsList');
+                if (agents.length === 0) {
+                    list.innerHTML = '<p class="text-center text-gray-500 py-4">Aucun agent</p>';
+                    return;
+                }
+                
+                list.innerHTML = agents.map(agent => {
+                    const agentMissions = missions.filter(m => m.agent_id === agent.id);
+                    const completees = agentMissions.filter(m => m.statut === 'termine' || m.statut === 'complete').length;
+                    const note = agentMissions.length > 0 ? Math.round((completees / agentMissions.length) * 10) : 0;
+                    
+                    return `
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <div class="font-medium">${agent.name || agent.nom}</div>
+                                    <div class="text-sm text-gray-600">${agentMissions.length} missions</div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-2xl font-bold text-green-600">${note}/10</div>
+                                    <div class="text-xs text-gray-500">${completees} complétées</div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } catch (error) {
+                console.error('Erreur chargement évaluation:', error);
+            }
+        }
+        
+        function chargerPlanning() {
+            const dateDebut = document.getElementById('planningDateDebut').value;
+            const dateFin = document.getElementById('planningDateFin').value;
+            
+            if (!dateDebut || !dateFin) {
+                showNotification('Veuillez sélectionner une période', 'warning');
+                return;
+            }
+            
+            const container = document.getElementById('planningCalendrier');
+            container.innerHTML = '<p class="text-center text-gray-500 py-8">Chargement du planning...</p>';
+            
+            // Simuler le chargement (à remplacer par un vrai appel API)
+            setTimeout(() => {
+                container.innerHTML = `
+                    <div class="bg-blue-50 p-4 rounded-lg">
+                        <div class="font-semibold mb-2">Planning du ${dateDebut} au ${dateFin}</div>
+                        <p class="text-sm text-gray-600">Fonctionnalité en développement</p>
+                    </div>
+                `;
+            }, 1000);
+        }
+        
+        function genererRapportPDF() {
+            const type = document.getElementById('rapportType').value;
+            const dateDebut = document.getElementById('rapportDateDebut').value;
+            const dateFin = document.getElementById('rapportDateFin').value;
+            const sections = Array.from(document.querySelectorAll('input[name="rapportSections"]:checked')).map(cb => cb.value);
+            
+            if (!dateDebut || !dateFin) {
+                showNotification('Veuillez sélectionner une période', 'warning');
+                return;
+            }
+            
+            showNotification('Génération du rapport en cours...', 'info');
+            
+            // Simuler la génération
+            setTimeout(() => {
+                showNotification(`Rapport ${type} généré avec succès (${sections.length} sections)`, 'success');
+                closeModal('genererRapportModal');
+            }, 2000);
+        }
+        
+        async function chargerAnalysePerformance() {
+            try {
+                const [demandesResult, signalementsResult] = await Promise.all([
+                    apiCall('demandes.php').catch(() => ({ data: [] })),
+                    apiCall('signalements.php').catch(() => ({ data: [] }))
+                ]);
+                
+                const demandes = demandesResult.data || [];
+                const signalements = signalementsResult.data || [];
+                
+                const details = document.getElementById('performanceDetails');
+                details.innerHTML = `
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-blue-50 p-4 rounded-lg">
+                            <div class="font-semibold text-blue-800">Demandes</div>
+                            <div class="text-2xl font-bold text-blue-600 mt-2">${demandes.length}</div>
+                            <div class="text-sm text-gray-600">Total traitées</div>
+                        </div>
+                        <div class="bg-green-50 p-4 rounded-lg">
+                            <div class="font-semibold text-green-800">Signalements</div>
+                            <div class="text-2xl font-bold text-green-600 mt-2">${signalements.length}</div>
+                            <div class="text-sm text-gray-600">Total reçus</div>
+                        </div>
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Erreur chargement performance:', error);
+            }
+        }
+        
+        function chargerPrevisions() {
+            const list = document.getElementById('previsionsList');
+            list.innerHTML = `
+                <div class="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-500">
+                    <div class="font-semibold text-blue-800">Mars 2025</div>
+                    <div class="text-sm text-gray-600 mt-1">Pic de demandes prévu: +34%</div>
+                </div>
+                <div class="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                    <div class="font-semibold text-green-800">Avril 2025</div>
+                    <div class="text-sm text-gray-600 mt-1">Stabilisation prévue: +12%</div>
+                </div>
+                <div class="bg-yellow-50 p-4 rounded-lg border-l-4 border-yellow-500">
+                    <div class="font-semibold text-yellow-800">Mai 2025</div>
+                    <div class="text-sm text-gray-600 mt-1">Baisse saisonnière: -8%</div>
+                </div>
+            `;
+        }
+        
+        async function chargerMarches() {
+            try {
+                // Utiliser les données d'emplacements si disponibles
+                const result = await apiCall('emplacements.php').catch(() => ({ data: [] }));
+                const emplacements = result.data || [];
+                
+                const total = emplacements.length;
+                const occupes = emplacements.filter(e => e.statut === 'occupe' || e.statut === 'reserve').length;
+                const taux = total > 0 ? Math.round((occupes / total) * 100) : 0;
+                
+                document.getElementById('marchesTotal').textContent = total;
+                document.getElementById('marchesOccupation').textContent = taux + '%';
+                document.getElementById('marchesRecettes').textContent = '0';
+                
+                const list = document.getElementById('marchesList');
+                if (emplacements.length === 0) {
+                    list.innerHTML = '<p class="text-center text-gray-500 py-4">Aucun marché disponible</p>';
+                    return;
+                }
+                
+                list.innerHTML = emplacements.slice(0, 10).map(e => `
+                    <div class="bg-gray-50 p-3 rounded-lg">
+                        <div class="font-medium">${e.nom || 'Marché'}</div>
+                        <div class="text-sm text-gray-600">Statut: ${e.statut || 'N/A'}</div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Erreur chargement marchés:', error);
+            }
+        }
+        
+        function programmerControle() {
+            showNotification('Fonctionnalité de programmation de contrôle en développement', 'info');
+        }
+        
+        function chargerControles() {
+            const list = document.getElementById('controlesList');
+            list.innerHTML = '<p class="text-center text-gray-500 py-4">Aucun contrôle programmé</p>';
+        }
+        
+        function chargerTournees() {
+            const list = document.getElementById('tourneesList');
+            list.innerHTML = `
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <div class="font-medium mb-2">Tournée Optimisée</div>
+                    <div class="text-sm text-gray-600">15 marchés - Distance totale: 45 km</div>
+                    <div class="text-xs text-gray-500 mt-1">Temps estimé: 3h 30min</div>
+                </div>
+            `;
         }
 
         // Fonctions super admin
