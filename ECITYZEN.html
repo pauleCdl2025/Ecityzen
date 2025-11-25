@@ -3657,8 +3657,8 @@
             let url;
             const endpointClean = endpoint.replace('.php', '');
             
-            // Liste des Netlify Functions disponibles
-            const netlifyFunctions = ['login', 'register', 'signalements', 'demandes', 'notifications', 'geocode', 'chantiers', 'missions'];
+                    // Liste des Netlify Functions disponibles
+                    const netlifyFunctions = ['login', 'register', 'signalements', 'demandes', 'notifications', 'geocode', 'chantiers', 'missions', 'users'];
             
             if (!API_BASE_URL) {
                 // Production sans serveur PHP: utiliser Netlify Functions
@@ -3673,10 +3673,14 @@
                 url = `${API_BASE_URL}/${endpoint}${endpoint.includes('.php') ? '' : '.php'}`;
             }
             
-            // Pour les Netlify Functions en production, ajouter les infos utilisateur au body
+            // Pour les Netlify Functions en production, ajouter les infos utilisateur au body ou query params
             if (!API_BASE_URL && netlifyFunctions.includes(endpointClean) && currentUser) {
-                if (data && method !== 'GET') {
-                    // Ajouter user_id et user_role au body
+                if (method === 'GET') {
+                    // Pour GET, ajouter les infos utilisateur dans l'URL
+                    const separator = url.includes('?') ? '&' : '?';
+                    url += `${separator}_user_id=${currentUser.id}&_user_role=${currentUser.role}`;
+                } else if (data) {
+                    // Pour POST/PUT, ajouter user_id et user_role au body
                     if (typeof data === 'object') {
                         data._user_id = currentUser.id;
                         data._user_role = currentUser.role;
