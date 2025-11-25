@@ -3108,7 +3108,7 @@
             const endpointClean = endpoint.replace('.php', '');
             
             // Liste des Netlify Functions disponibles
-            const netlifyFunctions = ['login', 'register', 'signalements', 'demandes', 'notifications', 'geocode', 'chantiers'];
+            const netlifyFunctions = ['login', 'register', 'signalements', 'demandes', 'notifications', 'geocode', 'chantiers', 'missions'];
             
             if (!API_BASE_URL) {
                 // Production sans serveur PHP: utiliser Netlify Functions
@@ -5650,8 +5650,19 @@
                 });
                 
                 // Envoyer avec FormData
-                const response = await fetch('api/demandes.php', {
+                // Note: Les Netlify Functions ne supportent pas FormData pour les fichiers
+                // En production, on doit utiliser l'API PHP ou convertir en base64
+                let response;
+                if (!API_BASE_URL) {
+                    // Production: Netlify Functions ne supporte pas les fichiers pour l'instant
+                    // Convertir les fichiers en base64 ou utiliser une solution alternative
+                    showNotification('L\'upload de fichiers nécessite un serveur PHP. Utilisez la version locale ou hébergez les APIs PHP séparément.', 'warning');
+                    throw new Error('Upload de fichiers non supporté en production Netlify');
+                }
+                
+                response = await fetch(`${API_BASE_URL}/demandes.php`, {
                     method: 'POST',
+                    credentials: 'include',
                     body: formData
                 });
                 
