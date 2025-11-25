@@ -257,21 +257,42 @@ exports.handler = async (event, context) => {
     try {
       const data = JSON.parse(event.body);
       
-      if (!data.id || !data.statut) {
+      if (!data.id) {
         return {
           statusCode: 400,
           headers: {
             'Content-Type': 'application/json',
             'Access-Control-Allow-Origin': '*'
           },
-          body: JSON.stringify({ success: false, message: 'Champs manquants: id, statut' })
+          body: JSON.stringify({ success: false, message: 'ID manquant' })
         };
       }
       
-      const updateData = { statut: data.statut };
-      if (data.statut === 'resolu') {
-        updateData.date_modification = new Date().toISOString();
-        updateData.date_resolution = new Date().toISOString();
+      const updateData = {};
+      
+      // Mettre à jour le statut si fourni
+      if (data.statut) {
+        updateData.statut = data.statut;
+        if (data.statut === 'resolu') {
+          updateData.date_modification = new Date().toISOString();
+          updateData.date_resolution = new Date().toISOString();
+        }
+      }
+      
+      // Mettre à jour l'agent assigné si fourni (pour le manager)
+      if (data.agent_assigné_id !== undefined) {
+        updateData.agent_assigné_id = data.agent_assigné_id ? parseInt(data.agent_assigné_id) : null;
+      }
+      
+      if (Object.keys(updateData).length === 0) {
+        return {
+          statusCode: 400,
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
+          },
+          body: JSON.stringify({ success: false, message: 'Aucune donnée à mettre à jour' })
+        };
       }
       
       const { error } = await supabase
