@@ -42,7 +42,7 @@ exports.handler = async (event, context) => {
     userRole = event.queryStringParameters._user_role || null;
   }
   
-  // Sinon, essayer le body (pour PUT)
+  // Sinon, essayer le body (pour PUT/POST)
   if (!userId && event.body) {
     try {
       const body = JSON.parse(event.body);
@@ -79,7 +79,8 @@ exports.handler = async (event, context) => {
         const { mot_de_passe, ...userWithoutPassword } = user;
         return {
           ...userWithoutPassword,
-          name: user.nom // Compatibilité avec le frontend
+          name: user.nom || user.name, // Compatibilité avec le frontend
+          statut: user.statut || 'actif' // S'assurer que statut existe
         };
       });
 
