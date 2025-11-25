@@ -1,6 +1,6 @@
 # Netlify Redirects
 
 # Redirection pour le fichier principal
-/ ECITYZEN.html 200
-/index.html ECITYZEN.html 200
+/ /ECITYZEN.html 200
+/index.html /ECITYZEN.html 200
 

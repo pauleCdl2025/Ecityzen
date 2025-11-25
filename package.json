@@ -18,7 +18,9 @@
   ],
   "author": "pauleCdl2025",
   "license": "MIT",
-  "dependencies": {},
+  "dependencies": {
+    "node-fetch": "^2.6.7"
+  },
   "devDependencies": {}
 }
 

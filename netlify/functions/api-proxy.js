@@ -16,6 +16,7 @@ exports.handler = async (event, context) => {
   
   try {
     // Faire l'appel vers le serveur PHP
+    // Note: Node.js 18+ a fetch intégré, mais pour compatibilité on utilise node-fetch
     const fetch = require('node-fetch');
     const response = await fetch(url, {
       method: method,
