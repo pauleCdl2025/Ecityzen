@@ -4446,7 +4446,15 @@
                     document.getElementById('registerForm').reset();
                     
                     // Revenir à l'onglet connexion
-                    document.getElementById('loginTab').click();
+                    const loginTab = document.getElementById('tabLogin');
+                    if (loginTab) {
+                        // Utiliser la fonction switchTab si elle existe, sinon cliquer sur le bouton
+                        if (typeof switchTab === 'function') {
+                            switchTab('login');
+                        } else {
+                            loginTab.click();
+                        }
+                    }
                     return;
                 }
                 
