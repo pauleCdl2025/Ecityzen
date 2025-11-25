@@ -55,6 +55,14 @@ exports.handler = async (event, context) => {
 
   // GET: Récupérer la liste des utilisateurs (managers/superadmins seulement)
   if (event.httpMethod === 'GET') {
+    // Pour GET, récupérer userId et userRole depuis query string si pas déjà fait
+    if (!userId && event.queryStringParameters?._user_id) {
+      userId = event.queryStringParameters._user_id;
+    }
+    if (!userRole && event.queryStringParameters?._user_role) {
+      userRole = event.queryStringParameters._user_role;
+    }
+    
     if (!userId || !['manager', 'superadmin'].includes(userRole)) {
       return {
         statusCode: 403,
