@@ -3092,16 +3092,27 @@
             };
             
             if (data && method !== 'GET') {
-                options.body = JSON.stringify(data);
+                // Ajouter les infos utilisateur pour les Netlify Functions
+                if (!API_BASE_URL && currentUser) {
+                    const dataToSend = { ...data };
+                    dataToSend._user_id = currentUser.id;
+                    dataToSend._user_role = currentUser.role;
+                    options.body = JSON.stringify(dataToSend);
+                } else {
+                    options.body = JSON.stringify(data);
+                }
             }
             
             // Construire l'URL selon l'environnement
             let url;
             const endpointClean = endpoint.replace('.php', '');
             
+            // Liste des Netlify Functions disponibles
+            const netlifyFunctions = ['login', 'register', 'signalements', 'demandes', 'notifications', 'geocode', 'chantiers'];
+            
             if (!API_BASE_URL) {
-                // Production sans serveur PHP: seules login et register via Netlify Functions
-                if (endpointClean === 'login' || endpointClean === 'register') {
+                // Production sans serveur PHP: utiliser Netlify Functions
+                if (netlifyFunctions.includes(endpointClean)) {
                     url = `/.netlify/functions/${endpointClean}`;
                 } else {
                     // Les autres endpoints nécessitent un serveur PHP
@@ -3112,11 +3123,31 @@
                 url = `${API_BASE_URL}/${endpoint}${endpoint.includes('.php') ? '' : '.php'}`;
             }
             
+            // Pour les Netlify Functions en production, ajouter les infos utilisateur au body
+            if (!API_BASE_URL && netlifyFunctions.includes(endpointClean) && currentUser) {
+                if (data && method !== 'GET') {
+                    // Ajouter user_id et user_role au body
+                    if (typeof data === 'object') {
+                        data._user_id = currentUser.id;
+                        data._user_role = currentUser.role;
+                    }
+                } else if (method === 'GET' && data === null) {
+                    // Pour les GET, passer les infos dans query string ou body via POST si nécessaire
+                    // Pour l'instant, on laisse les GET sans user info (sera géré côté fonction si nécessaire)
+                }
+            }
+            
             // Ajouter un paramètre de cache-busting pour les requêtes GET
             if (method === 'GET' && !url.includes('?')) {
                 url += `?_t=${Date.now()}`;
             } else if (method === 'GET' && url.includes('?')) {
                 url += `&_t=${Date.now()}`;
+            }
+            
+            // Pour les GET avec Netlify Functions, ajouter user_id dans query string si nécessaire
+            if (!API_BASE_URL && method === 'GET' && netlifyFunctions.includes(endpointClean) && currentUser) {
+                const separator = url.includes('?') ? '&' : '?';
+                url += `${separator}_user_id=${currentUser.id}&_user_role=${currentUser.role}`;
             }
             
             try {
