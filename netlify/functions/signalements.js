@@ -131,7 +131,9 @@ exports.handler = async (event, context) => {
           ...sig,
           id_formate: 'SIG' + year + '-' + String(sig.id).padStart(6, '0'),
           date_creation: sig.date_signalement || sig.date_creation,
-          photo: sig.photo_url || sig.photo
+          // Mapper photo_url vers photo pour compatibilité frontend
+          photo: sig.photo_url || sig.photo || null,
+          photo_url: sig.photo_url || sig.photo || null
         };
       });
       
@@ -225,7 +227,9 @@ exports.handler = async (event, context) => {
       const year = new Date().getFullYear();
       signalement.id_formate = 'SIG' + year + '-' + String(signalement.id).padStart(6, '0');
       signalement.date_creation = signalement.date_signalement || signalement.date_creation;
-      signalement.photo = signalement.photo_url || signalement.photo;
+      // Mapper photo_url vers photo pour compatibilité frontend
+      signalement.photo = signalement.photo_url || signalement.photo || null;
+      signalement.photo_url = signalement.photo_url || signalement.photo || null;
       
       return {
         statusCode: 200,
@@ -304,7 +308,9 @@ exports.handler = async (event, context) => {
       const year = new Date(dateField).getFullYear();
       formatted.id_formate = 'SIG' + year + '-' + String(formatted.id).padStart(6, '0');
       formatted.date_creation = formatted.date_signalement || formatted.date_creation;
-      formatted.photo = formatted.photo_url || formatted.photo;
+      // Mapper photo_url vers photo pour compatibilité frontend
+      formatted.photo = formatted.photo_url || formatted.photo || null;
+      formatted.photo_url = formatted.photo_url || formatted.photo || null;
       
       return {
         statusCode: 200,

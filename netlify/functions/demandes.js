@@ -101,7 +101,7 @@ exports.handler = async (event, context) => {
       
       if (error) throw error;
       
-      // Décoder les documents JSON
+      // Décoder les documents JSON et formater les données
       const formatted = (demandes || []).map(d => {
         if (d.documents && typeof d.documents === 'string') {
           try {
@@ -110,6 +110,18 @@ exports.handler = async (event, context) => {
             d.documents = [];
           }
         }
+        
+        // Générer numero_dossier si absent
+        if (!d.numero_dossier && d.id) {
+          const year = d.date_creation ? new Date(d.date_creation).getFullYear() : new Date().getFullYear();
+          d.numero_dossier = 'DEM-' + year + '-' + String(d.id).padStart(6, '0');
+        }
+        
+        // S'assurer que motif existe
+        if (!d.motif) {
+          d.motif = d.motif || null;
+        }
+        
         return d;
       });
       
@@ -196,6 +208,15 @@ exports.handler = async (event, context) => {
         } catch (e) {
           newDemande.documents = [];
         }
+      }
+      
+      // Générer numero_dossier
+      const year = new Date().getFullYear();
+      newDemande.numero_dossier = 'DEM-' + year + '-' + String(newDemande.id).padStart(6, '0');
+      
+      // S'assurer que motif existe
+      if (!newDemande.motif) {
+        newDemande.motif = demandeData.motif || null;
       }
       
       return {
