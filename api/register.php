@@ -97,12 +97,6 @@ try {
     
     $user = $result['data'][0];
     
-    // Démarrer la session
-    session_start();
-    $_SESSION['user_id'] = $user['id'];
-    $_SESSION['user_role'] = $user['role'];
-    $_SESSION['user_nom'] = $user['nom'];
-    
     // Préparer les données utilisateur pour le frontend
     $userResponse = [
         'id' => $user['id'],
@@ -118,12 +112,12 @@ try {
     
     // Message différent selon le statut
     $message = ($role === 'agent' && $statut === 'en_attente') 
-        ? 'Votre demande d\'inscription a été soumise. Elle sera validée par un manager sous peu.' 
+        ? 'Votre demande d\'inscription a été soumise. Elle sera validée par un manager sous peu. Vous ne pourrez pas vous connecter tant que votre compte n\'est pas validé.' 
         : 'Compte créé avec succès';
     
     // Ne pas démarrer de session si l'agent est en attente
     if ($role === 'agent' && $statut === 'en_attente') {
-        // Ne pas créer de session pour les agents en attente
+        // Ne pas créer de session pour les agents en attente - ils ne peuvent pas se connecter
     } else {
         // Démarrer la session pour les autres rôles
         session_start();

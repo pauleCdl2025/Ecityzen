@@ -4437,6 +4437,24 @@
                     result = await apiCall('register', 'POST', registerData);
                 }
                 
+                // Vérifier si l'utilisateur est un agent en attente
+                if (result.data && result.data.role === 'agent' && result.data.statut === 'en_attente') {
+                    // Agent en attente - ne pas connecter
+                    showNotification(result.message || 'Votre demande d\'inscription a été soumise. Elle sera validée par un manager sous peu. Vous ne pourrez pas vous connecter tant que votre compte n\'est pas validé.', 'warning');
+                    
+                    // Réinitialiser le formulaire
+                    document.getElementById('registerForm').reset();
+                    
+                    // Revenir à l'onglet connexion
+                    document.getElementById('loginTab').click();
+                    return;
+                }
+                
+                // Pour les autres utilisateurs, connecter normalement
+                if (!result.success || !result.data) {
+                    throw new Error(result.message || 'Erreur lors de la création du compte');
+                }
+                
                 currentUser = result.data;
                 currentProfile = result.data.role;
                 
@@ -4478,7 +4496,7 @@
                     }
                 }, 300);
                 
-                showNotification(`Compte créé avec succès ! Bienvenue ${currentUser.name}`, 'success');
+                showNotification(result.message || `Compte créé avec succès ! Bienvenue ${currentUser.name}`, 'success');
             } catch (error) {
                 showNotification(error.message || 'Erreur lors de la création du compte', 'error');
             }
