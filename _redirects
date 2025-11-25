@@ -1,8 +1,5 @@
 # Netlify Redirects
 
-# Redirection pour les APIs (à adapter selon votre configuration)
-/api/* /.netlify/functions/:splat 200
-
 # Redirection pour le fichier principal
 / ECITYZEN.html 200
 /index.html ECITYZEN.html 200

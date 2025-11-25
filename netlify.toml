@@ -12,12 +12,9 @@
   # SUPABASE_URL et SUPABASE_ANON_KEY doivent être ajoutées via l'interface Netlify
   # Site settings > Environment variables
 
-[[redirects]]
-  # Rediriger les API calls vers un autre serveur si nécessaire
-  # ou utiliser Netlify Functions
-  from = "/api/*"
-  to = "/.netlify/functions/:splat"
-  status = 200
+# Pas de redirection API - l'application utilise Supabase directement
+# Si vous hébergez les APIs PHP ailleurs, configurez CORS sur votre serveur
+# et modifiez API_BASE_URL dans ECITYZEN.html pour pointer vers votre serveur
 
 # Headers pour sécurité
 [[headers]]

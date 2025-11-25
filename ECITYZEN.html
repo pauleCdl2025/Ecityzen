@@ -3032,7 +3032,11 @@
 
     <script>
         // Configuration API
-        const API_BASE_URL = 'api';
+        // Si vous hébergez les APIs PHP sur un autre serveur, modifiez cette URL
+        // Sinon, l'application utilise Supabase directement
+        const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'api'  // Local: utiliser les APIs locales
+            : 'https://votre-serveur-api.com/api';  // Production: remplacer par votre URL d'APIs
         
         // Configuration Supabase
         const SUPABASE_URL = 'https://srbzvjrqbhtuyzlwdghn.supabase.co';
