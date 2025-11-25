@@ -3707,8 +3707,7 @@
                 if (response.status === 401) {
                     // Si l'utilisateur n'est pas connecté, rediriger vers la page de login
                     if (!currentUser) {
-                        showNotification('Veuillez vous connecter pour accéder à cette fonctionnalité', 'warning');
-                        showLoginPage();
+                        // Ne pas afficher de notification pour les tests de connexion automatiques
                         throw new Error('Non authentifié');
                     } else {
                         // Session expirée, déconnecter l'utilisateur
@@ -3718,10 +3717,36 @@
                     }
                 }
                 
+                // Lire le texte de la réponse d'abord (pour gérer 403/409 avant le parsing JSON)
+                const text = await response.text();
+                
+                // Gérer les erreurs 403 (Accès refusé / Compte en attente)
+                if (response.status === 403) {
+                    let errorMessage = 'Accès refusé';
+                    try {
+                        const errorData = JSON.parse(text);
+                        errorMessage = errorData.message || errorMessage;
+                    } catch (e) {
+                        // Ignorer l'erreur de parsing
+                    }
+                    throw new Error(errorMessage);
+                }
+                
+                // Gérer les erreurs 409 (Conflit - téléphone déjà utilisé)
+                if (response.status === 409) {
+                    let errorMessage = 'Ce numéro de téléphone est déjà utilisé';
+                    try {
+                        const errorData = JSON.parse(text);
+                        errorMessage = errorData.message || errorMessage;
+                    } catch (e) {
+                        // Ignorer l'erreur de parsing
+                    }
+                    throw new Error(errorMessage);
+                }
+                
                 // Gérer les erreurs de parsing JSON
                 let result;
                 try {
-                    const text = await response.text();
                     result = text ? JSON.parse(text) : null;
                 } catch (parseError) {
                     // Si la réponse n'est pas du JSON (probablement une page HTML d'erreur 404)
@@ -3739,16 +3764,26 @@
                 
                 return result;
             } catch (error) {
-                // Ne pas afficher d'erreur si c'est une erreur 401 déjà gérée
-                if (error.message !== 'Non authentifié' && error.message !== 'Session expirée') {
-                    console.error('Erreur API:', error);
-                    // Ne pas afficher de notification pour les erreurs d'endpoints manquants si pas connecté
-                    if (error.message.includes('non disponible') && !currentUser) {
-                        // Silencieux pour éviter de polluer la console
-                    } else {
-                        showNotification('Erreur: ' + error.message, 'error');
-                    }
+                // Ne pas afficher d'erreur si c'est une erreur déjà gérée
+                if (error.message === 'Non authentifié' || error.message === 'Session expirée') {
+                    throw error; // Re-lancer sans afficher
                 }
+                
+                // Ne pas afficher de notification pour les erreurs d'endpoints manquants si pas connecté
+                if (error.message && error.message.includes('non disponible') && !currentUser) {
+                    throw error; // Silencieux pour éviter de polluer la console
+                }
+                
+                // Ne pas afficher d'erreur pour les tests de connexion automatiques (401)
+                if (error.message && (error.message.includes('Non authentifié') || error.message === '401')) {
+                    throw error;
+                }
+                
+                // Pour les autres erreurs, logger seulement (les notifications seront gérées par les fonctions appelantes)
+                if (error.message && !error.message.includes('en attente') && !error.message.includes('déjà utilisé')) {
+                    console.error('Erreur API:', error);
+                }
+                
                 throw error;
             }
         }
@@ -4381,7 +4416,14 @@
                 
                 showNotification(`Connexion réussie ! Bienvenue ${currentUser.name}`, 'success');
             } catch (error) {
-                showNotification(error.message || 'Erreur de connexion. Vérifiez votre numéro de téléphone et votre mot de passe.', 'error');
+                // Ne pas afficher d'erreur pour les erreurs 401/403/409 normales
+                if (error.message && (error.message.includes('Non authentifié') || error.message.includes('Session expirée'))) {
+                    return; // Erreur déjà gérée
+                }
+                
+                // Afficher le message d'erreur approprié
+                const message = error.message || 'Erreur de connexion. Vérifiez votre numéro de téléphone et votre mot de passe.';
+                showNotification(message, error.message && error.message.includes('en attente') ? 'warning' : 'error');
             }
         });
         
@@ -4506,7 +4548,10 @@
                 
                 showNotification(result.message || `Compte créé avec succès ! Bienvenue ${currentUser.name}`, 'success');
             } catch (error) {
-                showNotification(error.message || 'Erreur lors de la création du compte', 'error');
+                // Afficher le message d'erreur approprié (déjà géré pour les agents en attente)
+                if (error.message && !error.message.includes('en attente')) {
+                    showNotification(error.message || 'Erreur lors de la création du compte', 'error');
+                }
             }
         });
         
