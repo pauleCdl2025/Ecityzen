@@ -88,13 +88,16 @@ exports.handler = async (event, context) => {
     const email = 'user_' + data.telephone.replace(/\D/g, '') + '@ecityzen.ga';
 
     // Préparer les données utilisateur
+    // Les agents doivent être validés par le manager
+    const statut = (data.role === 'agent') ? 'en_attente' : 'actif';
+    
     const userData = {
       nom: data.nom,
       email: email,
       telephone: data.telephone,
       role: data.role,
       mot_de_passe: mot_de_passe_hash,
-      statut: 'actif'
+      statut: statut
     };
 
     if (data.localisation) userData.localisation = data.localisation;
@@ -114,6 +117,11 @@ exports.handler = async (event, context) => {
       throw insertError;
     }
 
+    // Message différent selon le statut
+    const message = (data.role === 'agent' && statut === 'en_attente')
+      ? 'Votre demande d\'inscription a été soumise. Elle sera validée par un manager sous peu.'
+      : 'Compte créé avec succès';
+    
     // Formater la réponse
     const response = {
       success: true,
@@ -125,9 +133,10 @@ exports.handler = async (event, context) => {
         role: newUser.role,
         location: newUser.localisation || null,
         sector: newUser.secteur || null,
-        business: newUser.entreprise || null
+        business: newUser.entreprise || null,
+        statut: newUser.statut
       },
-      message: 'Compte créé avec succès'
+      message: message
     };
 
     return {

@@ -1848,6 +1848,10 @@
                             <i class="fas fa-exclamation-triangle mr-2"></i>Assigner Signalements
                             <span id="managerSignalementsNonAssignes" class="ml-2 bg-red-500 text-white px-2 py-1 rounded-full text-xs">0</span>
                         </button>
+                        <button onclick="validerInscriptionsAgents()" class="w-full bg-orange-500 text-white p-3 rounded hover:bg-orange-600 transition-colors">
+                            <i class="fas fa-user-check mr-2"></i>Valider Inscriptions Agents
+                            <span id="managerAgentsEnAttente" class="ml-2 bg-red-500 text-white px-2 py-1 rounded-full text-xs">0</span>
+                        </button>
                         <button onclick="assignerTaches()" class="w-full bg-purple-500 text-white p-3 rounded hover:bg-purple-600 transition-colors">
                             <i class="fas fa-tasks mr-2"></i>Assigner Tâches
                         </button>
@@ -3473,6 +3477,28 @@
             <div class="p-6">
                 <div id="assignerSignalementsList" class="space-y-3">
                     <p class="text-center text-gray-500 py-8">Chargement des signalements...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Valider Inscriptions Agents (Manager) -->
+    <div id="validerInscriptionsAgentsModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" style="padding-top: 80px;">
+        <div class="bg-white rounded-xl shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="text-white p-6 rounded-t-xl" style="background-color: var(--gabon-orange);">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-2xl font-bold">
+                        <i class="fas fa-user-check mr-2"></i>Valider les Inscriptions d'Agents
+                    </h2>
+                    <button onclick="closeModal('validerInscriptionsAgentsModal')" class="text-white hover:text-gray-200 transition-colors">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="p-6">
+                <div id="validerInscriptionsAgentsList" class="space-y-3">
+                    <p class="text-center text-gray-500 py-8">Chargement des demandes d'inscription...</p>
                 </div>
             </div>
         </div>
@@ -5599,22 +5625,27 @@
         async function loadManagerData() {
             // Compter les demandes et signalements non assignés
             try {
-                const [demandesResult, signalementsResult] = await Promise.all([
+                const [demandesResult, signalementsResult, usersResult] = await Promise.all([
                     apiCall('demandes.php').catch(() => ({ data: [] })),
-                    apiCall('signalements.php').catch(() => ({ data: [] }))
+                    apiCall('signalements.php').catch(() => ({ data: [] })),
+                    apiCall('users.php').catch(() => ({ data: [] }))
                 ]);
                 
                 const demandes = demandesResult.data || [];
                 const signalements = signalementsResult.data || [];
+                const users = usersResult.data || [];
                 
                 const demandesNonAssignees = demandes.filter(d => !d.agent_assigné_id && d.statut === 'en_attente');
                 const signalementsNonAssignes = signalements.filter(s => !s.agent_assigné_id && s.statut === 'en_attente');
+                const agentsEnAttente = users.filter(u => u.role === 'agent' && u.statut === 'en_attente');
                 
                 // Mettre à jour les badges
                 const badgeDemandes = document.getElementById('managerDemandesNonAssignees');
                 const badgeSignalements = document.getElementById('managerSignalementsNonAssignes');
+                const badgeAgents = document.getElementById('managerAgentsEnAttente');
                 if (badgeDemandes) badgeDemandes.textContent = demandesNonAssignees.length;
                 if (badgeSignalements) badgeSignalements.textContent = signalementsNonAssignes.length;
+                if (badgeAgents) badgeAgents.textContent = agentsEnAttente.length;
             } catch (error) {
                 console.error('Erreur comptage demandes/signalements:', error);
             }
@@ -6915,6 +6946,113 @@
                 }
             } catch (error) {
                 showNotification('Erreur lors de l\'assignation: ' + error.message, 'error');
+            }
+        }
+        
+        // Fonction Manager - Valider inscriptions agents
+        async function validerInscriptionsAgents() {
+            const modal = document.getElementById('validerInscriptionsAgentsModal');
+            modal.classList.remove('hidden');
+            await chargerAgentsEnAttente();
+        }
+        
+        async function chargerAgentsEnAttente() {
+            try {
+                const result = await apiCall('users.php').catch(() => ({ data: [] }));
+                const users = result.data || [];
+                const agentsEnAttente = users.filter(u => u.role === 'agent' && u.statut === 'en_attente');
+                
+                // Mettre à jour le badge
+                const badge = document.getElementById('managerAgentsEnAttente');
+                if (badge) badge.textContent = agentsEnAttente.length;
+                
+                const listContainer = document.getElementById('validerInscriptionsAgentsList');
+                if (!listContainer) return;
+                
+                listContainer.innerHTML = '';
+                
+                if (agentsEnAttente.length === 0) {
+                    listContainer.innerHTML = '<p class="text-center text-gray-500 py-8">Aucune demande d\'inscription d\'agent en attente</p>';
+                    return;
+                }
+                
+                agentsEnAttente.forEach(agent => {
+                    const div = document.createElement('div');
+                    div.className = 'p-4 border rounded-lg bg-gray-50';
+                    
+                    const dateCreation = agent.date_creation ? new Date(agent.date_creation) : new Date();
+                    const dateFormatee = dateCreation.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                    const heureFormatee = dateCreation.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+                    
+                    div.innerHTML = `
+                        <div class="flex justify-between items-start">
+                            <div class="flex-1">
+                                <div class="font-semibold text-lg mb-1">${agent.name || agent.nom || 'Agent'}</div>
+                                <div class="text-sm text-gray-600 mb-1">
+                                    <i class="fas fa-phone mr-1"></i>${agent.telephone || 'N/A'}
+                                </div>
+                                ${agent.email ? `<div class="text-sm text-gray-600 mb-1">
+                                    <i class="fas fa-envelope mr-1"></i>${agent.email}
+                                </div>` : ''}
+                                ${agent.location || agent.localisation ? `<div class="text-sm text-gray-600 mb-1">
+                                    <i class="fas fa-map-marker-alt mr-1"></i>${agent.location || agent.localisation}
+                                </div>` : ''}
+                                <div class="text-xs text-gray-500">
+                                    <i class="fas fa-clock mr-1"></i>Demande du ${dateFormatee} à ${heureFormatee}
+                                </div>
+                            </div>
+                            <div class="ml-4 flex flex-col gap-2">
+                                <button onclick="validerAgent(${agent.id})" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded text-sm transition-colors">
+                                    <i class="fas fa-check mr-1"></i>Valider
+                                </button>
+                                <button onclick="rejeterAgent(${agent.id})" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded text-sm transition-colors">
+                                    <i class="fas fa-times mr-1"></i>Rejeter
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    listContainer.appendChild(div);
+                });
+            } catch (error) {
+                console.error('Erreur chargement agents:', error);
+                showNotification('Erreur lors du chargement des demandes d\'inscription', 'error');
+            }
+        }
+        
+        async function validerAgent(agentId) {
+            try {
+                const result = await apiCall('users.php', 'PUT', {
+                    id: parseInt(agentId),
+                    statut: 'actif'
+                });
+                
+                if (result.success) {
+                    showNotification('Agent validé avec succès. Il peut maintenant se connecter.', 'success');
+                    chargerAgentsEnAttente();
+                    loadManagerData(); // Recharger les stats
+                }
+            } catch (error) {
+                showNotification('Erreur lors de la validation: ' + error.message, 'error');
+            }
+        }
+        
+        async function rejeterAgent(agentId) {
+            const confirmation = confirm('Êtes-vous sûr de vouloir rejeter cette demande d\'inscription ? L\'agent ne pourra pas se connecter.');
+            if (!confirmation) return;
+            
+            try {
+                const result = await apiCall('users.php', 'PUT', {
+                    id: parseInt(agentId),
+                    statut: 'rejete'
+                });
+                
+                if (result.success) {
+                    showNotification('Demande d\'inscription rejetée', 'info');
+                    chargerAgentsEnAttente();
+                    loadManagerData(); // Recharger les stats
+                }
+            } catch (error) {
+                showNotification('Erreur lors du rejet: ' + error.message, 'error');
             }
         }
         

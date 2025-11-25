@@ -43,7 +43,11 @@ try {
     
     // Vérifier le statut
     if ($user['statut'] !== 'actif') {
-        sendJSONResponse(false, null, 'Votre compte est désactivé', 403);
+        if ($user['statut'] === 'en_attente' && $user['role'] === 'agent') {
+            sendJSONResponse(false, null, 'Votre demande d\'inscription est en attente de validation par un manager', 403);
+        } else {
+            sendJSONResponse(false, null, 'Votre compte est désactivé', 403);
+        }
     }
     
     // Vérifier le mot de passe

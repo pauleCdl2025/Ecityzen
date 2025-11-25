@@ -85,13 +85,17 @@ exports.handler = async (event, context) => {
 
     // Vérifier le statut
     if (user.statut !== 'actif') {
+      let message = 'Votre compte est désactivé';
+      if (user.statut === 'en_attente' && user.role === 'agent') {
+        message = 'Votre demande d\'inscription est en attente de validation par un manager';
+      }
       return {
         statusCode: 403,
         headers: {
           'Content-Type': 'application/json',
           'Access-Control-Allow-Origin': '*'
         },
-        body: JSON.stringify({ success: false, message: 'Votre compte est désactivé' })
+        body: JSON.stringify({ success: false, message: message })
       };
     }
 

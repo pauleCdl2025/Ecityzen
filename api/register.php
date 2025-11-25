@@ -69,13 +69,16 @@ try {
     $email = 'user_' . preg_replace('/[^0-9]/', '', $telephone) . '@ecityzen.ga';
     
     // Préparer les données pour insertion
+    // Les agents doivent être validés par le manager
+    $statut = ($role === 'agent') ? 'en_attente' : 'actif';
+    
     $userData = [
         'nom' => $nom,
         'email' => $email,
         'telephone' => $telephone,
         'role' => $role,
         'mot_de_passe' => $mot_de_passe_hash,
-        'statut' => 'actif'
+        'statut' => $statut
     ];
     
     if ($localisation) $userData['localisation'] = $localisation;
@@ -109,10 +112,27 @@ try {
         'role' => $user['role'],
         'location' => $user['localisation'] ?? null,
         'sector' => $user['secteur'] ?? null,
-        'business' => $user['entreprise'] ?? null
+        'business' => $user['entreprise'] ?? null,
+        'statut' => $user['statut']
     ];
     
-    sendJSONResponse(true, $userResponse, 'Compte créé avec succès');
+    // Message différent selon le statut
+    $message = ($role === 'agent' && $statut === 'en_attente') 
+        ? 'Votre demande d\'inscription a été soumise. Elle sera validée par un manager sous peu.' 
+        : 'Compte créé avec succès';
+    
+    // Ne pas démarrer de session si l'agent est en attente
+    if ($role === 'agent' && $statut === 'en_attente') {
+        // Ne pas créer de session pour les agents en attente
+    } else {
+        // Démarrer la session pour les autres rôles
+        session_start();
+        $_SESSION['user_id'] = $user['id'];
+        $_SESSION['user_role'] = $user['role'];
+        $_SESSION['user_nom'] = $user['nom'];
+    }
+    
+    sendJSONResponse(true, $userResponse, $message);
     
 } catch (Exception $e) {
     error_log("Erreur inscription: " . $e->getMessage());
