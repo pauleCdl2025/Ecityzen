@@ -2454,6 +2454,69 @@
         </div>
     </div>
 
+    <!-- Modale Renouvellement Patente (Commerçant) -->
+    <div id="renouvellementPatenteModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" style="padding-top: 80px;">
+        <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full">
+            <div class="text-white p-6 rounded-t-xl" style="background-color: var(--gabon-blue);">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-2xl font-bold">
+                        <i class="fas fa-sync-alt mr-2"></i>Renouvellement de Patente
+                    </h2>
+                    <button onclick="closeModal('renouvellementPatenteModal')" class="text-white hover:text-gray-200 transition-colors">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="p-6">
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold mb-4">Détails du renouvellement</h3>
+                    
+                    <div class="bg-blue-50 p-4 rounded-lg mb-4">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-gray-700">Montant de la patente:</span>
+                            <span class="text-2xl font-bold text-blue-600" id="patenteMontant">125,000</span>
+                            <span class="text-gray-600">FCFA</span>
+                        </div>
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-gray-700">Date d'échéance actuelle:</span>
+                            <span class="font-semibold" id="patenteEcheanceActuelle">-</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-700">Nouvelle échéance:</span>
+                            <span class="font-semibold text-green-600" id="patenteNouvelleEcheance">30/03/2026</span>
+                        </div>
+                    </div>
+                    
+                    <div class="border-t pt-4 mb-4">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-gray-600">Période de validité:</span>
+                            <span class="font-semibold">12 mois</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">Type de licence:</span>
+                            <span class="font-semibold" id="patenteType">Patente Commerciale</span>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-yellow-50 border border-yellow-200 p-3 rounded-lg text-sm text-yellow-800 mb-4">
+                        <i class="fas fa-info-circle mr-2"></i>
+                        La patente est valable pour une durée d'un an à compter de la date de paiement.
+                    </div>
+                </div>
+                
+                <div class="flex gap-3">
+                    <button onclick="closeModal('renouvellementPatenteModal')" class="flex-1 bg-gray-500 hover:bg-gray-600 text-white p-3 rounded-lg font-semibold transition-colors">
+                        Annuler
+                    </button>
+                    <button onclick="confirmerRenouvellementPatente()" class="flex-1 text-white p-3 rounded-lg font-semibold transition-opacity hover:opacity-90" style="background-color: var(--gabon-blue);">
+                        <i class="fas fa-credit-card mr-2"></i>Procéder au paiement
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Modale Réservation Emplacement (Commerçant) -->
     <div id="reservationEmplacementModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" style="padding-top: 80px;">
         <div class="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
@@ -7294,13 +7357,72 @@
         }
 
         // Fonctions commerçants
-        function renouvellerPatente() {
-            showNotification('Calcul patente: 125,000 FCFA - Échéance 30/03/2025', 'info');
-            setTimeout(() => {
-                if (confirm('Procéder au paiement de la patente ?')) {
-                    effectuerPaiement('Patente Commerciale', 125000);
+        async function renouvellerPatente(licenceId = null) {
+            // Charger les licences pour obtenir les informations
+            try {
+                const result = await apiCall('licences.php').catch(() => ({ data: [] }));
+                const licences = result.data || [];
+                let licenceActive = null;
+                
+                if (licenceId) {
+                    licenceActive = licences.find(l => l.id == licenceId);
+                } else {
+                    licenceActive = licences
+                        .filter(l => l.statut === 'active')
+                        .sort((a, b) => new Date(b.date_fin) - new Date(a.date_fin))[0];
                 }
-            }, 2000);
+                
+                // Calculer le montant de la patente (ici on utilise une valeur par défaut ou celle de la licence)
+                const montantPatente = licenceActive ? (parseFloat(licenceActive.montant) || 125000) : 125000;
+                const echeanceActuelle = licenceActive ? new Date(licenceActive.date_fin) : new Date();
+                const nouvelleEcheance = new Date(echeanceActuelle);
+                nouvelleEcheance.setFullYear(nouvelleEcheance.getFullYear() + 1);
+                
+                // Afficher la modale avec les informations
+                const modal = document.getElementById('renouvellementPatenteModal');
+                if (modal) {
+                    document.getElementById('patenteMontant').textContent = montantPatente.toLocaleString('fr-FR');
+                    document.getElementById('patenteEcheanceActuelle').textContent = echeanceActuelle.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                    document.getElementById('patenteNouvelleEcheance').textContent = nouvelleEcheance.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                    document.getElementById('patenteType').textContent = licenceActive ? (licenceActive.type_licence || 'Patente Commerciale') : 'Patente Commerciale';
+                    
+                    // Stocker les données pour la confirmation
+                    modal.dataset.montant = montantPatente;
+                    modal.dataset.licenceId = licenceActive ? licenceActive.id : '';
+                    
+                    modal.classList.remove('hidden');
+                } else {
+                    // Fallback si la modale n'existe pas
+                    showNotification(`Calcul patente: ${montantPatente.toLocaleString('fr-FR')} FCFA - Nouvelle échéance ${nouvelleEcheance.toLocaleDateString('fr-FR')}`, 'info');
+                    setTimeout(() => {
+                        if (confirm('Procéder au paiement de la patente ?')) {
+                            effectuerPaiement('Patente Commerciale', montantPatente);
+                        }
+                    }, 2000);
+                }
+            } catch (error) {
+                console.error('Erreur chargement licences:', error);
+                // Valeurs par défaut
+                const modal = document.getElementById('renouvellementPatenteModal');
+                if (modal) {
+                    document.getElementById('patenteMontant').textContent = '125,000';
+                    const nouvelleEcheance = new Date();
+                    nouvelleEcheance.setFullYear(nouvelleEcheance.getFullYear() + 1);
+                    document.getElementById('patenteEcheanceActuelle').textContent = 'N/A';
+                    document.getElementById('patenteNouvelleEcheance').textContent = nouvelleEcheance.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                    modal.dataset.montant = 125000;
+                    modal.classList.remove('hidden');
+                }
+            }
+        }
+        
+        function confirmerRenouvellementPatente() {
+            const modal = document.getElementById('renouvellementPatenteModal');
+            if (!modal) return;
+            
+            const montant = parseFloat(modal.dataset.montant || 125000);
+            closeModal('renouvellementPatenteModal');
+            effectuerPaiement('Renouvellement Patente Commerciale', montant);
         }
         
         async function reserverEmplacement() {
