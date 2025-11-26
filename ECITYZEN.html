@@ -1321,13 +1321,32 @@
         
         /* Styles pour les inputs de la modale demande avec couleurs Gabon */
         .demande-input:focus {
-            outline: none;
+            outline: none !important;
             border-color: var(--gabon-blue) !important;
-            box-shadow: 0 0 0 2px rgba(62, 117, 196, 0.2);
+            box-shadow: 0 0 0 2px rgba(62, 117, 196, 0.2) !important;
         }
         
         .demande-input {
             transition: border-color 0.2s, box-shadow 0.2s;
+            border-color: #d1d5db;
+        }
+        
+        /* S'assurer que la modale utilise les couleurs du Gabon */
+        #demandeModal .demande-input {
+            border: 1px solid #d1d5db;
+        }
+        
+        #demandeModal .demande-input:focus {
+            border: 1px solid var(--gabon-blue);
+        }
+        
+        #demandeModal #coutEstime {
+            color: var(--gabon-green) !important;
+        }
+        
+        #demandeModal button[type="submit"],
+        #demandeModal button:last-of-type:not([onclick*="closeModal"]) {
+            background-color: var(--gabon-blue) !important;
         }
     </style>
 </head>
