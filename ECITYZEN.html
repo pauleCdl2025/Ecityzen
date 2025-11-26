@@ -1299,6 +1299,25 @@
                 min-width: 44px;
             }
         }
+        
+        /* Scroll personnalisé pour la modale de demande */
+        .demande-modal-scroll::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .demande-modal-scroll::-webkit-scrollbar-track {
+            background: #f7fafc;
+            border-radius: 4px;
+        }
+        
+        .demande-modal-scroll::-webkit-scrollbar-thumb {
+            background-color: var(--gabon-blue);
+            border-radius: 4px;
+        }
+        
+        .demande-modal-scroll::-webkit-scrollbar-thumb:hover {
+            background-color: #2d5aa0;
+        }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -2332,15 +2351,15 @@
 
     <!-- Modale Nouvelle Demande -->
     <div id="demandeModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" style="padding-top: 60px; padding-bottom: 20px;">
-        <div class="bg-white rounded-lg p-3 md:p-4 max-w-xl w-full mx-2 md:mx-4 max-h-[85vh] flex flex-col shadow-xl">
-            <div class="flex justify-between items-center mb-3 pb-2 border-b" style="border-color: var(--gabon-blue);">
+        <div class="bg-white rounded-lg max-w-xl w-full mx-2 md:mx-4 max-h-[85vh] flex flex-col shadow-xl" style="display: flex; flex-direction: column; height: 85vh; max-height: 85vh;">
+            <div class="flex justify-between items-center p-3 md:p-4 pb-3 border-b flex-shrink-0" style="border-color: var(--gabon-blue);">
                 <h2 class="text-lg font-semibold" style="color: var(--gabon-blue);">Nouvelle Demande Administrative</h2>
                 <button onclick="closeModal('demandeModal')" class="text-gray-500 hover:text-gray-700 text-xl leading-none">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
             
-            <div class="flex-1 overflow-y-auto pr-2" style="scrollbar-width: thin; scrollbar-color: var(--gabon-blue) #f7fafc;">
+            <div class="flex-1 overflow-y-auto p-3 md:p-4 demande-modal-scroll" style="min-height: 0; scrollbar-width: thin; scrollbar-color: var(--gabon-blue) #f7fafc;">
                 <form id="demandeForm" enctype="multipart/form-data">
                     <div class="mb-3">
                         <label class="block text-xs font-medium mb-1 text-gray-700">Type de service</label>
@@ -2393,7 +2412,7 @@
                 </form>
             </div>
             
-            <div class="flex gap-2 pt-3 border-t mt-2">
+            <div class="flex gap-2 p-3 md:p-4 pt-3 border-t flex-shrink-0" style="border-color: var(--gabon-blue);">
                 <button type="button" onclick="closeModal('demandeModal')" class="flex-1 text-white text-sm py-2 px-3 rounded transition-opacity hover:opacity-90" style="background-color: #6b7280;">
                     Annuler
                 </button>
