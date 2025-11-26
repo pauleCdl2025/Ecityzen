@@ -3673,35 +3673,23 @@
                 url = `${API_BASE_URL}/${endpoint}${endpoint.includes('.php') ? '' : '.php'}`;
             }
             
-            // Pour les Netlify Functions en production, ajouter les infos utilisateur au body ou query params
+            // Pour les Netlify Functions en production, ajouter les infos utilisateur
             if (!API_BASE_URL && netlifyFunctions.includes(endpointClean) && currentUser) {
                 if (method === 'GET') {
-                    // Pour GET, ajouter les infos utilisateur dans l'URL
+                    // Pour GET, ajouter les infos utilisateur dans l'URL AVANT le cache-busting
                     const separator = url.includes('?') ? '&' : '?';
                     url += `${separator}_user_id=${currentUser.id}&_user_role=${currentUser.role}`;
-                } else if (data) {
+                } else if (data && typeof data === 'object') {
                     // Pour POST/PUT, ajouter user_id et user_role au body
-                    if (typeof data === 'object') {
-                        data._user_id = currentUser.id;
-                        data._user_role = currentUser.role;
-                    }
-                } else if (method === 'GET' && data === null) {
-                    // Pour les GET, passer les infos dans query string ou body via POST si nécessaire
-                    // Pour l'instant, on laisse les GET sans user info (sera géré côté fonction si nécessaire)
+                    data._user_id = currentUser.id;
+                    data._user_role = currentUser.role;
                 }
             }
             
-            // Ajouter un paramètre de cache-busting pour les requêtes GET
-            if (method === 'GET' && !url.includes('?')) {
-                url += `?_t=${Date.now()}`;
-            } else if (method === 'GET' && url.includes('?')) {
-                url += `&_t=${Date.now()}`;
-            }
-            
-            // Pour les GET avec Netlify Functions, ajouter user_id dans query string si nécessaire
-            if (!API_BASE_URL && method === 'GET' && netlifyFunctions.includes(endpointClean) && currentUser) {
+            // Ajouter un paramètre de cache-busting pour les requêtes GET (après les autres params)
+            if (method === 'GET') {
                 const separator = url.includes('?') ? '&' : '?';
-                url += `${separator}_user_id=${currentUser.id}&_user_role=${currentUser.role}`;
+                url += `${separator}_t=${Date.now()}`;
             }
             
             try {
