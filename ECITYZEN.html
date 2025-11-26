@@ -1780,7 +1780,7 @@
 
     <!-- Dashboard Manager -->
     <div id="managerDashboard" class="hidden web-view" style="padding-top: 60px;">
-        <div class="bg-purple-600 text-white p-6">
+        <div class="text-white p-6" style="background: linear-gradient(120deg, var(--gabon-green) 0%, var(--gabon-yellow) 45%, var(--gabon-blue) 100%);">
             <div class="flex justify-between items-center">
                 <div class="flex items-center gap-4">
                     <img src="logoMarieAkanda.webp" alt="Logo" class="logo-small" />
@@ -1869,7 +1869,7 @@
                             </span>
                             <span id="managerAgentsEnAttente" class="bg-red-500 text-white px-3 py-1 rounded-full text-xs font-bold">0</span>
                         </button>
-                        <button onclick="assignerTaches()" class="w-full bg-purple-500 text-white p-3 rounded hover:bg-purple-600 transition-colors">
+                        <button onclick="assignerTaches()" class="w-full p-3 rounded transition-transform hover:-translate-y-0.5 font-semibold shadow" style="background-color: var(--gabon-yellow); color: #1E293B;">
                             <i class="fas fa-tasks mr-2"></i>Assigner Tâches
                         </button>
                     </div>
@@ -1900,13 +1900,13 @@
                 <div class="bg-white rounded-lg p-6 shadow">
                     <h2 class="text-xl font-bold mb-4">Analytics</h2>
                     <div class="space-y-4">
-                        <button onclick="genererRapport()" class="w-full bg-red-500 text-white p-3 rounded">
+                        <button onclick="genererRapport()" class="w-full text-white p-3 rounded shadow" style="background-color: var(--gabon-blue);">
                             <i class="fas fa-chart-bar mr-2"></i>Générer Rapport
                         </button>
-                        <button onclick="analysePerformance()" class="w-full bg-orange-500 text-white p-3 rounded">
+                        <button onclick="analysePerformance()" class="w-full text-white p-3 rounded shadow" style="background-color: var(--gabon-green);">
                             <i class="fas fa-analytics mr-2"></i>Analyse Performance
                         </button>
-                        <button onclick="previsionsTendances()" class="w-full bg-indigo-500 text-white p-3 rounded">
+                        <button onclick="previsionsTendances()" class="w-full p-3 rounded shadow transition-transform hover:-translate-y-0.5" style="background-color: var(--gabon-yellow); color: #1F2937;">
                             <i class="fas fa-crystal-ball mr-2"></i>Prévisions IA
                         </button>
                     </div>
@@ -1937,13 +1937,13 @@
                 </div>
                 
                 <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                    <button onclick="gestionMarches()" class="bg-green-500 text-white p-3 rounded">
+                    <button onclick="gestionMarches()" class="text-white p-3 rounded shadow" style="background-color: var(--gabon-green);">
                         <i class="fas fa-store mr-2"></i>Gestion Marchés
                     </button>
-                    <button onclick="controleQualite()" class="bg-blue-500 text-white p-3 rounded">
+                    <button onclick="controleQualite()" class="text-white p-3 rounded shadow" style="background-color: var(--gabon-blue);">
                         <i class="fas fa-check-circle mr-2"></i>Contrôle Qualité
                     </button>
-                    <button onclick="planificationTournees()" class="bg-purple-500 text-white p-3 rounded">
+                    <button onclick="planificationTournees()" class="p-3 rounded shadow" style="background-color: var(--gabon-yellow); color: #1E293B;">
                         <i class="fas fa-route mr-2"></i>Planification Tournées
                     </button>
                 </div>
