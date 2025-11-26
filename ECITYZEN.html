@@ -7129,16 +7129,6 @@
                     listContainer.appendChild(div);
                 });
                 
-                const alertBox = document.getElementById('managerAgentsAlert');
-                const alertCount = document.getElementById('managerAgentsAlertCount');
-                if (alertBox) {
-                    if (agentsEnAttente.length > 0) {
-                        alertBox.classList.remove('hidden');
-                        if (alertCount) alertCount.textContent = agentsEnAttente.length;
-                    } else {
-                        alertBox.classList.add('hidden');
-                    }
-                }
             } catch (error) {
                 console.error('Erreur chargement agents:', error);
                 showNotification('Erreur lors du chargement des demandes d\'inscription', 'error');
