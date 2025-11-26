@@ -1296,7 +1296,7 @@
         <div class="bg-white rounded-3xl shadow-2xl p-6 md:p-10 max-w-md w-full mx-4 fade-in">
             <div class="text-center mb-8">
                 <div class="logo-container mb-4">
-                    <img src="logoMarieAkanda.webp" alt="e-cityzen Logo" />
+                    <img src="https://res.cloudinary.com/dd64mwkl2/image/upload/v1764158267/OIP_1_nn6fy8.webp" alt="e-cityzen Logo" />
                 </div>
                 <h1 class="text-4xl font-extrabold mb-2" style="color: var(--gabon-green);">e-cityzen</h1>
                 <p class="text-gray-600 font-medium">Plateforme de services municipaux du Gabon</p>
@@ -1335,6 +1335,14 @@
                         <i class="fas fa-sign-in-alt mr-2"></i> SE CONNECTER
                 </button>
                 </form>
+                
+                <!-- Bouton signalement sans connexion -->
+                <div class="mt-6 pt-6 border-t border-gray-200">
+                    <p class="text-center text-sm text-gray-600 mb-3">Vous n'avez pas de compte ?</p>
+                    <button onclick="showNewSignalement()" class="w-full py-3 px-6 rounded-lg text-white text-base font-semibold transition-all duration-300 hover:shadow-lg" style="background-color: var(--gabon-green);">
+                        <i class="fas fa-exclamation-triangle mr-2"></i> Faire un signalement sans connexion
+                    </button>
+                </div>
             </div>
             
             <!-- Formulaire d'Inscription -->
@@ -1465,7 +1473,7 @@
         <div class="gabon-gradient text-white p-3 md:p-4">
             <div class="flex justify-between items-center">
                 <div class="flex items-center gap-3">
-                    <img src="logoMarieAkanda.webp" alt="Logo" class="logo-small" />
+                    <img src="https://res.cloudinary.com/dd64mwkl2/image/upload/v1764158267/OIP_1_nn6fy8.webp" alt="Logo" class="logo-small" />
                     <div>
                         <h1 class="text-xl font-bold" id="citoyenGreeting">Bonjour</h1>
                         <p class="text-sm opacity-90" id="citoyenInfo">Chargement...</p>
@@ -1552,7 +1560,7 @@
         <div class="bg-yellow-500 text-white p-4">
             <div class="flex justify-between items-center">
                 <div class="flex items-center gap-3">
-                    <img src="logoMarieAkanda.webp" alt="Logo" class="logo-small" />
+                    <img src="https://res.cloudinary.com/dd64mwkl2/image/upload/v1764158267/OIP_1_nn6fy8.webp" alt="Logo" class="logo-small" />
                     <div>
                         <h1 class="text-xl font-bold">Business Center</h1>
                         <p class="text-sm opacity-90" id="commercantInfo">Chargement...</p>
@@ -1608,7 +1616,7 @@
         <div class="bg-red-500 text-white p-4">
             <div class="flex justify-between items-center">
                 <div class="flex items-center gap-3">
-                    <img src="logoMarieAkanda.webp" alt="Logo" class="logo-small" />
+                    <img src="https://res.cloudinary.com/dd64mwkl2/image/upload/v1764158267/OIP_1_nn6fy8.webp" alt="Logo" class="logo-small" />
                     <div>
                         <h1 class="text-xl font-bold">Centre Hospitalier</h1>
                         <p class="text-sm opacity-90" id="hopitalInfo">Chargement...</p>
@@ -1690,7 +1698,7 @@
         <div class="bg-blue-500 text-white p-4">
             <div class="flex justify-between items-center">
                 <div class="flex items-center gap-3">
-                    <img src="logoMarieAkanda.webp" alt="Logo" class="logo-small" />
+                    <img src="https://res.cloudinary.com/dd64mwkl2/image/upload/v1764158267/OIP_1_nn6fy8.webp" alt="Logo" class="logo-small" />
                     <div>
                         <h1 class="text-xl font-bold">Agent Terrain</h1>
                         <p class="text-sm opacity-90" id="agentInfo">Chargement...</p>
@@ -1783,7 +1791,7 @@
         <div class="text-white p-6" style="background: linear-gradient(120deg, var(--gabon-green) 0%, var(--gabon-yellow) 45%, var(--gabon-blue) 100%);">
             <div class="flex justify-between items-center">
                 <div class="flex items-center gap-4">
-                    <img src="logoMarieAkanda.webp" alt="Logo" class="logo-small" />
+                    <img src="https://res.cloudinary.com/dd64mwkl2/image/upload/v1764158267/OIP_1_nn6fy8.webp" alt="Logo" class="logo-small" />
                     <div>
                         <h1 class="text-2xl font-bold">Tableau de Bord Manager</h1>
                         <p class="opacity-90" id="managerInfo">Chargement...</p>
@@ -2013,7 +2021,7 @@
         <div class="bg-red-600 text-white p-6">
             <div class="flex justify-between items-center">
                 <div class="flex items-center gap-4">
-                    <img src="logoMarieAkanda.webp" alt="Logo" class="logo-small" />
+                    <img src="https://res.cloudinary.com/dd64mwkl2/image/upload/v1764158267/OIP_1_nn6fy8.webp" alt="Logo" class="logo-small" />
                     <div>
                         <h1 class="text-2xl font-bold">Console Super Admin</h1>
                         <p class="opacity-90" id="superadminInfo">Chargement...</p>
@@ -6148,13 +6156,28 @@
             try {
                 showNotification('Enregistrement du signalement...', 'info');
                 
+                // Gérer l'upload de photo si présent
+                let photoBase64 = null;
+                const photoInput = document.getElementById('signalementPhoto');
+                if (photoInput && photoInput.files && photoInput.files.length > 0) {
+                    const file = photoInput.files[0];
+                    // Convertir en base64 pour l'envoi
+                    photoBase64 = await new Promise((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onload = () => resolve(reader.result);
+                        reader.onerror = reject;
+                        reader.readAsDataURL(file);
+                    });
+                }
+                
                 const signalementData = {
                     type: type,
                     sous_type: sousType,
                     description: description,
                     localisation: localisation || 'Libreville, Gabon',
                     latitude: latitude ? parseFloat(latitude) : null,
-                    longitude: longitude ? parseFloat(longitude) : null
+                    longitude: longitude ? parseFloat(longitude) : null,
+                    photo: photoBase64
                 };
                 
                 const result = await apiCall('signalements.php', 'POST', signalementData);
@@ -6167,19 +6190,21 @@
                 
                 showNotification(`Signalement ${result.data.id_formate || result.data.id} enregistré avec succès !`, 'success');
                 
-                // Recharger les données
-                if (currentProfile === 'citoyen') {
+                // Recharger les données si connecté
+                if (currentUser && currentProfile === 'citoyen') {
                     await loadCitoyenData();
                 }
                 
-                // Notifier que le signalement a été assigné à un agent
-                if (result.data.agent_assigné_id) {
+                // Message pour les signalements anonymes
+                if (!currentUser) {
+                    showNotification('Votre signalement a été enregistré. Un agent le traitera sous peu.', 'info');
+                } else if (result.data.agent_assigné_id) {
                     showNotification('Votre signalement a été assigné à un agent qui le traitera sous peu.', 'info');
+                } else {
+                    setTimeout(() => {
+                        showNotification('Signalement reçu et en attente d\'assignation', 'info');
+                    }, 2000);
                 }
-                
-                setTimeout(() => {
-                    showNotification('Signalement assigné à un agent', 'info');
-                }, 2000);
             } catch (error) {
                 showNotification('Erreur lors de l\'enregistrement', 'error');
             }

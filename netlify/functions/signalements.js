@@ -158,19 +158,8 @@ exports.handler = async (event, context) => {
     }
   }
   
-  // POST: Créer un signalement
+  // POST: Créer un signalement (peut être fait sans connexion)
   if (event.httpMethod === 'POST') {
-    if (!userId) {
-      return {
-        statusCode: 401,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*'
-        },
-        body: JSON.stringify({ success: false, message: 'Non authentifié' })
-      };
-    }
-    
     try {
       const data = JSON.parse(event.body);
       
@@ -185,10 +174,11 @@ exports.handler = async (event, context) => {
         };
       }
       
+      // userId peut être null pour les signalements anonymes
       // Ne pas assigner automatiquement - le manager assignera
       // Les signalements arrivent d'abord chez le manager
       const signalementData = {
-        utilisateur_id: userId,
+        utilisateur_id: userId || null, // Permettre les signalements anonymes
         type: data.type,
         sous_type: data.sous_type,
         description: data.description,

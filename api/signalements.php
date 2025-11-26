@@ -65,11 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     }
     
 } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Créer un signalement
-    if (!isset($_SESSION['user_id'])) {
-        sendJSONResponse(false, null, 'Non authentifié', 401);
-    }
-    
+    // Créer un signalement (peut être fait sans connexion)
     $data = json_decode(file_get_contents('php://input'), true);
     
     $required = ['type', 'sous_type', 'description'];
@@ -86,9 +82,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             $photoUrl = $data['photo'];
         }
         
+        // Récupérer l'utilisateur_id si connecté, sinon null (signalement anonyme)
+        $userId = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : null;
+        
         // Préparer les données pour Supabase
         $signalementData = [
-            'utilisateur_id' => $_SESSION['user_id'],
+            'utilisateur_id' => $userId,
             'type' => $data['type'],
             'sous_type' => $data['sous_type'],
             'description' => $data['description'],
