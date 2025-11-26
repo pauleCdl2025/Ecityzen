@@ -3683,6 +3683,123 @@
         </div>
     </div>
 
+    <!-- Modal Missions Terrain (Agent) -->
+    <div id="missionsTerrainModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" style="padding-top: 80px;">
+        <div class="bg-white rounded-xl shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="text-white p-6 rounded-t-xl" style="background-color: var(--gabon-green);">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-2xl font-bold">
+                        <i class="fas fa-map-marker-alt mr-2"></i>Missions Terrain
+                    </h2>
+                    <button onclick="closeModal('missionsTerrainModal')" class="text-white hover:text-gray-200 transition-colors">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="p-6">
+                <div id="missionsTerrainList" class="space-y-3">
+                    <p class="text-center text-gray-500 py-8">Chargement des missions...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Scanner QR (Agent) -->
+    <div id="scannerQRModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" style="padding-top: 80px;">
+        <div class="bg-white rounded-xl shadow-2xl max-w-md w-full">
+            <div class="text-white p-6 rounded-t-xl" style="background-color: var(--gabon-purple);">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-2xl font-bold">
+                        <i class="fas fa-qrcode mr-2"></i>Scanner QR Code
+                    </h2>
+                    <button onclick="closeModal('scannerQRModal')" class="text-white hover:text-gray-200 transition-colors">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="p-6">
+                <div class="text-center mb-4">
+                    <div id="qrScannerArea" class="bg-gray-100 rounded-lg p-8 mb-4" style="min-height: 300px; display: flex; align-items: center; justify-content: center;">
+                        <div class="text-center">
+                            <i class="fas fa-qrcode text-6xl text-gray-400 mb-4"></i>
+                            <p class="text-gray-600">Positionnez le QR code dans le cadre</p>
+                            <button onclick="demarrerScanQR()" class="mt-4 bg-purple-500 text-white px-6 py-2 rounded-lg">
+                                <i class="fas fa-camera mr-2"></i>Démarrer le scan
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="qrResult" class="hidden p-4 bg-green-50 rounded-lg border border-green-200">
+                    <h3 class="font-semibold text-green-800 mb-2">QR Code scanné avec succès</h3>
+                    <div id="qrResultContent" class="text-sm text-gray-700"></div>
+                </div>
+                
+                <div class="mt-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Ou saisir manuellement</label>
+                    <input type="text" id="qrCodeInput" class="w-full border border-gray-300 rounded-lg p-3" placeholder="Entrez le code QR">
+                    <button onclick="validerQRManuel()" class="mt-2 w-full bg-purple-500 text-white p-3 rounded-lg">
+                        <i class="fas fa-check mr-2"></i>Valider
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Rédiger Rapport (Agent) -->
+    <div id="redigerRapportModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" style="padding-top: 80px;">
+        <div class="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="text-white p-6 rounded-t-xl" style="background-color: var(--gabon-orange);">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-2xl font-bold">
+                        <i class="fas fa-file-alt mr-2"></i>Rédiger un Rapport
+                    </h2>
+                    <button onclick="closeModal('redigerRapportModal')" class="text-white hover:text-gray-200 transition-colors">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="p-6 space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Type de rapport</label>
+                    <select id="rapportTypeAgent" class="w-full border border-gray-300 rounded-lg p-3">
+                        <option value="mission">Rapport de mission</option>
+                        <option value="inspection">Rapport d'inspection</option>
+                        <option value="intervention">Rapport d'intervention</option>
+                        <option value="autre">Autre</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Titre</label>
+                    <input type="text" id="rapportTitre" class="w-full border border-gray-300 rounded-lg p-3" placeholder="Titre du rapport">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Date de l'intervention</label>
+                    <input type="date" id="rapportDate" class="w-full border border-gray-300 rounded-lg p-3">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Contenu</label>
+                    <textarea id="rapportContenu" rows="10" class="w-full border border-gray-300 rounded-lg p-3" placeholder="Décrivez les faits observés, actions entreprises, résultats..."></textarea>
+                </div>
+                
+                <div class="flex gap-3">
+                    <button onclick="enregistrerRapport()" class="flex-1 bg-orange-500 text-white p-3 rounded-lg font-semibold">
+                        <i class="fas fa-save mr-2"></i>Enregistrer
+                    </button>
+                    <button onclick="closeModal('redigerRapportModal')" class="flex-1 bg-gray-500 text-white p-3 rounded-lg font-semibold">
+                        Annuler
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal Valider Inscriptions Agents (Manager) -->
     <div id="validerInscriptionsAgentsModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" style="padding-top: 80px;">
         <div class="bg-white rounded-xl shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-y-auto">
@@ -7015,19 +7132,141 @@
             }
         }
         
-        function missionsTerrain() {
-            showNotification('3 missions actives - GPS activé pour navigation', 'info');
+        async function missionsTerrain() {
+            const modal = document.getElementById('missionsTerrainModal');
+            modal.classList.remove('hidden');
+            await chargerMissionsTerrain();
+        }
+        
+        async function chargerMissionsTerrain() {
+            try {
+                const result = await apiCall('missions.php').catch(() => ({ data: [] }));
+                const missions = result.data || [];
+                const missionsAgent = missions.filter(m => m.agent_id == currentUser.id);
+                
+                const listContainer = document.getElementById('missionsTerrainList');
+                if (!listContainer) return;
+                
+                listContainer.innerHTML = '';
+                
+                if (missionsAgent.length === 0) {
+                    listContainer.innerHTML = '<p class="text-center text-gray-500 py-8">Aucune mission assignée</p>';
+                    return;
+                }
+                
+                missionsAgent.forEach(mission => {
+                    const div = document.createElement('div');
+                    div.className = 'p-4 border rounded-lg hover:bg-gray-50 transition-colors';
+                    
+                    const dateDebut = mission.date_debut ? new Date(mission.date_debut).toLocaleDateString('fr-FR') : 'N/A';
+                    const statutClass = mission.statut === 'en_cours' ? 'bg-green-500' : mission.statut === 'termine' ? 'bg-blue-500' : 'bg-yellow-500';
+                    
+                    div.innerHTML = `
+                        <div class="flex justify-between items-start">
+                            <div class="flex-1">
+                                <div class="font-semibold text-lg mb-1">${mission.titre || 'Mission'}</div>
+                                <div class="text-sm text-gray-600 mb-1">${mission.description || ''}</div>
+                                <div class="text-xs text-gray-500">Date: ${dateDebut}</div>
+                                ${mission.localisation ? `<div class="text-xs text-gray-500"><i class="fas fa-map-marker-alt mr-1"></i>${mission.localisation}</div>` : ''}
+                            </div>
+                            <div class="ml-4 flex flex-col gap-2">
+                                <span class="px-3 py-1 ${statutClass} text-white rounded text-xs">${mission.statut || 'en_attente'}</span>
+                                ${mission.statut !== 'termine' ? `
+                                    <button onclick="demarrerMission(${mission.id})" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded text-sm">
+                                        <i class="fas fa-play mr-1"></i>Démarrer
+                                    </button>
+                                ` : ''}
+                            </div>
+                        </div>
+                    `;
+                    listContainer.appendChild(div);
+                });
+            } catch (error) {
+                console.error('Erreur chargement missions:', error);
+                showNotification('Erreur lors du chargement des missions', 'error');
+            }
         }
         
         function scannerQR() {
-            // Simuler un scan QR
+            const modal = document.getElementById('scannerQRModal');
+            modal.classList.remove('hidden');
+            document.getElementById('qrResult').classList.add('hidden');
+            document.getElementById('qrCodeInput').value = '';
+        }
+        
+        function demarrerScanQR() {
+            // Simuler un scan QR (dans une vraie app, utiliser une librairie comme html5-qrcode)
+            showNotification('Démarrage du scan QR...', 'info');
             setTimeout(() => {
-                showNotification('QR scanné: Commerçant MBANG Pierre - Emplacement E-47 valide', 'success');
+                const qrResult = document.getElementById('qrResult');
+                const qrResultContent = document.getElementById('qrResultContent');
+                qrResult.classList.remove('hidden');
+                qrResultContent.innerHTML = `
+                    <p><strong>Commerçant:</strong> MBANG Pierre</p>
+                    <p><strong>Emplacement:</strong> E-47</p>
+                    <p><strong>Statut:</strong> Valide</p>
+                    <p><strong>Date:</strong> ${new Date().toLocaleDateString('fr-FR')}</p>
+                `;
+                showNotification('QR Code scanné avec succès', 'success');
             }, 1500);
         }
         
+        function validerQRManuel() {
+            const code = document.getElementById('qrCodeInput').value.trim();
+            if (!code) {
+                showNotification('Veuillez saisir un code QR', 'error');
+                return;
+            }
+            
+            // Simuler la validation
+            const qrResult = document.getElementById('qrResult');
+            const qrResultContent = document.getElementById('qrResultContent');
+            qrResult.classList.remove('hidden');
+            qrResultContent.innerHTML = `
+                <p><strong>Code QR:</strong> ${code}</p>
+                <p><strong>Statut:</strong> Validé</p>
+                <p><strong>Date:</strong> ${new Date().toLocaleDateString('fr-FR')}</p>
+            `;
+            showNotification('Code QR validé avec succès', 'success');
+        }
+        
         function redigerRapport() {
-            showNotification('Template de rapport chargé - Saisie vocale activée', 'info');
+            const modal = document.getElementById('redigerRapportModal');
+            modal.classList.remove('hidden');
+            // Initialiser avec la date d'aujourd'hui
+            document.getElementById('rapportDate').value = new Date().toISOString().split('T')[0];
+            document.getElementById('rapportTitre').value = '';
+            document.getElementById('rapportContenu').value = '';
+        }
+        
+        async function enregistrerRapport() {
+            const type = document.getElementById('rapportTypeAgent').value;
+            const titre = document.getElementById('rapportTitre').value;
+            const date = document.getElementById('rapportDate').value;
+            const contenu = document.getElementById('rapportContenu').value;
+            
+            if (!titre || !contenu) {
+                showNotification('Veuillez remplir tous les champs obligatoires', 'error');
+                return;
+            }
+            
+            try {
+                // Créer une demande de type rapport
+                const result = await apiCall('demandes', 'POST', {
+                    type: 'autres',
+                    service: `Rapport ${type}`,
+                    description: contenu,
+                    motif: titre,
+                    date_creation: date
+                });
+                
+                if (result.success) {
+                    showNotification('Rapport enregistré avec succès', 'success');
+                    closeModal('redigerRapportModal');
+                }
+            } catch (error) {
+                showNotification('Erreur lors de l\'enregistrement: ' + error.message, 'error');
+            }
         }
         
         async function demarrerMission(missionId) {
