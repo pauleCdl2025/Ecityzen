@@ -1090,6 +1090,17 @@
             border: 2px solid #e5e7eb;
             position: relative;
             background-color: #f3f4f6;
+            min-height: 300px;
+            display: block;
+            visibility: visible;
+        }
+        
+        #registerMap {
+            height: 300px !important;
+            min-height: 300px !important;
+            width: 100% !important;
+            display: block !important;
+            visibility: visible !important;
         }
         
         .map-container:empty::before {
@@ -4096,6 +4107,12 @@
                 setTimeout(() => {
                     const mapContainer = document.getElementById('registerMap');
                     if (mapContainer) {
+                        // S'assurer que le conteneur est visible
+                        mapContainer.style.display = 'block';
+                        mapContainer.style.visibility = 'visible';
+                        mapContainer.style.height = '300px';
+                        mapContainer.style.minHeight = '300px';
+                        
                         // Vérifier qu'il n'y a pas déjà une carte initialisée
                         if (mapContainer._leaflet_id && !registerMap) {
                             delete mapContainer._leaflet_id;
@@ -4108,14 +4125,22 @@
                                 if (registerMap) {
                                     setTimeout(() => {
                                         registerMap.invalidateSize();
-                                    }, 100);
+                                        registerMap.whenReady(() => {
+                                            registerMap.invalidateSize();
+                                        });
+                                    }, 200);
                                 }
-                            }, 100);
+                            }, 200);
                         } else {
-                            registerMap.invalidateSize();
+                            setTimeout(() => {
+                                registerMap.invalidateSize();
+                                registerMap.whenReady(() => {
+                                    registerMap.invalidateSize();
+                                });
+                            }, 200);
                         }
                     }
-                }, 100);
+                }, 200);
             }
         }
         
@@ -4126,6 +4151,13 @@
                 console.error('Conteneur registerMap non trouvé');
                 return;
             }
+            
+            // S'assurer que le conteneur est visible et a une hauteur
+            mapContainer.style.display = 'block';
+            mapContainer.style.visibility = 'visible';
+            mapContainer.style.height = '300px';
+            mapContainer.style.minHeight = '300px';
+            mapContainer.style.width = '100%';
             
             // Vérifier que les constantes sont définies
             if (typeof GABON_CENTER === 'undefined' || !Array.isArray(GABON_CENTER) || GABON_CENTER.length !== 2) {
@@ -4161,6 +4193,12 @@
             // Vider le conteneur pour éviter les conflits
             mapContainer.innerHTML = '';
             
+            // Vérifier que Leaflet est chargé
+            if (typeof L === 'undefined') {
+                console.error('Leaflet n\'est pas chargé');
+                return;
+            }
+            
             // Créer la carte centrée sur le Gabon
             try {
                 registerMap = L.map('registerMap', {
@@ -4177,10 +4215,16 @@
             }
             
             // Ajouter la couche de tuiles OpenStreetMap
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            const tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '© OpenStreetMap contributors',
                 maxZoom: 18
             }).addTo(registerMap);
+            
+            // Forcer le redessin des tuiles
+            registerMap.whenReady(() => {
+                tileLayer.redraw();
+                registerMap.invalidateSize();
+            });
             
             // Marqueur par défaut sur Libreville
             registerMarker = L.marker(GABON_CENTER, {
@@ -4202,8 +4246,11 @@
                 updateRegisterLocation(lat, lng);
             });
             
-            // Initialiser avec Libreville
-            updateRegisterLocation(GABON_CENTER[0], GABON_CENTER[1]);
+            // Initialiser avec Libreville après un court délai pour s'assurer que la carte est prête
+            setTimeout(() => {
+                registerMap.invalidateSize();
+                updateRegisterLocation(GABON_CENTER[0], GABON_CENTER[1]);
+            }, 300);
         }
         
         // Mettre à jour la localisation dans le formulaire d'inscription
@@ -4442,6 +4489,12 @@
                     const mapContainer = document.getElementById('registerMap');
                     if (!mapContainer) return;
                     
+                    // S'assurer que le conteneur est visible
+                    mapContainer.style.display = 'block';
+                    mapContainer.style.visibility = 'visible';
+                    mapContainer.style.height = '300px';
+                    mapContainer.style.minHeight = '300px';
+                    
                     // Vérifier qu'il n'y a pas déjà une carte initialisée
                     if (mapContainer._leaflet_id) {
                         delete mapContainer._leaflet_id;
@@ -4454,16 +4507,20 @@
                         setTimeout(() => {
                             if (registerMap) {
                                 registerMap.invalidateSize();
+                                registerMap.whenReady(() => {
+                                    registerMap.invalidateSize();
+                                });
                             }
-                        }, 100);
+                        }, 300);
                     } else {
-                        registerMap.invalidateSize();
-                        // Recalculer à nouveau après un court délai
                         setTimeout(() => {
                             registerMap.invalidateSize();
-                        }, 200);
+                            registerMap.whenReady(() => {
+                                registerMap.invalidateSize();
+                            });
+                        }, 300);
                     }
-                }, 200);
+                }, 300);
             } else {
                 localisationContainer.classList.add('hidden');
                 entrepriseContainer.classList.add('hidden');
