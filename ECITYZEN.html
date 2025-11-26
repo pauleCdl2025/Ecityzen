@@ -7307,10 +7307,69 @@
             try {
                 const result = await apiCall('emplacements.php').catch(() => ({ data: [] }));
                 const emplacements = result.data || [];
-                const emplacementsDisponibles = emplacements.filter(e => e.statut === 'disponible' || !e.statut);
+                
+                // Si aucun emplacement dans la base, créer des emplacements de démonstration pour la visualisation
+                if (emplacements.length === 0) {
+                    // Créer quelques emplacements de démonstration (non sauvegardés, juste pour affichage)
+                    const emplacementsDemo = [
+                        { id: 1, marche: 'Marché Central', emplacement: 'A-01', prix_mensuel: 50000, statut: 'disponible' },
+                        { id: 2, marche: 'Marché Central', emplacement: 'A-02', prix_mensuel: 50000, statut: 'disponible' },
+                        { id: 3, marche: 'Marché de Port-Gentil', emplacement: 'B-15', prix_mensuel: 45000, statut: 'disponible' },
+                        { id: 4, marche: 'Marché de Mont-Bouët', emplacement: 'C-08', prix_mensuel: 40000, statut: 'disponible' },
+                        { id: 5, marche: 'Marché de Nkembo', emplacement: 'D-22', prix_mensuel: 35000, statut: 'disponible' }
+                    ];
+                    
+                    const modal = document.getElementById('reservationEmplacementModal');
+                    if (modal) {
+                        modal.classList.remove('hidden');
+                        const listContainer = document.getElementById('emplacementsDisponiblesList');
+                        if (listContainer) {
+                            listContainer.innerHTML = '<div class="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-800"><i class="fas fa-info-circle mr-2"></i>Ces emplacements sont à titre indicatif. Contactez l\'administration pour finaliser votre réservation.</div>';
+                            
+                            emplacementsDemo.forEach(emp => {
+                                const div = document.createElement('div');
+                                div.className = 'p-3 border rounded-lg mb-2';
+                                div.innerHTML = `
+                                    <div class="flex justify-between items-center">
+                                        <div>
+                                            <div class="font-medium">${emp.marche} - ${emp.emplacement}</div>
+                                            <div class="text-sm text-gray-600">${parseFloat(emp.prix_mensuel).toLocaleString('fr-FR')} FCFA/mois</div>
+                                        </div>
+                                        <button onclick="demanderReservationEmplacement('${emp.marche}', '${emp.emplacement}')" class="bg-blue-500 text-white px-4 py-2 rounded text-sm">
+                                            Demander
+                                        </button>
+                                    </div>
+                                `;
+                                listContainer.appendChild(div);
+                            });
+                        }
+                    }
+                    return;
+                }
+                
+                const emplacementsDisponibles = emplacements.filter(e => e.statut === 'disponible' || !e.statut || e.statut === null);
                 
                 if (emplacementsDisponibles.length === 0) {
-                    showNotification('Aucun emplacement disponible pour le moment', 'info');
+                    // Afficher la modale avec un message informatif
+                    const modal = document.getElementById('reservationEmplacementModal');
+                    if (modal) {
+                        modal.classList.remove('hidden');
+                        const listContainer = document.getElementById('emplacementsDisponiblesList');
+                        if (listContainer) {
+                            listContainer.innerHTML = `
+                                <div class="text-center py-8">
+                                    <i class="fas fa-store text-4xl text-gray-400 mb-4"></i>
+                                    <p class="text-gray-600 mb-4">Aucun emplacement disponible pour le moment</p>
+                                    <p class="text-sm text-gray-500 mb-4">Contactez l'administration pour plus d'informations</p>
+                                    <button onclick="showAssistance()" class="bg-blue-500 text-white px-6 py-2 rounded-lg">
+                                        <i class="fas fa-headset mr-2"></i>Contacter l'assistance
+                                    </button>
+                                </div>
+                            `;
+                        }
+                    } else {
+                        showNotification('Aucun emplacement disponible. Contactez l\'administration.', 'info');
+                    }
                     return;
                 }
                 
@@ -7365,6 +7424,28 @@
                     }
                 } catch (error) {
                     showNotification('Erreur lors de la réservation: ' + error.message, 'error');
+                }
+            }
+        }
+        
+        async function demanderReservationEmplacement(marche, emplacement) {
+            if (confirm(`Demander la réservation de l'emplacement ${emplacement} au marché ${marche} ?\n\nNote: Vous devrez finaliser cette réservation auprès de l'administration.`)) {
+                try {
+                    // Créer une demande de réservation
+                    const result = await apiCall('demandes', 'POST', {
+                        type: 'autres',
+                        service: 'Réservation emplacement marché',
+                        description: `Demande de réservation pour l'emplacement ${emplacement} au marché ${marche}`,
+                        motif: `Réservation ${emplacement} - ${marche}`
+                    });
+                    
+                    if (result.success) {
+                        showNotification('Demande de réservation envoyée. L\'administration vous contactera pour finaliser.', 'success');
+                        closeModal('reservationEmplacementModal');
+                        await loadCommercantData();
+                    }
+                } catch (error) {
+                    showNotification('Erreur lors de la demande: ' + error.message, 'error');
                 }
             }
         }
