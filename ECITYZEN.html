@@ -1318,6 +1318,17 @@
         .demande-modal-scroll::-webkit-scrollbar-thumb:hover {
             background-color: #2d5aa0;
         }
+        
+        /* Styles pour les inputs de la modale demande avec couleurs Gabon */
+        .demande-input:focus {
+            outline: none;
+            border-color: var(--gabon-blue) !important;
+            box-shadow: 0 0 0 2px rgba(62, 117, 196, 0.2);
+        }
+        
+        .demande-input {
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -2363,7 +2374,7 @@
                 <form id="demandeForm" enctype="multipart/form-data">
                     <div class="mb-3">
                         <label class="block text-xs font-medium mb-1 text-gray-700">Type de service</label>
-                        <select id="demandeType" class="w-full border border-gray-300 rounded p-2 text-sm focus:ring-2 focus:border-transparent" style="focus:ring-color: var(--gabon-blue);">
+                        <select id="demandeType" class="w-full border rounded p-2 text-sm demande-input" style="border-color: #d1d5db;">
                             <option value="">Sélectionner...</option>
                             <option value="etat-civil">📄 État Civil</option>
                             <option value="cadastre-urbanisme">🏗️ Cadastre & Urbanisme</option>
@@ -2376,14 +2387,14 @@
                     
                     <div class="mb-3">
                         <label class="block text-xs font-medium mb-1 text-gray-700">Service spécifique</label>
-                        <select id="demandeService" class="w-full border border-gray-300 rounded p-2 text-sm focus:ring-2 focus:border-transparent" style="focus:ring-color: var(--gabon-blue);">
+                        <select id="demandeService" class="w-full border rounded p-2 text-sm demande-input" style="border-color: #d1d5db;">
                             <option value="">Choisir d'abord le type...</option>
                         </select>
                     </div>
                     
                     <div class="mb-3">
                         <label class="block text-xs font-medium mb-1 text-gray-700">Motif/Utilisation</label>
-                        <textarea id="demandeMotif" class="w-full border border-gray-300 rounded p-2 text-sm focus:ring-2 focus:border-transparent" style="focus:ring-color: var(--gabon-blue);" rows="2" placeholder="Pour quelle utilisation ?"></textarea>
+                        <textarea id="demandeMotif" class="w-full border rounded p-2 text-sm demande-input" style="border-color: #d1d5db;" rows="2" placeholder="Pour quelle utilisation ?"></textarea>
                     </div>
                     
                     <div class="mb-3">
