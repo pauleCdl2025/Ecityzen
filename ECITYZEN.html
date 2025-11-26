@@ -1848,6 +1848,63 @@
                 </button>
             </div>
             
+            <!-- Services municipaux -->
+            <div class="mt-6 bg-white rounded-lg p-6 shadow">
+                <h2 class="text-xl font-bold mb-4">Services clés de l'hôtel de ville</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div class="border-l-4 rounded-lg p-4 bg-gray-50" style="border-color: var(--gabon-green);">
+                        <h3 class="font-semibold text-lg mb-2 text-green-700 flex items-center gap-2">
+                            <i class="fas fa-id-card"></i>État civil
+                        </h3>
+                        <ul class="text-sm text-gray-700 space-y-1">
+                            <li>• Actes de naissance et de décès</li>
+                            <li>• Retraite, résidence, attestations</li>
+                            <li>• Légalisations et changements d'état civil</li>
+                        </ul>
+                    </div>
+                    <div class="border-l-4 rounded-lg p-4 bg-gray-50" style="border-color: var(--gabon-yellow);">
+                        <h3 class="font-semibold text-lg mb-2 text-yellow-700 flex items-center gap-2">
+                            <i class="fas fa-city"></i>Cadastre & Urbanisme
+                        </h3>
+                        <ul class="text-sm text-gray-700 space-y-1">
+                            <li>• Permis de construire</li>
+                            <li>• Permis de démolir</li>
+                            <li>• Occupation du domaine communal (ODDC)</li>
+                        </ul>
+                    </div>
+                    <div class="border-l-4 rounded-lg p-4 bg-gray-50" style="border-color: var(--gabon-blue);">
+                        <h3 class="font-semibold text-lg mb-2 text-blue-700 flex items-center gap-2">
+                            <i class="fas fa-hands-helping"></i>Service social
+                        </h3>
+                        <ul class="text-sm text-gray-700 space-y-1">
+                            <li>• Aides solidaires individuelles</li>
+                            <li>• Programmes collectifs</li>
+                            <li>• Accompagnement d'urgence</li>
+                        </ul>
+                    </div>
+                    <div class="border-l-4 rounded-lg p-4 bg-gray-50" style="border-color: var(--gabon-blue);">
+                        <h3 class="font-semibold text-lg mb-2 text-blue-700 flex items-center gap-2">
+                            <i class="fas fa-road"></i>Voiries
+                        </h3>
+                        <ul class="text-sm text-gray-700 space-y-1">
+                            <li>• Contrôles quotidiens</li>
+                            <li>• Actions ponctuelles planifiées</li>
+                            <li>• Interventions sur interpellation</li>
+                        </ul>
+                    </div>
+                    <div class="border-l-4 rounded-lg p-4 bg-gray-50" style="border-color: var(--gabon-green);">
+                        <h3 class="font-semibold text-lg mb-2 text-green-700 flex items-center gap-2">
+                            <i class="fas fa-coins"></i>Finances municipales
+                        </h3>
+                        <ul class="text-sm text-gray-700 space-y-1">
+                            <li>• Transport et logistique municipale</li>
+                            <li>• Paie des agents & régies</li>
+                            <li>• Ordres de recettes & fournisseurs</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
             <!-- Navigation -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
                 <!-- Assignation Demandes/Signalements -->
@@ -2228,10 +2285,11 @@
                     <select id="demandeType" class="w-full border rounded p-2">
                         <option value="">Sélectionner...</option>
                         <option value="etat-civil">📄 État Civil</option>
-                        <option value="hopital">🏥 Hôpital</option>
-                        <option value="urbanisme">🏗️ Urbanisme</option>
-                        <option value="commerce">🏪 Commerce</option>
-                        <option value="divers">📋 Services Divers</option>
+                        <option value="cadastre-urbanisme">🏗️ Cadastre & Urbanisme</option>
+                        <option value="service-social">🤝 Service Social</option>
+                        <option value="voiries">🚧 Voiries & Interventions</option>
+                        <option value="finances">💼 Finances Municipales</option>
+                        <option value="hopital">🏥 Services Hospitaliers</option>
                     </select>
                 </div>
                 
@@ -3867,22 +3925,74 @@
             'etat-civil': {
                 services: [
                     'Acte de Naissance',
-                    'Acte de Mariage',
                     'Acte de Décès',
-                    'Certificat de résidence',
-                    'Attestation de vie',
-                    'Légalisation de signature',
-                    'Changement d\'état civil'
+                    'Attestation / Certificat de Retraite',
+                    'Certificat de Résidence',
+                    'Autres démarches (Attestation de vie, légalisation, changement d\'état civil)'
                 ],
-                tarifs: [5000, 15000, 8000, 3000, 2000, 10000, 25000],
+                tarifs: [5000, 8000, 6000, 3000, 7000],
                 documents: [
                     'Pièce d\'identité + Photocopie (déclaration dans les 3 jours après accouchement, ou jugement supplétif si délai dépassé)',
-                    'Actes de naissance des deux époux + Pièce d\'identité + Certificat médical prénuptial + 2 témoins majeurs',
-                    'Certificat médical de décès + Pièce d\'identité du défunt + Acte de naissance du défunt (déclaration et établissement de l\'acte)',
-                    'Justificatif de domicile + Photocopie', 
-                    'Certificat médical récent',
-                    'Document à légaliser original',
-                    'Acte de naissance + Pièce d\'identité'
+                    'Certificat médical de décès + Pièce d\'identité du défunt + Acte de naissance du défunt',
+                    'Bulletin de pension + Pièce d\'identité + Justificatifs de services',
+                    'Justificatif de domicile + Facture récente + Pièce d\'identité',
+                    'Documents originaux à légaliser + Acte de naissance + Pièce d\'identité'
+                ]
+            },
+            'cadastre-urbanisme': {
+                services: [
+                    'Permis de Construire',
+                    'Permis de Démolir',
+                    'ODDC (Occupation du Domaine Communal)'
+                ],
+                tarifs: [45000, 30000, 20000],
+                documents: [
+                    'Plans architecturaux visés + Étude géotechnique + Certificat de propriété',
+                    'Rapport technique + Étude d\'impact + Plans de démolition',
+                    'Plan d\'implantation + Description des activités + Attestation d\'assurance'
+                ]
+            },
+            'service-social': {
+                services: [
+                    'Demande d\'aide solidaire individuelle',
+                    'Demande d\'aide solidaire collective',
+                    'Accompagnement social d\'urgence'
+                ],
+                tarifs: [0, 0, 0],
+                documents: [
+                    'Lettre motivée + Pièce d\'identité + Justificatifs de revenus',
+                    'Lettre des représentants + Liste des bénéficiaires + Budget prévisionnel',
+                    'Rapport d\'assistante sociale + Pièce d\'identité + Justificatifs d\'urgence'
+                ]
+            },
+            'voiries': {
+                services: [
+                    'Contrôles et visites quotidiennes',
+                    'Actions ponctuelles planifiées',
+                    'Interventions sur interpellation/dénonciation'
+                ],
+                tarifs: [0, 0, 0],
+                documents: [
+                    'Planning de tournée + Liste des axes à inspecter',
+                    'Ordre de mission + Fiches techniques des travaux',
+                    'Lettre d\'interpellation / signalement citoyen + Coordonnées du site'
+                ]
+            },
+            'finances': {
+                services: [
+                    'Gestion du transport municipal',
+                    'Traitement de la paie des agents',
+                    'Gestion des régies municipales',
+                    'Ordres de recettes',
+                    'Traitement des fournisseurs'
+                ],
+                tarifs: [0, 0, 0, 0, 0],
+                documents: [
+                    'Planning des navettes + Engagement de dépense + Liste du personnel',
+                    'États de présence + Fiche agent + Relevés bancaires',
+                    'Registres des régies + Rapports de caisse + Pièces justificatives',
+                    'Pièces comptables + Engagement budgétaire + Visa du contrôleur',
+                    'Bon de commande + Facture + Certificat de service fait'
                 ]
             },
             'hopital': {
@@ -3902,57 +4012,6 @@
                     'Rapport médical de naissance signé par médecin',
                     'Rapport médical de décès signé par médecin',
                     'Justificatif d\'hospitalisation + Pièce d\'identité patient'
-                ]
-            },
-            'urbanisme': {
-                services: [
-                    'Permis de construire',
-                    'Certificat d\'urbanisme',
-                    'Autorisation de voirie',
-                    'Certificat de conformité',
-                    'Déclaration de travaux'
-                ],
-                tarifs: [45000, 25000, 15000, 35000, 20000],
-                documents: [
-                    'Plan architectural + Étude géotechnique',
-                    'Certificat de propriété + Plan parcelle',
-                    'Demande + Plan d\'occupation',
-                    'Permis + Photos état final',
-                    'Descriptif travaux + Plans'
-                ]
-            },
-            'commerce': {
-                services: [
-                    'Licence commerciale',
-                    'Autorisation d\'ouverture',
-                    'Certificat de non-faillite',
-                    'Attestation fiscale',
-                    'Permis de spectacle'
-                ],
-                tarifs: [125000, 75000, 15000, 25000, 50000],
-                documents: [
-                    'Registre commerce + Pièce d\'identité',
-                    'Bail + Plan local + Autorisation sanitaire',
-                    'Attestation bancaire + Bilan comptable',
-                    'Déclarations fiscales + Quittances',
-                    'Programme + Autorisation sécurité'
-                ]
-            },
-            'divers': {
-                services: [
-                    'Légalisation de documents',
-                    'Attestation diverses',
-                    'Certificats administratifs',
-                    'Autorisations temporaires',
-                    'Copies certifiées conformes'
-                ],
-                tarifs: [10000, 5000, 8000, 15000, 3000],
-                documents: [
-                    'Documents originaux à légaliser',
-                    'Justificatifs selon le type',
-                    'Pièce d\'identité + Justificatifs',
-                    'Demande motivée + Plans si nécessaire',
-                    'Documents originaux + Pièce d\'identité'
                 ]
             }
         };
