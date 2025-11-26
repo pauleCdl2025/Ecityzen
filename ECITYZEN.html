@@ -2331,74 +2331,76 @@
     </div>
 
     <!-- Modale Nouvelle Demande -->
-    <div id="demandeModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" style="padding-top: 80px;">
-        <div class="bg-white rounded-lg p-4 md:p-6 max-w-2xl w-full mx-2 md:mx-4 max-h-[90vh] overflow-y-auto">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-bold">Nouvelle Demande Administrative</h2>
-                <button onclick="closeModal('demandeModal')" class="text-gray-500 hover:text-gray-700 text-2xl leading-none">
+    <div id="demandeModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" style="padding-top: 60px; padding-bottom: 20px;">
+        <div class="bg-white rounded-lg p-3 md:p-4 max-w-xl w-full mx-2 md:mx-4 max-h-[85vh] flex flex-col">
+            <div class="flex justify-between items-center mb-3 pb-2 border-b">
+                <h2 class="text-lg font-semibold">Nouvelle Demande Administrative</h2>
+                <button onclick="closeModal('demandeModal')" class="text-gray-500 hover:text-gray-700 text-xl leading-none">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
             
-            <form id="demandeForm" enctype="multipart/form-data">
-                <div class="mb-4">
-                    <label class="block text-sm font-medium mb-2">Type de service</label>
-                    <select id="demandeType" class="w-full border rounded p-2">
-                        <option value="">Sélectionner...</option>
-                        <option value="etat-civil">📄 État Civil</option>
-                        <option value="cadastre-urbanisme">🏗️ Cadastre & Urbanisme</option>
-                        <option value="service-social">🤝 Service Social</option>
-                        <option value="voiries">🚧 Voiries & Interventions</option>
-                        <option value="finances">💼 Finances Municipales</option>
-                        <option value="hopital">🏥 Services Hospitaliers</option>
-                    </select>
-                </div>
-                
-                <div class="mb-4">
-                    <label class="block text-sm font-medium mb-2">Service spécifique</label>
-                    <select id="demandeService" class="w-full border rounded p-2">
-                        <option value="">Choisir d'abord le type...</option>
-                    </select>
-                </div>
-                
-                <div class="mb-4">
-                    <label class="block text-sm font-medium mb-2">Motif/Utilisation</label>
-                    <textarea id="demandeMotif" class="w-full border rounded p-2" rows="2" placeholder="Pour quelle utilisation ?"></textarea>
-                </div>
-                
-                <div class="mb-4">
-                    <label class="block text-sm font-medium mb-2">Documents requis <span class="text-red-500">*</span></label>
-                    <div id="documentsRequis" class="text-sm text-gray-600 bg-gray-50 p-3 rounded mb-2">
-                        Sélectionnez un service pour voir les documents requis
+            <div class="flex-1 overflow-y-auto pr-2" style="scrollbar-width: thin; scrollbar-color: #cbd5e0 #f7fafc;">
+                <form id="demandeForm" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label class="block text-xs font-medium mb-1 text-gray-700">Type de service</label>
+                        <select id="demandeType" class="w-full border border-gray-300 rounded p-2 text-sm focus:ring-1 focus:ring-blue-400 focus:border-blue-400">
+                            <option value="">Sélectionner...</option>
+                            <option value="etat-civil">📄 État Civil</option>
+                            <option value="cadastre-urbanisme">🏗️ Cadastre & Urbanisme</option>
+                            <option value="service-social">🤝 Service Social</option>
+                            <option value="voiries">🚧 Voiries & Interventions</option>
+                            <option value="finances">💼 Finances Municipales</option>
+                            <option value="hopital">🏥 Services Hospitaliers</option>
+                        </select>
                     </div>
-                    <div id="infoSpeciale" class="text-xs text-blue-600 mt-2 hidden">
-                        <i class="fas fa-info-circle mr-1"></i>
-                        <span id="infoSpecialeText"></span>
+                    
+                    <div class="mb-3">
+                        <label class="block text-xs font-medium mb-1 text-gray-700">Service spécifique</label>
+                        <select id="demandeService" class="w-full border border-gray-300 rounded p-2 text-sm focus:ring-1 focus:ring-blue-400 focus:border-blue-400">
+                            <option value="">Choisir d'abord le type...</option>
+                        </select>
                     </div>
-                    <div id="documentsUploadContainer" class="mt-3 space-y-2 hidden">
-                        <p class="text-xs text-red-600 font-semibold mb-2">
-                            <i class="fas fa-exclamation-triangle mr-1"></i>
-                            Tous les documents sont obligatoires
-                        </p>
+                    
+                    <div class="mb-3">
+                        <label class="block text-xs font-medium mb-1 text-gray-700">Motif/Utilisation</label>
+                        <textarea id="demandeMotif" class="w-full border border-gray-300 rounded p-2 text-sm focus:ring-1 focus:ring-blue-400 focus:border-blue-400" rows="2" placeholder="Pour quelle utilisation ?"></textarea>
                     </div>
-                </div>
-                
-                <div class="mb-4">
-                    <label class="block text-sm font-medium mb-2">Coût estimé</label>
-                    <div id="coutEstime" class="text-lg font-bold text-green-600">
-                        - FCFA
+                    
+                    <div class="mb-3">
+                        <label class="block text-xs font-medium mb-1 text-gray-700">Documents requis <span class="text-red-500">*</span></label>
+                        <div id="documentsRequis" class="text-xs text-gray-600 bg-gray-50 p-2 rounded mb-2 border border-gray-200">
+                            Sélectionnez un service pour voir les documents requis
+                        </div>
+                        <div id="infoSpeciale" class="text-xs text-blue-700 bg-blue-50 border border-blue-200 p-2 rounded mt-2 hidden">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            <span id="infoSpecialeText"></span>
+                        </div>
+                        <div id="documentsUploadContainer" class="mt-2 space-y-2 hidden">
+                            <p class="text-xs text-red-700 font-medium mb-1 bg-red-50 border border-red-200 p-2 rounded">
+                                <i class="fas fa-exclamation-triangle mr-1"></i>
+                                Tous les documents sont obligatoires
+                            </p>
+                        </div>
                     </div>
-                </div>
-                
-                <div class="flex gap-3">
-                    <button type="button" onclick="closeModal('demandeModal')" class="flex-1 bg-gray-500 text-white p-2 rounded">
-                        Annuler
-                    </button>
-                    <button type="submit" class="flex-1 bg-blue-500 text-white p-2 rounded">
-                        Soumettre
-                    </button>
-                </div>
-            </form>
+                    
+                    <div class="mb-3 pb-2 border-b">
+                        <label class="block text-xs font-medium mb-1 text-gray-700">Coût estimé</label>
+                        <div id="coutEstime" class="text-base font-semibold text-green-700">
+                            - FCFA
+                        </div>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="flex gap-2 pt-3 border-t mt-2">
+                <button type="button" onclick="closeModal('demandeModal')" class="flex-1 bg-gray-400 hover:bg-gray-500 text-white text-sm py-2 px-3 rounded transition-colors">
+                    Annuler
+                </button>
+                <button type="button" onclick="document.getElementById('demandeForm').dispatchEvent(new Event('submit'))" class="flex-1 bg-blue-400 hover:bg-blue-500 text-white text-sm py-2 px-3 rounded transition-colors">
+                    Soumettre
+                </button>
+            </div>
         </div>
     </div>
 
