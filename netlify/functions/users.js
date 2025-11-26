@@ -52,6 +52,10 @@ exports.handler = async (event, context) => {
       // Ignorer si pas de body ou erreur de parsing
     }
   }
+  
+  // Debug: logger les valeurs récupérées
+  console.log('Users function - userId:', userId, 'userRole:', userRole);
+  console.log('Query params:', event.queryStringParameters);
 
   // GET: Récupérer la liste des utilisateurs (managers/superadmins seulement)
   if (event.httpMethod === 'GET') {

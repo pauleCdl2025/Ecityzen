@@ -147,13 +147,14 @@ exports.handler = async (event, context) => {
       };
     } catch (error) {
       console.error('Erreur récupération signalements:', error);
+      console.error('Détails erreur:', error.message, error.stack);
       return {
         statusCode: 500,
         headers: {
           'Content-Type': 'application/json',
           'Access-Control-Allow-Origin': '*'
         },
-        body: JSON.stringify({ success: false, message: 'Erreur serveur' })
+        body: JSON.stringify({ success: false, message: 'Erreur serveur: ' + (error.message || 'Erreur inconnue') })
       };
     }
   }

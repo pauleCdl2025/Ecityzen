@@ -10,10 +10,15 @@ async function enrichWithUserNames(supabase, items) {
   
   if (userIds.size === 0) return items;
   
-  const { data: users } = await supabase
+  const { data: users, error } = await supabase
     .from('utilisateurs')
     .select('id, nom')
     .in('id', Array.from(userIds));
+  
+  if (error) {
+    console.error('Erreur récupération utilisateurs:', error);
+    return items; // Retourner les items sans enrichissement en cas d'erreur
+  }
   
   const userMap = {};
   if (users) {
@@ -134,10 +139,11 @@ exports.handler = async (event, context) => {
       };
     } catch (error) {
       console.error('Erreur récupération demandes:', error);
+      console.error('Détails erreur:', error.message, error.stack);
       return {
         statusCode: 500,
         headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
-        body: JSON.stringify({ success: false, message: 'Erreur serveur' })
+        body: JSON.stringify({ success: false, message: 'Erreur serveur: ' + (error.message || 'Erreur inconnue') })
       };
     }
   }
