@@ -6655,6 +6655,7 @@
             serviceSelect.innerHTML = '<option value="">Sélectionner...</option>';
             documentsDiv.textContent = 'Sélectionnez un service pour voir les documents requis';
             coutDiv.textContent = '- FCFA';
+            coutDiv.style.color = 'var(--gabon-green)';
             documentsUploadContainer.innerHTML = '';
             documentsUploadContainer.classList.add('hidden');
             
@@ -6684,6 +6685,8 @@
                 const documentsText = servicesAdmin[type].documents[serviceIndex];
                 documentsDiv.textContent = documentsText;
                 coutDiv.textContent = servicesAdmin[type].tarifs[serviceIndex].toLocaleString() + ' FCFA';
+                // S'assurer que la couleur verte du Gabon est maintenue
+                coutDiv.style.color = 'var(--gabon-green)';
                 
                 // Afficher les informations spéciales selon le service
                 if (serviceName.includes('Acte de Naissance') || serviceName.includes('Naissance')) {
@@ -6881,7 +6884,9 @@
                 document.getElementById('demandeForm').reset();
                 document.getElementById('demandeService').innerHTML = '<option value="">Choisir d\'abord le type...</option>';
                 document.getElementById('documentsRequis').textContent = 'Sélectionnez un service pour voir les documents requis';
-                document.getElementById('coutEstime').textContent = '- FCFA';
+                const coutEstimeEl = document.getElementById('coutEstime');
+                coutEstimeEl.textContent = '- FCFA';
+                coutEstimeEl.style.color = 'var(--gabon-green)';
                 documentsUploadContainer.innerHTML = '';
                 documentsUploadContainer.classList.add('hidden');
                 
