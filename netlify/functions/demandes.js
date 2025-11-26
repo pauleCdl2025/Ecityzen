@@ -68,23 +68,23 @@ exports.handler = async (event, context) => {
   let userId = null;
   let userRole = null;
   
-  try {
-    if (event.body) {
+  // Pour GET, récupérer d'abord depuis query string
+  if (event.httpMethod === 'GET' && event.queryStringParameters) {
+    userId = event.queryStringParameters._user_id || null;
+    userRole = event.queryStringParameters._user_role || null;
+  }
+  
+  // Sinon, essayer depuis le body (pour POST/PUT)
+  if (!userId && event.body) {
+    try {
       const body = JSON.parse(event.body);
       userId = body._user_id || null;
       userRole = body._user_role || null;
-    }
-  } catch (e) {}
+    } catch (e) {}
+  }
 
   // GET: Récupérer les demandes
   if (event.httpMethod === 'GET') {
-    // Pour GET, récupérer userId et userRole depuis query string
-    if (!userId && event.queryStringParameters?._user_id) {
-      userId = event.queryStringParameters._user_id;
-    }
-    if (!userRole && event.queryStringParameters?._user_role) {
-      userRole = event.queryStringParameters._user_role;
-    }
     
     try {
       let query = supabase.from('demandes').select('*');
