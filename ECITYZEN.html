@@ -1834,8 +1834,24 @@
                 </div>
             </div>
             
+            <!-- Alerte inscriptions agents -->
+            <div id="managerAgentsAlert" class="mt-6 hidden bg-orange-50 border-l-4 border-orange-500 rounded-lg p-4 flex flex-col md:flex-row gap-3 md:items-center md:justify-between">
+                <div>
+                    <p class="text-orange-700 font-semibold text-lg flex items-center gap-2">
+                        <i class="fas fa-user-clock"></i>
+                        Inscriptions d'agents en attente
+                    </p>
+                    <p class="text-sm text-orange-700" id="managerAgentsAlertText">
+                        <span id="managerAgentsAlertCount">0</span> dossier(s) doivent être validés avant activation.
+                    </p>
+                </div>
+                <button onclick="validerInscriptionsAgents()" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-semibold transition-colors">
+                    Examiner maintenant
+                </button>
+            </div>
+            
             <!-- Navigation -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
                 <!-- Assignation Demandes/Signalements -->
                 <div class="bg-white rounded-lg p-6 shadow">
                     <h2 class="text-xl font-bold mb-4">Assignation</h2>
@@ -3078,7 +3094,10 @@
 
     <!-- Modal Planification Équipe (Manager) -->
     <div id="planificationEquipeModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-y-auto">
+        <div class="bg-white rounded-xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-y-auto relative">
+            <button onclick="closeModal('planificationEquipeModal')" class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 text-2xl leading-none z-10">
+                <i class="fas fa-times"></i>
+            </button>
             <div class="text-white p-6 rounded-t-xl" style="background-color: var(--gabon-purple);">
                 <div class="flex justify-between items-center">
                     <h2 class="text-2xl font-bold">
@@ -5716,9 +5735,19 @@
                 const badgeDemandes = document.getElementById('managerDemandesNonAssignees');
                 const badgeSignalements = document.getElementById('managerSignalementsNonAssignes');
                 const badgeAgents = document.getElementById('managerAgentsEnAttente');
+                const alertBox = document.getElementById('managerAgentsAlert');
+                const alertCount = document.getElementById('managerAgentsAlertCount');
                 if (badgeDemandes) badgeDemandes.textContent = demandesNonAssignees.length;
                 if (badgeSignalements) badgeSignalements.textContent = signalementsNonAssignes.length;
                 if (badgeAgents) badgeAgents.textContent = agentsEnAttente.length;
+                if (alertBox) {
+                    if (agentsEnAttente.length > 0) {
+                        alertBox.classList.remove('hidden');
+                        if (alertCount) alertCount.textContent = agentsEnAttente.length;
+                    } else {
+                        alertBox.classList.add('hidden');
+                    }
+                }
             } catch (error) {
                 console.error('Erreur comptage demandes/signalements:', error);
             }
@@ -7086,6 +7115,17 @@
                     `;
                     listContainer.appendChild(div);
                 });
+                
+                const alertBox = document.getElementById('managerAgentsAlert');
+                const alertCount = document.getElementById('managerAgentsAlertCount');
+                if (alertBox) {
+                    if (agentsEnAttente.length > 0) {
+                        alertBox.classList.remove('hidden');
+                        if (alertCount) alertCount.textContent = agentsEnAttente.length;
+                    } else {
+                        alertBox.classList.add('hidden');
+                    }
+                }
             } catch (error) {
                 console.error('Erreur chargement agents:', error);
                 showNotification('Erreur lors du chargement des demandes d\'inscription', 'error');
