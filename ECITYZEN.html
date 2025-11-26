@@ -1607,6 +1607,37 @@
                 </div>
             </div>
             
+            <!-- Actions Rapides -->
+            <div class="card-modern">
+                <h2 class="font-bold text-lg mb-4">Actions Rapides</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <button onclick="demanderNouvelleLicence()" class="action-btn-modern text-white p-3 rounded-xl text-xs font-semibold shadow-md hover:shadow-lg transform hover:-translate-y-1 transition-all duration-300" style="background-color: var(--gabon-green);">
+                        <i class="fas fa-file-contract text-xl mb-1"></i>
+                        <span class="mt-1">Nouvelle Licence</span>
+                    </button>
+                    <button onclick="renouvellerPatente()" class="action-btn-modern text-white p-3 rounded-xl text-xs font-semibold shadow-md hover:shadow-lg transform hover:-translate-y-1 transition-all duration-300" style="background-color: var(--gabon-blue);">
+                        <i class="fas fa-sync-alt text-xl mb-1"></i>
+                        <span class="mt-1">Renouveler Patente</span>
+                    </button>
+                    <button onclick="reserverEmplacement()" class="action-btn-modern text-white p-3 rounded-xl text-xs font-semibold shadow-md hover:shadow-lg transform hover:-translate-y-1 transition-all duration-300" style="background-color: var(--gabon-yellow); color: #1E293B;">
+                        <i class="fas fa-store text-xl mb-1"></i>
+                        <span class="mt-1">Réserver Emplacement</span>
+                    </button>
+                    <button onclick="showCommercantPaiements()" class="action-btn-modern text-white p-3 rounded-xl text-xs font-semibold shadow-md hover:shadow-lg transform hover:-translate-y-1 transition-all duration-300" style="background-color: var(--gabon-green);">
+                        <i class="fas fa-credit-card text-xl mb-1"></i>
+                        <span class="mt-1">Mes Paiements</span>
+                    </button>
+                    <button onclick="showCommercantLicences()" class="action-btn-modern text-white p-3 rounded-xl text-xs font-semibold shadow-md hover:shadow-lg transform hover:-translate-y-1 transition-all duration-300" style="background-color: var(--gabon-blue);">
+                        <i class="fas fa-id-card text-xl mb-1"></i>
+                        <span class="mt-1">Mes Licences</span>
+                    </button>
+                    <button onclick="showAssistance()" class="action-btn-modern text-white p-3 rounded-xl text-xs font-semibold shadow-md hover:shadow-lg transform hover:-translate-y-1 transition-all duration-300" style="background-color: var(--gabon-green);">
+                        <i class="fas fa-headset text-xl mb-1"></i>
+                        <span class="mt-1">Assistance</span>
+                    </button>
+                </div>
+            </div>
+            
             <!-- Gestion Licences -->
             <div class="bg-white rounded-lg p-4 shadow">
                 <h2 class="font-bold text-lg mb-4">Mes Licences</h2>
@@ -2373,44 +2404,96 @@
 
     <!-- Modale Paiement -->
     <div id="paiementModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div class="bg-white rounded-lg p-4 md:p-6 max-w-md w-full mx-2 md:mx-4">
+        <div class="bg-white rounded-lg p-4 md:p-6 max-w-md w-full mx-2 md:mx-4 max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-bold">Effectuer un Paiement</h2>
+                <h2 class="text-xl font-bold">Mes Paiements</h2>
                 <button onclick="closeModal('paiementModal')" class="text-gray-500 hover:text-gray-700 text-2xl leading-none">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
             
-            <div class="mb-4">
-                <div class="text-lg font-semibold">Service: <span id="paiementService"></span></div>
-                <div class="text-2xl font-bold text-green-600">Montant: <span id="paiementMontant"></span> FCFA</div>
+            <!-- Liste des paiements pour commerçant -->
+            <div id="paiementsList" class="space-y-3 mb-4">
+                <p class="text-center text-gray-500 py-4">Chargement...</p>
             </div>
             
-            <div class="mb-4">
-                <label class="block text-sm font-medium mb-2">Moyen de paiement</label>
-                <div class="space-y-2">
-                    <button onclick="selectPaiement('clickpay')" class="w-full p-3 border rounded hover:bg-gray-50 text-left">
-                        <i class="fas fa-credit-card mr-2 text-green-600"></i>ClickPay (Paiement sécurisé)
-                    </button>
-                    <button onclick="selectPaiement('airtel')" class="w-full p-3 border rounded hover:bg-gray-50 text-left">
-                        <i class="fas fa-mobile-alt mr-2 text-red-600"></i>Airtel Money
-                    </button>
-                    <button onclick="selectPaiement('moov')" class="w-full p-3 border rounded hover:bg-gray-50 text-left">
-                        <i class="fas fa-mobile-alt mr-2 text-blue-600"></i>Moov Money
-                    </button>
-                    <button onclick="selectPaiement('carte')" class="w-full p-3 border rounded hover:bg-gray-50 text-left">
-                        <i class="fas fa-credit-card mr-2 text-purple-600"></i>Carte Bancaire
-                    </button>
-                    <button onclick="selectPaiement('especes')" class="w-full p-3 border rounded hover:bg-gray-50 text-left">
-                        <i class="fas fa-money-bill mr-2 text-green-600"></i>Paiement Espèces (Agent)
-                    </button>
+            <!-- Formulaire de paiement (si nécessaire) -->
+            <div id="paiementFormContainer" class="hidden">
+                <div class="mb-4">
+                    <div class="text-lg font-semibold">Service: <span id="paiementService"></span></div>
+                    <div class="text-2xl font-bold text-green-600">Montant: <span id="paiementMontant"></span> FCFA</div>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-medium mb-2">Moyen de paiement</label>
+                    <div class="space-y-2">
+                        <button onclick="selectPaiement('clickpay')" class="w-full p-3 border rounded hover:bg-gray-50 text-left">
+                            <i class="fas fa-credit-card mr-2 text-green-600"></i>ClickPay (Paiement sécurisé)
+                        </button>
+                        <button onclick="selectPaiement('airtel')" class="w-full p-3 border rounded hover:bg-gray-50 text-left">
+                            <i class="fas fa-mobile-alt mr-2 text-red-600"></i>Airtel Money
+                        </button>
+                        <button onclick="selectPaiement('moov')" class="w-full p-3 border rounded hover:bg-gray-50 text-left">
+                            <i class="fas fa-mobile-alt mr-2 text-blue-600"></i>Moov Money
+                        </button>
+                        <button onclick="selectPaiement('carte')" class="w-full p-3 border rounded hover:bg-gray-50 text-left">
+                            <i class="fas fa-credit-card mr-2 text-purple-600"></i>Carte Bancaire
+                        </button>
+                        <button onclick="selectPaiement('especes')" class="w-full p-3 border rounded hover:bg-gray-50 text-left">
+                            <i class="fas fa-money-bill mr-2 text-green-600"></i>Paiement Espèces (Agent)
+                        </button>
+                    </div>
                 </div>
             </div>
             
             <div class="flex gap-3">
                 <button onclick="closeModal('paiementModal')" class="flex-1 bg-gray-500 text-white p-2 rounded">
-                    Annuler
+                    Fermer
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modale Réservation Emplacement (Commerçant) -->
+    <div id="reservationEmplacementModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" style="padding-top: 80px;">
+        <div class="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="text-white p-6 rounded-t-xl" style="background-color: var(--gabon-yellow); color: #1E293B;">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-2xl font-bold">
+                        <i class="fas fa-store mr-2"></i>Réserver un Emplacement
+                    </h2>
+                    <button onclick="closeModal('reservationEmplacementModal')" class="text-gray-700 hover:text-gray-900 transition-colors">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="p-6">
+                <div id="emplacementsDisponiblesList" class="space-y-3">
+                    <p class="text-center text-gray-500 py-8">Chargement des emplacements disponibles...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modale Mes Licences (Commerçant) -->
+    <div id="licencesModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" style="padding-top: 80px;">
+        <div class="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="text-white p-6 rounded-t-xl" style="background-color: var(--gabon-green);">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-2xl font-bold">
+                        <i class="fas fa-id-card mr-2"></i>Mes Licences
+                    </h2>
+                    <button onclick="closeModal('licencesModal')" class="text-white hover:text-gray-200 transition-colors">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="p-6">
+                <div id="licencesList" class="space-y-3">
+                    <p class="text-center text-gray-500 py-8">Chargement des licences...</p>
+                </div>
             </div>
         </div>
     </div>
@@ -6976,8 +7059,163 @@
             }, 2000);
         }
         
-        function reserverEmplacement() {
-            showNotification('Carte des marchés chargée - 15 marchés disponibles', 'info');
+        async function reserverEmplacement() {
+            try {
+                const result = await apiCall('emplacements.php').catch(() => ({ data: [] }));
+                const emplacements = result.data || [];
+                const emplacementsDisponibles = emplacements.filter(e => e.statut === 'disponible' || !e.statut);
+                
+                if (emplacementsDisponibles.length === 0) {
+                    showNotification('Aucun emplacement disponible pour le moment', 'info');
+                    return;
+                }
+                
+                // Ouvrir une modale pour sélectionner un emplacement
+                const modal = document.getElementById('reservationEmplacementModal');
+                if (modal) {
+                    modal.classList.remove('hidden');
+                    const listContainer = document.getElementById('emplacementsDisponiblesList');
+                    if (listContainer) {
+                        listContainer.innerHTML = '';
+                        emplacementsDisponibles.forEach(emp => {
+                            const div = document.createElement('div');
+                            div.className = 'p-3 border rounded-lg mb-2';
+                            div.innerHTML = `
+                                <div class="flex justify-between items-center">
+                                    <div>
+                                        <div class="font-medium">${emp.marche || 'Marché'} - ${emp.emplacement || 'Emplacement'}</div>
+                                        <div class="text-sm text-gray-600">${emp.prix_mensuel ? parseFloat(emp.prix_mensuel).toLocaleString('fr-FR') + ' FCFA/mois' : 'Prix non défini'}</div>
+                                    </div>
+                                    <button onclick="confirmerReservation(${emp.id}, '${emp.marche || ''}', '${emp.emplacement || ''}')" class="bg-blue-500 text-white px-4 py-2 rounded text-sm">
+                                        Réserver
+                                    </button>
+                                </div>
+                            `;
+                            listContainer.appendChild(div);
+                        });
+                    }
+                } else {
+                    showNotification('Carte des marchés chargée - ' + emplacementsDisponibles.length + ' emplacements disponibles', 'info');
+                }
+            } catch (error) {
+                console.error('Erreur chargement emplacements:', error);
+                showNotification('Erreur lors du chargement des emplacements', 'error');
+            }
+        }
+        
+        async function confirmerReservation(emplacementId, marche, emplacement) {
+            if (confirm(`Confirmer la réservation de l'emplacement ${emplacement} au marché ${marche} ?`)) {
+                try {
+                    // Créer une demande de réservation
+                    const result = await apiCall('demandes', 'POST', {
+                        type: 'autres',
+                        service: 'Réservation emplacement marché',
+                        description: `Demande de réservation pour l'emplacement ${emplacement} au marché ${marche}`,
+                        emplacement_id: emplacementId
+                    });
+                    
+                    if (result.success) {
+                        showNotification('Demande de réservation envoyée avec succès', 'success');
+                        closeModal('reservationEmplacementModal');
+                        await loadCommercantData();
+                    }
+                } catch (error) {
+                    showNotification('Erreur lors de la réservation: ' + error.message, 'error');
+                }
+            }
+        }
+        
+        async function demanderNouvelleLicence() {
+            // Ouvrir le formulaire de demande avec le service pré-sélectionné
+            document.getElementById('demandeModal').classList.remove('hidden');
+            document.getElementById('demandeType').value = 'autres';
+            document.getElementById('demandeType').dispatchEvent(new Event('change'));
+            setTimeout(() => {
+                document.getElementById('demandeService').value = 'Nouvelle licence commerciale';
+                document.getElementById('demandeService').dispatchEvent(new Event('change'));
+            }, 100);
+        }
+        
+        async function showCommercantPaiements() {
+            try {
+                const result = await apiCall('paiements.php').catch(() => ({ data: [] }));
+                const paiements = result.data || [];
+                
+                const modal = document.getElementById('paiementModal');
+                if (modal) {
+                    modal.classList.remove('hidden');
+                    const listContainer = document.getElementById('paiementsList');
+                    if (listContainer) {
+                        listContainer.innerHTML = '';
+                        if (paiements.length === 0) {
+                            listContainer.innerHTML = '<p class="text-center text-gray-500 py-4">Aucun paiement</p>';
+                        } else {
+                            paiements.forEach(paiement => {
+                                const div = document.createElement('div');
+                                div.className = 'p-3 border rounded-lg mb-2';
+                                const datePaiement = paiement.date_paiement ? new Date(paiement.date_paiement).toLocaleDateString('fr-FR') : 'N/A';
+                                const statutClass = paiement.statut === 'confirme' ? 'bg-green-500' : paiement.statut === 'en_attente' ? 'bg-yellow-500' : 'bg-gray-500';
+                                div.innerHTML = `
+                                    <div class="flex justify-between items-center">
+                                        <div>
+                                            <div class="font-medium">${paiement.type_paiement || 'Paiement'}</div>
+                                            <div class="text-sm text-gray-600">${parseFloat(paiement.montant || 0).toLocaleString('fr-FR')} FCFA - ${datePaiement}</div>
+                                        </div>
+                                        <span class="px-3 py-1 ${statutClass} text-white rounded text-xs">${paiement.statut || 'N/A'}</span>
+                                    </div>
+                                `;
+                                listContainer.appendChild(div);
+                            });
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Erreur chargement paiements:', error);
+                showNotification('Erreur lors du chargement des paiements', 'error');
+            }
+        }
+        
+        async function showCommercantLicences() {
+            try {
+                const result = await apiCall('licences.php').catch(() => ({ data: [] }));
+                const licences = result.data || [];
+                
+                const modal = document.getElementById('licencesModal');
+                if (modal) {
+                    modal.classList.remove('hidden');
+                    const listContainer = document.getElementById('licencesList');
+                    if (listContainer) {
+                        listContainer.innerHTML = '';
+                        if (licences.length === 0) {
+                            listContainer.innerHTML = '<p class="text-center text-gray-500 py-4">Aucune licence</p>';
+                        } else {
+                            licences.forEach(licence => {
+                                const div = document.createElement('div');
+                                div.className = 'p-3 border rounded-lg mb-2';
+                                const dateFin = licence.date_fin ? new Date(licence.date_fin).toLocaleDateString('fr-FR') : 'N/A';
+                                const statutClass = licence.statut === 'active' ? 'bg-green-500' : 'bg-gray-500';
+                                div.innerHTML = `
+                                    <div class="flex justify-between items-center">
+                                        <div>
+                                            <div class="font-medium">${licence.type_licence || 'Licence'}</div>
+                                            <div class="text-sm text-gray-600">Expire le: ${dateFin}</div>
+                                            <div class="text-sm text-gray-600">Montant: ${parseFloat(licence.montant || 0).toLocaleString('fr-FR')} FCFA</div>
+                                        </div>
+                                        <span class="px-3 py-1 ${statutClass} text-white rounded text-xs">${licence.statut || 'N/A'}</span>
+                                    </div>
+                                `;
+                                listContainer.appendChild(div);
+                            });
+                        }
+                    }
+                } else {
+                    // Si la modale n'existe pas, afficher dans une notification
+                    showNotification(`${licences.length} licence(s) trouvée(s)`, 'info');
+                }
+            } catch (error) {
+                console.error('Erreur chargement licences:', error);
+                showNotification('Erreur lors du chargement des licences', 'error');
+            }
         }
         
         // Fonctions hôpital
