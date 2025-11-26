@@ -2332,19 +2332,19 @@
 
     <!-- Modale Nouvelle Demande -->
     <div id="demandeModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" style="padding-top: 60px; padding-bottom: 20px;">
-        <div class="bg-white rounded-lg p-3 md:p-4 max-w-xl w-full mx-2 md:mx-4 max-h-[85vh] flex flex-col">
-            <div class="flex justify-between items-center mb-3 pb-2 border-b">
-                <h2 class="text-lg font-semibold">Nouvelle Demande Administrative</h2>
+        <div class="bg-white rounded-lg p-3 md:p-4 max-w-xl w-full mx-2 md:mx-4 max-h-[85vh] flex flex-col shadow-xl">
+            <div class="flex justify-between items-center mb-3 pb-2 border-b" style="border-color: var(--gabon-blue);">
+                <h2 class="text-lg font-semibold" style="color: var(--gabon-blue);">Nouvelle Demande Administrative</h2>
                 <button onclick="closeModal('demandeModal')" class="text-gray-500 hover:text-gray-700 text-xl leading-none">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
             
-            <div class="flex-1 overflow-y-auto pr-2" style="scrollbar-width: thin; scrollbar-color: #cbd5e0 #f7fafc;">
+            <div class="flex-1 overflow-y-auto pr-2" style="scrollbar-width: thin; scrollbar-color: var(--gabon-blue) #f7fafc;">
                 <form id="demandeForm" enctype="multipart/form-data">
                     <div class="mb-3">
                         <label class="block text-xs font-medium mb-1 text-gray-700">Type de service</label>
-                        <select id="demandeType" class="w-full border border-gray-300 rounded p-2 text-sm focus:ring-1 focus:ring-blue-400 focus:border-blue-400">
+                        <select id="demandeType" class="w-full border border-gray-300 rounded p-2 text-sm focus:ring-2 focus:border-transparent" style="focus:ring-color: var(--gabon-blue);">
                             <option value="">Sélectionner...</option>
                             <option value="etat-civil">📄 État Civil</option>
                             <option value="cadastre-urbanisme">🏗️ Cadastre & Urbanisme</option>
@@ -2357,14 +2357,14 @@
                     
                     <div class="mb-3">
                         <label class="block text-xs font-medium mb-1 text-gray-700">Service spécifique</label>
-                        <select id="demandeService" class="w-full border border-gray-300 rounded p-2 text-sm focus:ring-1 focus:ring-blue-400 focus:border-blue-400">
+                        <select id="demandeService" class="w-full border border-gray-300 rounded p-2 text-sm focus:ring-2 focus:border-transparent" style="focus:ring-color: var(--gabon-blue);">
                             <option value="">Choisir d'abord le type...</option>
                         </select>
                     </div>
                     
                     <div class="mb-3">
                         <label class="block text-xs font-medium mb-1 text-gray-700">Motif/Utilisation</label>
-                        <textarea id="demandeMotif" class="w-full border border-gray-300 rounded p-2 text-sm focus:ring-1 focus:ring-blue-400 focus:border-blue-400" rows="2" placeholder="Pour quelle utilisation ?"></textarea>
+                        <textarea id="demandeMotif" class="w-full border border-gray-300 rounded p-2 text-sm focus:ring-2 focus:border-transparent" style="focus:ring-color: var(--gabon-blue);" rows="2" placeholder="Pour quelle utilisation ?"></textarea>
                     </div>
                     
                     <div class="mb-3">
@@ -2372,12 +2372,12 @@
                         <div id="documentsRequis" class="text-xs text-gray-600 bg-gray-50 p-2 rounded mb-2 border border-gray-200">
                             Sélectionnez un service pour voir les documents requis
                         </div>
-                        <div id="infoSpeciale" class="text-xs text-blue-700 bg-blue-50 border border-blue-200 p-2 rounded mt-2 hidden">
+                        <div id="infoSpeciale" class="text-xs p-2 rounded mt-2 hidden" style="color: var(--gabon-blue); background-color: rgba(62, 117, 196, 0.1); border: 1px solid rgba(62, 117, 196, 0.3);">
                             <i class="fas fa-info-circle mr-1"></i>
                             <span id="infoSpecialeText"></span>
                         </div>
                         <div id="documentsUploadContainer" class="mt-2 space-y-2 hidden">
-                            <p class="text-xs text-red-700 font-medium mb-1 bg-red-50 border border-red-200 p-2 rounded">
+                            <p class="text-xs font-medium mb-1 p-2 rounded" style="color: #dc2626; background-color: rgba(220, 38, 38, 0.1); border: 1px solid rgba(220, 38, 38, 0.3);">
                                 <i class="fas fa-exclamation-triangle mr-1"></i>
                                 Tous les documents sont obligatoires
                             </p>
@@ -2386,7 +2386,7 @@
                     
                     <div class="mb-3 pb-2 border-b">
                         <label class="block text-xs font-medium mb-1 text-gray-700">Coût estimé</label>
-                        <div id="coutEstime" class="text-base font-semibold text-green-700">
+                        <div id="coutEstime" class="text-base font-semibold" style="color: var(--gabon-green);">
                             - FCFA
                         </div>
                     </div>
@@ -2394,10 +2394,10 @@
             </div>
             
             <div class="flex gap-2 pt-3 border-t mt-2">
-                <button type="button" onclick="closeModal('demandeModal')" class="flex-1 bg-gray-400 hover:bg-gray-500 text-white text-sm py-2 px-3 rounded transition-colors">
+                <button type="button" onclick="closeModal('demandeModal')" class="flex-1 text-white text-sm py-2 px-3 rounded transition-opacity hover:opacity-90" style="background-color: #6b7280;">
                     Annuler
                 </button>
-                <button type="button" onclick="document.getElementById('demandeForm').dispatchEvent(new Event('submit'))" class="flex-1 bg-blue-400 hover:bg-blue-500 text-white text-sm py-2 px-3 rounded transition-colors">
+                <button type="button" onclick="document.getElementById('demandeForm').dispatchEvent(new Event('submit'))" class="flex-1 text-white text-sm py-2 px-3 rounded transition-opacity hover:opacity-90" style="background-color: var(--gabon-blue);">
                     Soumettre
                 </button>
             </div>
