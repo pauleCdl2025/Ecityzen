@@ -3983,7 +3983,7 @@
             const endpointClean = endpoint.replace('.php', '');
             
                     // Liste des Netlify Functions disponibles
-                    const netlifyFunctions = ['login', 'register', 'signalements', 'demandes', 'notifications', 'geocode', 'chantiers', 'missions', 'users', 'stats'];
+                    const netlifyFunctions = ['login', 'register', 'signalements', 'demandes', 'notifications', 'geocode', 'chantiers', 'missions', 'users', 'stats', 'paiements', 'licences', 'emplacements', 'feedback', 'assistance'];
             
             if (!API_BASE_URL) {
                 // Production sans serveur PHP: utiliser Netlify Functions
@@ -4022,8 +4022,13 @@
                 
                 // Gérer les erreurs 404 (Endpoint non trouvé)
                 if (response.status === 404) {
-                    // Si c'est un endpoint qui nécessite un serveur PHP, afficher un message approprié
+                    // Si c'est un endpoint qui nécessite un serveur PHP, ne pas afficher d'erreur pour les endpoints optionnels
                     if (!API_BASE_URL && !netlifyFunctions.includes(endpointClean)) {
+                        // Pour les endpoints optionnels (comme emplacements, licences, etc.), retourner une réponse vide
+                        const optionalEndpoints = ['emplacements', 'licences', 'paiements', 'feedback', 'assistance', 'preferences_notifications', 'chefs_quartier'];
+                        if (optionalEndpoints.includes(endpointClean)) {
+                            return { success: true, data: [], message: 'Endpoint non disponible en production' };
+                        }
                         throw new Error(`L'endpoint ${endpointClean} nécessite un serveur PHP. Veuillez configurer un serveur PHP séparé.`);
                     }
                     // Sinon, c'est une vraie erreur 404
@@ -9675,13 +9680,16 @@
                     // Une réponse 401 est normale (identifiants invalides) et signifie que l'API fonctionne
                     if (response.status === 401 || response.ok) {
                         console.log('API connectée');
+                    } else if (response.status === 404) {
+                        // 404 signifie que l'endpoint n'existe pas (normal en production Netlify si pas de serveur PHP)
+                        console.log('API endpoint non disponible (normal si pas de serveur PHP)');
                     } else {
                         console.warn('API répond avec un code inattendu:', response.status);
                     }
                 })
                 .catch(error => {
                     // Ignorer les erreurs réseau silencieusement si l'API n'est pas disponible
-                    // Ne pas afficher d'erreur pour les 401 qui sont normaux
+                    // Ne pas afficher d'erreur dans la console pour les erreurs normales
                 });
         });
     </script>
