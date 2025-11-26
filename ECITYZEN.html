@@ -2198,7 +2198,12 @@
     <!-- Modale Nouvelle Demande -->
     <div id="demandeModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" style="padding-top: 80px;">
         <div class="bg-white rounded-lg p-4 md:p-6 max-w-2xl w-full mx-2 md:mx-4 max-h-[90vh] overflow-y-auto">
-            <h2 class="text-xl font-bold mb-4">Nouvelle Demande Administrative</h2>
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold">Nouvelle Demande Administrative</h2>
+                <button onclick="closeModal('demandeModal')" class="text-gray-500 hover:text-gray-700 text-2xl leading-none">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
             
             <form id="demandeForm" enctype="multipart/form-data">
                 <div class="mb-4">
@@ -2264,7 +2269,12 @@
     <!-- Modale Paiement -->
     <div id="paiementModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
         <div class="bg-white rounded-lg p-4 md:p-6 max-w-md w-full mx-2 md:mx-4">
-            <h2 class="text-xl font-bold mb-4">Effectuer un Paiement</h2>
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold">Effectuer un Paiement</h2>
+                <button onclick="closeModal('paiementModal')" class="text-gray-500 hover:text-gray-700 text-2xl leading-none">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
             
             <div class="mb-4">
                 <div class="text-lg font-semibold">Service: <span id="paiementService"></span></div>
