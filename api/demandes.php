@@ -10,6 +10,186 @@ require_once '../config/supabase.php';
 setupCORS('GET, POST, PUT, OPTIONS');
 startSecureSession();
 
+/**
+ * Fonction pour obtenir les documents requis pour un service donné
+ * Retourne un tableau avec les informations des documents requis (nom, format, tailleMax)
+ */
+function getDocumentsRequis($type, $service) {
+    // Structure des documents requis (identique au frontend)
+    $documentsRequis = [
+        'etat-civil' => [
+            'Acte de Naissance' => [
+                ['nom' => 'Pièce d\'identité', 'format' => ['PDF', 'JPG', 'PNG'], 'tailleMax' => 5],
+                ['nom' => 'Photocopie pièce d\'identité', 'format' => ['PDF', 'JPG', 'PNG'], 'tailleMax' => 5]
+            ],
+            'Acte de Décès' => [
+                ['nom' => 'Certificat médical de décès', 'format' => ['PDF', 'JPG', 'PNG'], 'tailleMax' => 5],
+                ['nom' => 'Pièce d\'identité du défunt', 'format' => ['PDF', 'JPG', 'PNG'], 'tailleMax' => 5],
+                ['nom' => 'Acte de naissance du défunt', 'format' => ['PDF', 'JPG', 'PNG'], 'tailleMax' => 5]
+            ],
+            'Attestation / Certificat de Retraite' => [
+                ['nom' => 'Bulletin de pension', 'format' => ['PDF', 'JPG', 'PNG'], 'tailleMax' => 5],
+                ['nom' => 'Pièce d\'identité', 'format' => ['PDF', 'JPG', 'PNG'], 'tailleMax' => 5],
+                ['nom' => 'Justificatifs de services', 'format' => ['PDF', 'JPG', 'PNG'], 'tailleMax' => 10]
+            ],
+            'Certificat de Résidence' => [
+                ['nom' => 'Justificatif de domicile', 'format' => ['PDF', 'JPG', 'PNG'], 'tailleMax' => 5],
+                ['nom' => 'Facture récente', 'format' => ['PDF', 'JPG', 'PNG'], 'tailleMax' => 5],
+                ['nom' => 'Pièce d\'identité', 'format' => ['PDF', 'JPG', 'PNG'], 'tailleMax' => 5]
+            ],
+            'Autres démarches (Attestation de vie, légalisation, changement d\'état civil)' => [
+                ['nom' => 'Documents originaux à légaliser', 'format' => ['PDF', 'JPG', 'PNG'], 'tailleMax' => 10],
+                ['nom' => 'Acte de naissance', 'format' => ['PDF', 'JPG', 'PNG'], 'tailleMax' => 5],
+                ['nom' => 'Pièce d\'identité', 'format' => ['PDF', 'JPG', 'PNG'], 'tailleMax' => 5]
+            ]
+        ],
+        'cadastre-urbanisme' => [
+            'Permis de Construire' => [
+                ['nom' => 'Plans architecturaux visés', 'format' => ['PDF'], 'tailleMax' => 20],
+                ['nom' => 'Étude géotechnique', 'format' => ['PDF'], 'tailleMax' => 10],
+                ['nom' => 'Certificat de propriété', 'format' => ['PDF', 'JPG', 'PNG'], 'tailleMax' => 5]
+            ],
+            'Permis de Démolir' => [
+                ['nom' => 'Rapport technique', 'format' => ['PDF'], 'tailleMax' => 10],
+                ['nom' => 'Étude d\'impact', 'format' => ['PDF'], 'tailleMax' => 10],
+                ['nom' => 'Plans de démolition', 'format' => ['PDF'], 'tailleMax' => 20]
+            ],
+            'ODDC (Occupation du Domaine Communal)' => [
+                ['nom' => 'Plan d\'implantation', 'format' => ['PDF'], 'tailleMax' => 10],
+                ['nom' => 'Description des activités', 'format' => ['PDF', 'DOC', 'DOCX'], 'tailleMax' => 5],
+                ['nom' => 'Attestation d\'assurance', 'format' => ['PDF', 'JPG', 'PNG'], 'tailleMax' => 5]
+            ]
+        ],
+        'service-social' => [
+            'Demande d\'aide solidaire individuelle' => [
+                ['nom' => 'Lettre motivée', 'format' => ['PDF', 'DOC', 'DOCX'], 'tailleMax' => 5],
+                ['nom' => 'Pièce d\'identité', 'format' => ['PDF', 'JPG', 'PNG'], 'tailleMax' => 5],
+                ['nom' => 'Justificatifs de revenus', 'format' => ['PDF', 'JPG', 'PNG'], 'tailleMax' => 5]
+            ],
+            'Demande d\'aide solidaire collective' => [
+                ['nom' => 'Lettre des représentants', 'format' => ['PDF', 'DOC', 'DOCX'], 'tailleMax' => 5],
+                ['nom' => 'Liste des bénéficiaires', 'format' => ['PDF', 'DOC', 'DOCX', 'XLS', 'XLSX'], 'tailleMax' => 5],
+                ['nom' => 'Budget prévisionnel', 'format' => ['PDF', 'DOC', 'DOCX', 'XLS', 'XLSX'], 'tailleMax' => 5]
+            ],
+            'Accompagnement social d\'urgence' => [
+                ['nom' => 'Rapport d\'assistante sociale', 'format' => ['PDF', 'DOC', 'DOCX'], 'tailleMax' => 5],
+                ['nom' => 'Pièce d\'identité', 'format' => ['PDF', 'JPG', 'PNG'], 'tailleMax' => 5],
+                ['nom' => 'Justificatifs d\'urgence', 'format' => ['PDF', 'JPG', 'PNG'], 'tailleMax' => 5]
+            ]
+        ],
+        'voiries' => [
+            'Contrôles et visites quotidiennes' => [
+                ['nom' => 'Planning de tournée', 'format' => ['PDF', 'DOC', 'DOCX', 'XLS', 'XLSX'], 'tailleMax' => 5],
+                ['nom' => 'Liste des axes à inspecter', 'format' => ['PDF', 'DOC', 'DOCX', 'XLS', 'XLSX'], 'tailleMax' => 5]
+            ],
+            'Actions ponctuelles planifiées' => [
+                ['nom' => 'Ordre de mission', 'format' => ['PDF', 'DOC', 'DOCX'], 'tailleMax' => 5],
+                ['nom' => 'Fiches techniques des travaux', 'format' => ['PDF'], 'tailleMax' => 10]
+            ],
+            'Interventions sur interpellation/dénonciation' => [
+                ['nom' => 'Lettre d\'interpellation / signalement citoyen', 'format' => ['PDF', 'DOC', 'DOCX'], 'tailleMax' => 5],
+                ['nom' => 'Coordonnées du site', 'format' => ['PDF', 'DOC', 'DOCX'], 'tailleMax' => 2]
+            ]
+        ],
+        'finances' => [
+            'Gestion du transport municipal' => [
+                ['nom' => 'Planning des navettes', 'format' => ['PDF', 'DOC', 'DOCX', 'XLS', 'XLSX'], 'tailleMax' => 5],
+                ['nom' => 'Engagement de dépense', 'format' => ['PDF', 'DOC', 'DOCX'], 'tailleMax' => 5],
+                ['nom' => 'Liste du personnel', 'format' => ['PDF', 'DOC', 'DOCX', 'XLS', 'XLSX'], 'tailleMax' => 5]
+            ],
+            'Traitement de la paie des agents' => [
+                ['nom' => 'États de présence', 'format' => ['PDF', 'DOC', 'DOCX', 'XLS', 'XLSX'], 'tailleMax' => 5],
+                ['nom' => 'Fiche agent', 'format' => ['PDF', 'DOC', 'DOCX'], 'tailleMax' => 5],
+                ['nom' => 'Relevés bancaires', 'format' => ['PDF', 'JPG', 'PNG'], 'tailleMax' => 5]
+            ],
+            'Gestion des régies municipales' => [
+                ['nom' => 'Registres des régies', 'format' => ['PDF', 'DOC', 'DOCX', 'XLS', 'XLSX'], 'tailleMax' => 10],
+                ['nom' => 'Rapports de caisse', 'format' => ['PDF', 'DOC', 'DOCX', 'XLS', 'XLSX'], 'tailleMax' => 5],
+                ['nom' => 'Pièces justificatives', 'format' => ['PDF', 'JPG', 'PNG'], 'tailleMax' => 10]
+            ],
+            'Ordres de recettes' => [
+                ['nom' => 'Pièces comptables', 'format' => ['PDF', 'DOC', 'DOCX', 'XLS', 'XLSX'], 'tailleMax' => 10],
+                ['nom' => 'Engagement budgétaire', 'format' => ['PDF', 'DOC', 'DOCX'], 'tailleMax' => 5],
+                ['nom' => 'Visa du contrôleur', 'format' => ['PDF', 'JPG', 'PNG'], 'tailleMax' => 5]
+            ],
+            'Traitement des fournisseurs' => [
+                ['nom' => 'Bon de commande', 'format' => ['PDF', 'DOC', 'DOCX'], 'tailleMax' => 5],
+                ['nom' => 'Facture', 'format' => ['PDF', 'JPG', 'PNG'], 'tailleMax' => 5],
+                ['nom' => 'Certificat de service fait', 'format' => ['PDF', 'DOC', 'DOCX'], 'tailleMax' => 5]
+            ]
+        ],
+        'hopital' => [
+            'Acte de Naissance (Déclaration)' => [
+                ['nom' => 'Fiche de naissance remplie', 'format' => ['PDF', 'JPG', 'PNG'], 'tailleMax' => 5],
+                ['nom' => 'Pièce d\'identité parents', 'format' => ['PDF', 'JPG', 'PNG'], 'tailleMax' => 5],
+                ['nom' => 'Acte de mariage (si mariés)', 'format' => ['PDF', 'JPG', 'PNG'], 'tailleMax' => 5]
+            ],
+            'Acte de Décès (Déclaration)' => [
+                ['nom' => 'Certificat médical de décès', 'format' => ['PDF', 'JPG', 'PNG'], 'tailleMax' => 5],
+                ['nom' => 'Pièce d\'identité défunt', 'format' => ['PDF', 'JPG', 'PNG'], 'tailleMax' => 5],
+                ['nom' => 'Acte de naissance défunt', 'format' => ['PDF', 'JPG', 'PNG'], 'tailleMax' => 5]
+            ],
+            'Certificat médical de naissance' => [
+                ['nom' => 'Rapport médical de naissance signé par médecin', 'format' => ['PDF', 'JPG', 'PNG'], 'tailleMax' => 5]
+            ],
+            'Certificat médical de décès' => [
+                ['nom' => 'Rapport médical de décès signé par médecin', 'format' => ['PDF', 'JPG', 'PNG'], 'tailleMax' => 5]
+            ],
+            'Attestation d\'hospitalisation' => [
+                ['nom' => 'Justificatif d\'hospitalisation', 'format' => ['PDF', 'JPG', 'PNG'], 'tailleMax' => 5],
+                ['nom' => 'Pièce d\'identité patient', 'format' => ['PDF', 'JPG', 'PNG'], 'tailleMax' => 5]
+            ]
+        ]
+    ];
+    
+    if (isset($documentsRequis[$type][$service])) {
+        return $documentsRequis[$type][$service];
+    }
+    
+    return [];
+}
+
+/**
+ * Valide un fichier uploadé selon les critères du document requis
+ */
+function validerDocument($file, $documentRequis) {
+    $errors = [];
+    
+    // Vérifier que le fichier existe
+    if (!isset($file) || $file['error'] !== UPLOAD_ERR_OK) {
+        $errors[] = 'Erreur lors de l\'upload du fichier';
+        return $errors;
+    }
+    
+    // Vérifier le format
+    $extension = strtoupper(pathinfo($file['name'], PATHINFO_EXTENSION));
+    $formatMap = [
+        'PDF' => 'PDF',
+        'JPG' => 'JPG',
+        'JPEG' => 'JPG',
+        'PNG' => 'PNG',
+        'DOC' => 'DOC',
+        'DOCX' => 'DOCX',
+        'XLS' => 'XLS',
+        'XLSX' => 'XLSX'
+    ];
+    
+    $fileFormat = isset($formatMap[$extension]) ? $formatMap[$extension] : $extension;
+    
+    if (!in_array($fileFormat, $documentRequis['format'])) {
+        $errors[] = "Format non accepté pour '{$documentRequis['nom']}'. Formats acceptés: " . implode(', ', $documentRequis['format']);
+    }
+    
+    // Vérifier la taille
+    $maxSize = $documentRequis['tailleMax'] * 1024 * 1024; // Convertir en bytes
+    if ($file['size'] > $maxSize) {
+        $fileSizeMB = round($file['size'] / 1024 / 1024, 2);
+        $errors[] = "Taille trop grande pour '{$documentRequis['nom']}' ({$fileSizeMB} Mo). Taille maximale: {$documentRequis['tailleMax']} Mo";
+    }
+    
+    return $errors;
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     // Récupérer les demandes
     $userId = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : null;
@@ -107,6 +287,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             sendJSONResponse(false, null, 'Champs manquants: type, service, cout', 400);
         }
         
+        // Récupérer les documents requis pour ce service
+        $documentsRequis = getDocumentsRequis($type, $service);
+        
+        if (empty($documentsRequis)) {
+            sendJSONResponse(false, null, 'Service non trouvé ou documents requis non définis', 400);
+        }
+        
+        // Vérifier que tous les documents requis ont été fournis
+        $expectedDocs = [];
+        for ($i = 0; isset($_POST["document_name_$i"]); $i++) {
+            $expectedDocs[] = $_POST["document_name_$i"];
+        }
+        
+        if (count($expectedDocs) !== count($documentsRequis)) {
+            sendJSONResponse(false, null, 'Nombre de documents incorrect. Documents requis: ' . count($documentsRequis) . ', documents fournis: ' . count($expectedDocs), 400);
+        }
+        
         // Créer le dossier d'upload s'il n'existe pas
         $uploadDir = '../uploads/demandes/';
         if (!file_exists($uploadDir)) {
@@ -115,11 +312,47 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         
         $documents = [];
         $documentIndex = 0;
+        $allErrors = [];
         
-        // Traiter tous les fichiers uploadés
+        // Traiter et valider tous les fichiers uploadés
         foreach ($_FILES as $key => $file) {
             if (strpos($key, 'document_') === 0 && $file['error'] === UPLOAD_ERR_OK) {
                 $documentName = $_POST['document_name_' . $documentIndex] ?? 'document_' . $documentIndex;
+                
+                // Trouver le document requis correspondant
+                $documentRequis = null;
+                foreach ($documentsRequis as $docReq) {
+                    if ($docReq['nom'] === $documentName) {
+                        $documentRequis = $docReq;
+                        break;
+                    }
+                }
+                
+                // Si le document requis n'est pas trouvé, vérifier par index
+                if (!$documentRequis && isset($documentsRequis[$documentIndex])) {
+                    $documentRequis = $documentsRequis[$documentIndex];
+                }
+                
+                if (!$documentRequis) {
+                    $allErrors[] = "Document requis non trouvé pour '{$documentName}'";
+                    $documentIndex++;
+                    continue;
+                }
+                
+                // Vérifier que le nom du document correspond
+                if ($documentRequis['nom'] !== $documentName) {
+                    $allErrors[] = "Document incorrect. Document requis: '{$documentRequis['nom']}', document fourni: '{$documentName}'";
+                    $documentIndex++;
+                    continue;
+                }
+                
+                // Valider le format et la taille
+                $validationErrors = validerDocument($file, $documentRequis);
+                if (!empty($validationErrors)) {
+                    $allErrors = array_merge($allErrors, $validationErrors);
+                    $documentIndex++;
+                    continue;
+                }
                 
                 // Générer un nom de fichier unique
                 $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
@@ -135,6 +368,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                         'type' => $file['type']
                     ];
                 } else {
+                    $allErrors[] = "Erreur lors de l'upload du fichier: {$file['name']}";
                     error_log("Erreur upload fichier: " . $file['name']);
                 }
                 
@@ -142,14 +376,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             }
         }
         
-        // Vérifier que tous les documents requis ont été fournis
-        $expectedDocs = [];
-        for ($i = 0; isset($_POST["document_name_$i"]); $i++) {
-            $expectedDocs[] = $_POST["document_name_$i"];
+        // Si des erreurs de validation ont été détectées, retourner une erreur
+        if (!empty($allErrors)) {
+            sendJSONResponse(false, ['errors' => $allErrors], 'Documents non conformes: ' . implode('; ', $allErrors), 400);
         }
         
-        if (count($expectedDocs) > 0 && count($documents) < count($expectedDocs)) {
-            sendJSONResponse(false, null, 'Tous les documents requis doivent être fournis', 400);
+        // Vérifier que tous les documents requis ont été fournis
+        if (count($documents) < count($documentsRequis)) {
+            $missing = [];
+            foreach ($documentsRequis as $docReq) {
+                $found = false;
+                foreach ($documents as $doc) {
+                    if ($doc['nom'] === $docReq['nom']) {
+                        $found = true;
+                        break;
+                    }
+                }
+                if (!$found) {
+                    $missing[] = $docReq['nom'];
+                }
+            }
+            sendJSONResponse(false, null, 'Documents manquants: ' . implode(', ', $missing), 400);
         }
         
     } else {

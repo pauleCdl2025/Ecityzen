@@ -4286,7 +4286,7 @@
             ]
         };
         
-        // Services administratifs
+        // Services administratifs avec documents détaillés (nom, format, tailleMax en Mo)
         const servicesAdmin = {
             'etat-civil': {
                 services: [
@@ -4298,11 +4298,30 @@
                 ],
                 tarifs: [5000, 8000, 6000, 3000, 7000],
                 documents: [
-                    'Pièce d\'identité + Photocopie (déclaration dans les 3 jours après accouchement, ou jugement supplétif si délai dépassé)',
-                    'Certificat médical de décès + Pièce d\'identité du défunt + Acte de naissance du défunt',
-                    'Bulletin de pension + Pièce d\'identité + Justificatifs de services',
-                    'Justificatif de domicile + Facture récente + Pièce d\'identité',
-                    'Documents originaux à légaliser + Acte de naissance + Pièce d\'identité'
+                    [
+                        {nom: 'Pièce d\'identité', format: ['PDF', 'JPG', 'PNG'], tailleMax: 5, description: 'Carte nationale d\'identité ou passeport'},
+                        {nom: 'Photocopie pièce d\'identité', format: ['PDF', 'JPG', 'PNG'], tailleMax: 5, description: 'Photocopie recto-verso'}
+                    ],
+                    [
+                        {nom: 'Certificat médical de décès', format: ['PDF', 'JPG', 'PNG'], tailleMax: 5, description: 'Certificat signé par un médecin'},
+                        {nom: 'Pièce d\'identité du défunt', format: ['PDF', 'JPG', 'PNG'], tailleMax: 5, description: 'Carte nationale d\'identité ou passeport'},
+                        {nom: 'Acte de naissance du défunt', format: ['PDF', 'JPG', 'PNG'], tailleMax: 5, description: 'Copie intégrale ou extrait'}
+                    ],
+                    [
+                        {nom: 'Bulletin de pension', format: ['PDF', 'JPG', 'PNG'], tailleMax: 5, description: 'Dernier bulletin de pension'},
+                        {nom: 'Pièce d\'identité', format: ['PDF', 'JPG', 'PNG'], tailleMax: 5, description: 'Carte nationale d\'identité ou passeport'},
+                        {nom: 'Justificatifs de services', format: ['PDF', 'JPG', 'PNG'], tailleMax: 10, description: 'Attestations de travail ou fiches de paie'}
+                    ],
+                    [
+                        {nom: 'Justificatif de domicile', format: ['PDF', 'JPG', 'PNG'], tailleMax: 5, description: 'Facture d\'électricité, eau ou quittance de loyer'},
+                        {nom: 'Facture récente', format: ['PDF', 'JPG', 'PNG'], tailleMax: 5, description: 'Facture de moins de 3 mois'},
+                        {nom: 'Pièce d\'identité', format: ['PDF', 'JPG', 'PNG'], tailleMax: 5, description: 'Carte nationale d\'identité ou passeport'}
+                    ],
+                    [
+                        {nom: 'Documents originaux à légaliser', format: ['PDF', 'JPG', 'PNG'], tailleMax: 10, description: 'Documents à légaliser'},
+                        {nom: 'Acte de naissance', format: ['PDF', 'JPG', 'PNG'], tailleMax: 5, description: 'Copie intégrale ou extrait'},
+                        {nom: 'Pièce d\'identité', format: ['PDF', 'JPG', 'PNG'], tailleMax: 5, description: 'Carte nationale d\'identité ou passeport'}
+                    ]
                 ]
             },
             'cadastre-urbanisme': {
@@ -4313,9 +4332,21 @@
                 ],
                 tarifs: [45000, 30000, 20000],
                 documents: [
-                    'Plans architecturaux visés + Étude géotechnique + Certificat de propriété',
-                    'Rapport technique + Étude d\'impact + Plans de démolition',
-                    'Plan d\'implantation + Description des activités + Attestation d\'assurance'
+                    [
+                        {nom: 'Plans architecturaux visés', format: ['PDF'], tailleMax: 20, description: 'Plans signés par un architecte'},
+                        {nom: 'Étude géotechnique', format: ['PDF'], tailleMax: 10, description: 'Rapport d\'étude géotechnique'},
+                        {nom: 'Certificat de propriété', format: ['PDF', 'JPG', 'PNG'], tailleMax: 5, description: 'Titre de propriété ou acte notarié'}
+                    ],
+                    [
+                        {nom: 'Rapport technique', format: ['PDF'], tailleMax: 10, description: 'Rapport technique de démolition'},
+                        {nom: 'Étude d\'impact', format: ['PDF'], tailleMax: 10, description: 'Étude d\'impact environnemental'},
+                        {nom: 'Plans de démolition', format: ['PDF'], tailleMax: 20, description: 'Plans de démolition signés'}
+                    ],
+                    [
+                        {nom: 'Plan d\'implantation', format: ['PDF'], tailleMax: 10, description: 'Plan d\'implantation du site'},
+                        {nom: 'Description des activités', format: ['PDF', 'DOC', 'DOCX'], tailleMax: 5, description: 'Description détaillée des activités'},
+                        {nom: 'Attestation d\'assurance', format: ['PDF', 'JPG', 'PNG'], tailleMax: 5, description: 'Attestation d\'assurance responsabilité civile'}
+                    ]
                 ]
             },
             'service-social': {
@@ -4326,9 +4357,21 @@
                 ],
                 tarifs: [0, 0, 0],
                 documents: [
-                    'Lettre motivée + Pièce d\'identité + Justificatifs de revenus',
-                    'Lettre des représentants + Liste des bénéficiaires + Budget prévisionnel',
-                    'Rapport d\'assistante sociale + Pièce d\'identité + Justificatifs d\'urgence'
+                    [
+                        {nom: 'Lettre motivée', format: ['PDF', 'DOC', 'DOCX'], tailleMax: 5, description: 'Lettre expliquant la situation'},
+                        {nom: 'Pièce d\'identité', format: ['PDF', 'JPG', 'PNG'], tailleMax: 5, description: 'Carte nationale d\'identité ou passeport'},
+                        {nom: 'Justificatifs de revenus', format: ['PDF', 'JPG', 'PNG'], tailleMax: 5, description: 'Fiches de paie, attestations de chômage, etc.'}
+                    ],
+                    [
+                        {nom: 'Lettre des représentants', format: ['PDF', 'DOC', 'DOCX'], tailleMax: 5, description: 'Lettre signée par les représentants'},
+                        {nom: 'Liste des bénéficiaires', format: ['PDF', 'DOC', 'DOCX', 'XLS', 'XLSX'], tailleMax: 5, description: 'Liste nominative des bénéficiaires'},
+                        {nom: 'Budget prévisionnel', format: ['PDF', 'DOC', 'DOCX', 'XLS', 'XLSX'], tailleMax: 5, description: 'Budget détaillé de l\'aide demandée'}
+                    ],
+                    [
+                        {nom: 'Rapport d\'assistante sociale', format: ['PDF', 'DOC', 'DOCX'], tailleMax: 5, description: 'Rapport d\'évaluation sociale'},
+                        {nom: 'Pièce d\'identité', format: ['PDF', 'JPG', 'PNG'], tailleMax: 5, description: 'Carte nationale d\'identité ou passeport'},
+                        {nom: 'Justificatifs d\'urgence', format: ['PDF', 'JPG', 'PNG'], tailleMax: 5, description: 'Documents justifiant l\'urgence de la situation'}
+                    ]
                 ]
             },
             'voiries': {
@@ -4339,9 +4382,18 @@
                 ],
                 tarifs: [0, 0, 0],
                 documents: [
-                    'Planning de tournée + Liste des axes à inspecter',
-                    'Ordre de mission + Fiches techniques des travaux',
-                    'Lettre d\'interpellation / signalement citoyen + Coordonnées du site'
+                    [
+                        {nom: 'Planning de tournée', format: ['PDF', 'DOC', 'DOCX', 'XLS', 'XLSX'], tailleMax: 5, description: 'Planning des tournées prévues'},
+                        {nom: 'Liste des axes à inspecter', format: ['PDF', 'DOC', 'DOCX', 'XLS', 'XLSX'], tailleMax: 5, description: 'Liste des axes routiers concernés'}
+                    ],
+                    [
+                        {nom: 'Ordre de mission', format: ['PDF', 'DOC', 'DOCX'], tailleMax: 5, description: 'Ordre de mission signé'},
+                        {nom: 'Fiches techniques des travaux', format: ['PDF'], tailleMax: 10, description: 'Fiches techniques détaillées des travaux'}
+                    ],
+                    [
+                        {nom: 'Lettre d\'interpellation / signalement citoyen', format: ['PDF', 'DOC', 'DOCX'], tailleMax: 5, description: 'Lettre ou signalement décrivant le problème'},
+                        {nom: 'Coordonnées du site', format: ['PDF', 'DOC', 'DOCX'], tailleMax: 2, description: 'Adresse précise et coordonnées GPS si disponibles'}
+                    ]
                 ]
             },
             'finances': {
@@ -4354,11 +4406,31 @@
                 ],
                 tarifs: [0, 0, 0, 0, 0],
                 documents: [
-                    'Planning des navettes + Engagement de dépense + Liste du personnel',
-                    'États de présence + Fiche agent + Relevés bancaires',
-                    'Registres des régies + Rapports de caisse + Pièces justificatives',
-                    'Pièces comptables + Engagement budgétaire + Visa du contrôleur',
-                    'Bon de commande + Facture + Certificat de service fait'
+                    [
+                        {nom: 'Planning des navettes', format: ['PDF', 'DOC', 'DOCX', 'XLS', 'XLSX'], tailleMax: 5, description: 'Planning hebdomadaire ou mensuel'},
+                        {nom: 'Engagement de dépense', format: ['PDF', 'DOC', 'DOCX'], tailleMax: 5, description: 'Engagement de dépense signé'},
+                        {nom: 'Liste du personnel', format: ['PDF', 'DOC', 'DOCX', 'XLS', 'XLSX'], tailleMax: 5, description: 'Liste du personnel concerné'}
+                    ],
+                    [
+                        {nom: 'États de présence', format: ['PDF', 'DOC', 'DOCX', 'XLS', 'XLSX'], tailleMax: 5, description: 'États de présence mensuels'},
+                        {nom: 'Fiche agent', format: ['PDF', 'DOC', 'DOCX'], tailleMax: 5, description: 'Fiche individuelle de chaque agent'},
+                        {nom: 'Relevés bancaires', format: ['PDF', 'JPG', 'PNG'], tailleMax: 5, description: 'Relevés bancaires pour virements'}
+                    ],
+                    [
+                        {nom: 'Registres des régies', format: ['PDF', 'DOC', 'DOCX', 'XLS', 'XLSX'], tailleMax: 10, description: 'Registres comptables des régies'},
+                        {nom: 'Rapports de caisse', format: ['PDF', 'DOC', 'DOCX', 'XLS', 'XLSX'], tailleMax: 5, description: 'Rapports de caisse quotidiens'},
+                        {nom: 'Pièces justificatives', format: ['PDF', 'JPG', 'PNG'], tailleMax: 10, description: 'Toutes les pièces justificatives'}
+                    ],
+                    [
+                        {nom: 'Pièces comptables', format: ['PDF', 'DOC', 'DOCX', 'XLS', 'XLSX'], tailleMax: 10, description: 'Pièces comptables à traiter'},
+                        {nom: 'Engagement budgétaire', format: ['PDF', 'DOC', 'DOCX'], tailleMax: 5, description: 'Engagement budgétaire signé'},
+                        {nom: 'Visa du contrôleur', format: ['PDF', 'JPG', 'PNG'], tailleMax: 5, description: 'Visa du contrôleur financier'}
+                    ],
+                    [
+                        {nom: 'Bon de commande', format: ['PDF', 'DOC', 'DOCX'], tailleMax: 5, description: 'Bon de commande signé'},
+                        {nom: 'Facture', format: ['PDF', 'JPG', 'PNG'], tailleMax: 5, description: 'Facture originale du fournisseur'},
+                        {nom: 'Certificat de service fait', format: ['PDF', 'DOC', 'DOCX'], tailleMax: 5, description: 'Certificat de service fait signé'}
+                    ]
                 ]
             },
             'hopital': {
@@ -4371,11 +4443,26 @@
                 ],
                 tarifs: [0, 0, 5000, 8000, 3000],
                 documents: [
-                    'Fiche de naissance remplie + Pièce d\'identité parents + Acte de mariage (si mariés) - Déclaration dans les 3 jours après accouchement',
-                    'Certificat médical de décès + Pièce d\'identité défunt + Acte de naissance défunt - Déclaration et établissement de l\'acte',
-                    'Rapport médical de naissance signé par médecin',
-                    'Rapport médical de décès signé par médecin',
-                    'Justificatif d\'hospitalisation + Pièce d\'identité patient'
+                    [
+                        {nom: 'Fiche de naissance remplie', format: ['PDF', 'JPG', 'PNG'], tailleMax: 5, description: 'Fiche de déclaration de naissance complétée'},
+                        {nom: 'Pièce d\'identité parents', format: ['PDF', 'JPG', 'PNG'], tailleMax: 5, description: 'Carte nationale d\'identité ou passeport des parents'},
+                        {nom: 'Acte de mariage (si mariés)', format: ['PDF', 'JPG', 'PNG'], tailleMax: 5, description: 'Acte de mariage si les parents sont mariés'}
+                    ],
+                    [
+                        {nom: 'Certificat médical de décès', format: ['PDF', 'JPG', 'PNG'], tailleMax: 5, description: 'Certificat signé par un médecin'},
+                        {nom: 'Pièce d\'identité défunt', format: ['PDF', 'JPG', 'PNG'], tailleMax: 5, description: 'Carte nationale d\'identité ou passeport du défunt'},
+                        {nom: 'Acte de naissance défunt', format: ['PDF', 'JPG', 'PNG'], tailleMax: 5, description: 'Copie intégrale ou extrait d\'acte de naissance'}
+                    ],
+                    [
+                        {nom: 'Rapport médical de naissance signé par médecin', format: ['PDF', 'JPG', 'PNG'], tailleMax: 5, description: 'Rapport médical signé et tamponné'}
+                    ],
+                    [
+                        {nom: 'Rapport médical de décès signé par médecin', format: ['PDF', 'JPG', 'PNG'], tailleMax: 5, description: 'Rapport médical signé et tamponné'}
+                    ],
+                    [
+                        {nom: 'Justificatif d\'hospitalisation', format: ['PDF', 'JPG', 'PNG'], tailleMax: 5, description: 'Justificatif d\'hospitalisation délivré par l\'hôpital'},
+                        {nom: 'Pièce d\'identité patient', format: ['PDF', 'JPG', 'PNG'], tailleMax: 5, description: 'Carte nationale d\'identité ou passeport du patient'}
+                    ]
                 ]
             }
         };
@@ -6705,7 +6792,10 @@
                 const documentsUploadContainer = document.getElementById('documentsUploadContainer');
                 
                 const serviceName = servicesAdmin[type].services[serviceIndex];
-                const documentsText = servicesAdmin[type].documents[serviceIndex];
+                const documentsList = servicesAdmin[type].documents[serviceIndex];
+                
+                // Afficher la liste des documents requis
+                const documentsText = documentsList.map(doc => doc.nom).join(' + ');
                 documentsDiv.textContent = documentsText;
                 coutDiv.textContent = servicesAdmin[type].tarifs[serviceIndex].toLocaleString() + ' FCFA';
                 // S'assurer que la couleur verte du Gabon est maintenue
@@ -6724,16 +6814,36 @@
                 
                 // Créer les champs de téléchargement pour chaque document requis
                 documentsUploadContainer.innerHTML = '';
-                const documentsList = documentsText.split('+').map(doc => doc.trim()).filter(doc => doc.length > 0);
                 
                 documentsList.forEach((doc, index) => {
                     const docDiv = document.createElement('div');
                     docDiv.className = 'mb-3 p-3 bg-gray-50 rounded border border-gray-200';
                     
+                    // Construire la liste des extensions acceptées
+                    const acceptExtensions = doc.format.map(f => {
+                        const extMap = {
+                            'PDF': '.pdf',
+                            'JPG': '.jpg,.jpeg',
+                            'PNG': '.png',
+                            'DOC': '.doc',
+                            'DOCX': '.docx',
+                            'XLS': '.xls',
+                            'XLSX': '.xlsx'
+                        };
+                        return extMap[f] || '';
+                    }).filter(e => e).join(',');
+                    
                     const label = document.createElement('label');
-                    label.className = 'block text-xs font-semibold text-gray-800 mb-2';
-                    label.innerHTML = `<i class="fas fa-file-upload mr-1 text-blue-600"></i> ${doc} <span class="text-red-500">*</span>`;
+                    label.className = 'block text-xs font-semibold text-gray-800 mb-1';
+                    label.innerHTML = `<i class="fas fa-file-upload mr-1 text-blue-600"></i> ${doc.nom} <span class="text-red-500">*</span>`;
                     label.setAttribute('for', `doc_${serviceIndex}_${index}`);
+                    
+                    const formatInfo = document.createElement('div');
+                    formatInfo.className = 'text-xs text-gray-600 mb-2';
+                    formatInfo.innerHTML = `<i class="fas fa-info-circle mr-1"></i> Format accepté: <strong>${doc.format.join(', ')}</strong> | Taille max: <strong>${doc.tailleMax} Mo</strong>`;
+                    if (doc.description) {
+                        formatInfo.innerHTML += `<br><span class="text-gray-500 italic">${doc.description}</span>`;
+                    }
                     
                     const input = document.createElement('input');
                     input.type = 'file';
@@ -6741,32 +6851,88 @@
                     input.name = `document_${index}`;
                     input.className = 'w-full text-xs border-2 border-gray-300 rounded p-2 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-blue-500 file:text-white hover:file:bg-blue-600 transition-colors';
                     input.required = true;
-                    input.accept = '.pdf,.jpg,.jpeg,.png,.doc,.docx';
-                    input.setAttribute('data-document-name', doc);
+                    input.accept = acceptExtensions;
+                    input.setAttribute('data-document-name', doc.nom);
+                    input.setAttribute('data-document-index', index);
+                    input.setAttribute('data-allowed-formats', doc.format.join(','));
+                    input.setAttribute('data-max-size', doc.tailleMax * 1024 * 1024); // Convertir en bytes
                     
                     const fileInfo = document.createElement('div');
-                    fileInfo.className = 'text-xs text-gray-500 mt-1 hidden';
+                    fileInfo.className = 'text-xs mt-1 hidden';
                     fileInfo.id = `fileInfo_${serviceIndex}_${index}`;
                     
-                    // Validation visuelle
+                    const errorMsg = document.createElement('div');
+                    errorMsg.className = 'text-xs text-red-600 mt-1 hidden';
+                    errorMsg.id = `errorMsg_${serviceIndex}_${index}`;
+                    
+                    // Validation du format et de la taille
                     input.addEventListener('change', function() {
+                        const errorDiv = document.getElementById(`errorMsg_${serviceIndex}_${index}`);
+                        errorDiv.classList.add('hidden');
+                        errorDiv.innerHTML = '';
+                        
                         if (this.files && this.files.length > 0) {
                             const file = this.files[0];
                             const fileSize = (file.size / 1024 / 1024).toFixed(2); // MB
-                            fileInfo.innerHTML = `<i class="fas fa-check-circle text-green-600 mr-1"></i> ${file.name} (${fileSize} MB)`;
-                            fileInfo.classList.remove('hidden');
-                            this.classList.remove('border-red-500', 'border-gray-300');
-                            this.classList.add('border-green-500');
+                            const fileExtension = file.name.split('.').pop().toUpperCase();
+                            const allowedFormats = doc.format;
+                            const maxSize = doc.tailleMax * 1024 * 1024; // bytes
+                            
+                            let isValid = true;
+                            let errorMessages = [];
+                            
+                            // Vérifier le format
+                            const formatMap = {
+                                'PDF': 'PDF',
+                                'JPG': 'JPG',
+                                'JPEG': 'JPG',
+                                'PNG': 'PNG',
+                                'DOC': 'DOC',
+                                'DOCX': 'DOCX',
+                                'XLS': 'XLS',
+                                'XLSX': 'XLSX'
+                            };
+                            
+                            const fileFormat = formatMap[fileExtension];
+                            if (!fileFormat || !allowedFormats.includes(fileFormat)) {
+                                isValid = false;
+                                errorMessages.push(`Format non accepté. Formats acceptés: ${allowedFormats.join(', ')}`);
+                            }
+                            
+                            // Vérifier la taille
+                            if (file.size > maxSize) {
+                                isValid = false;
+                                errorMessages.push(`Taille trop grande. Taille maximale: ${doc.tailleMax} Mo`);
+                            }
+                            
+                            if (isValid) {
+                                fileInfo.innerHTML = `<i class="fas fa-check-circle text-green-600 mr-1"></i> ${file.name} (${fileSize} MB)`;
+                                fileInfo.className = 'text-xs text-green-600 mt-1';
+                                fileInfo.classList.remove('hidden');
+                                this.classList.remove('border-red-500', 'border-gray-300');
+                                this.classList.add('border-green-500');
+                            } else {
+                                fileInfo.innerHTML = `<i class="fas fa-times-circle text-red-600 mr-1"></i> ${file.name} (${fileSize} MB)`;
+                                fileInfo.className = 'text-xs text-red-600 mt-1';
+                                fileInfo.classList.remove('hidden');
+                                errorDiv.innerHTML = errorMessages.map(msg => `<i class="fas fa-exclamation-triangle mr-1"></i>${msg}`).join('<br>');
+                                errorDiv.classList.remove('hidden');
+                                this.classList.remove('border-green-500', 'border-gray-300');
+                                this.classList.add('border-red-500');
+                                this.value = ''; // Réinitialiser le champ
+                            }
                         } else {
                             fileInfo.classList.add('hidden');
-                            this.classList.remove('border-green-500');
-                            this.classList.add('border-red-500');
+                            this.classList.remove('border-green-500', 'border-red-500');
+                            this.classList.add('border-gray-300');
                         }
                     });
                     
                     docDiv.appendChild(label);
+                    docDiv.appendChild(formatInfo);
                     docDiv.appendChild(input);
                     docDiv.appendChild(fileInfo);
+                    docDiv.appendChild(errorMsg);
                     documentsUploadContainer.appendChild(docDiv);
                 });
                 
@@ -6787,22 +6953,91 @@
                 return;
             }
             
-            // Vérifier que tous les documents sont fournis
+            const type = typeSelect.value;
+            const serviceIndex = parseInt(serviceSelect.value);
+            const serviceName = servicesAdmin[type].services[serviceIndex];
+            const documentsRequis = servicesAdmin[type].documents[serviceIndex];
+            const cout = servicesAdmin[type].tarifs[serviceIndex];
+            
+            // Vérifier que tous les documents sont fournis et valides
             const documentInputs = documentsUploadContainer.querySelectorAll('input[type="file"]');
             let allDocumentsProvided = true;
+            let allDocumentsValid = true;
             const missingDocuments = [];
+            const invalidDocuments = [];
             
-            documentInputs.forEach(input => {
+            const formatMap = {
+                'PDF': 'PDF',
+                'JPG': 'JPG',
+                'JPEG': 'JPG',
+                'PNG': 'PNG',
+                'DOC': 'DOC',
+                'DOCX': 'DOCX',
+                'XLS': 'XLS',
+                'XLSX': 'XLSX'
+            };
+            
+            documentInputs.forEach((input, index) => {
+                const documentRequis = documentsRequis[index];
+                const documentName = input.getAttribute('data-document-name');
+                
                 if (!input.files || input.files.length === 0) {
                     allDocumentsProvided = false;
-                    missingDocuments.push(input.getAttribute('data-document-name'));
+                    missingDocuments.push(documentName);
                     input.classList.add('border-red-500');
                     input.classList.add('ring-2');
                     input.classList.add('ring-red-300');
                 } else {
-                    input.classList.remove('border-red-500');
-                    input.classList.remove('ring-2');
-                    input.classList.remove('ring-red-300');
+                    const file = input.files[0];
+                    const fileExtension = file.name.split('.').pop().toUpperCase();
+                    const fileFormat = formatMap[fileExtension];
+                    const allowedFormats = documentRequis.format;
+                    const maxSize = documentRequis.tailleMax * 1024 * 1024; // bytes
+                    
+                    let isValid = true;
+                    let errorMessages = [];
+                    
+                    // Vérifier que le document correspond au document requis
+                    if (documentName !== documentRequis.nom) {
+                        isValid = false;
+                        errorMessages.push(`Document incorrect. Document requis: "${documentRequis.nom}"`);
+                    }
+                    
+                    // Vérifier le format
+                    if (!fileFormat || !allowedFormats.includes(fileFormat)) {
+                        isValid = false;
+                        errorMessages.push(`Format non accepté. Formats acceptés: ${allowedFormats.join(', ')}`);
+                    }
+                    
+                    // Vérifier la taille
+                    if (file.size > maxSize) {
+                        isValid = false;
+                        errorMessages.push(`Taille trop grande (${(file.size / 1024 / 1024).toFixed(2)} Mo). Taille maximale: ${documentRequis.tailleMax} Mo`);
+                    }
+                    
+                    if (isValid) {
+                        input.classList.remove('border-red-500');
+                        input.classList.remove('ring-2');
+                        input.classList.remove('ring-red-300');
+                        input.classList.add('border-green-500');
+                    } else {
+                        allDocumentsValid = false;
+                        invalidDocuments.push({
+                            nom: documentName,
+                            erreurs: errorMessages
+                        });
+                        input.classList.remove('border-green-500');
+                        input.classList.add('border-red-500');
+                        input.classList.add('ring-2');
+                        input.classList.add('ring-red-300');
+                        
+                        // Afficher l'erreur dans le champ
+                        const errorDiv = document.getElementById(`errorMsg_${serviceIndex}_${index}`);
+                        if (errorDiv) {
+                            errorDiv.innerHTML = errorMessages.map(msg => `<i class="fas fa-exclamation-triangle mr-1"></i>${msg}`).join('<br>');
+                            errorDiv.classList.remove('hidden');
+                        }
+                    }
                 }
             });
             
@@ -6817,10 +7052,19 @@
                 return;
             }
             
-            const type = typeSelect.value;
-            const serviceIndex = parseInt(serviceSelect.value);
-            const serviceName = servicesAdmin[type].services[serviceIndex];
-            const cout = servicesAdmin[type].tarifs[serviceIndex];
+            if (!allDocumentsValid) {
+                const errorDetails = invalidDocuments.map(doc => 
+                    `• ${doc.nom}: ${doc.erreurs.join('; ')}`
+                ).join('\n');
+                showNotification(`Documents non conformes:\n${errorDetails}`, 'error');
+                // Faire défiler vers le premier document invalide
+                const firstInvalid = documentsUploadContainer.querySelector('input[type="file"].border-red-500');
+                if (firstInvalid) {
+                    firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    firstInvalid.focus();
+                }
+                return;
+            }
             
             try {
                 showNotification('Création de la demande avec les documents...', 'info');
