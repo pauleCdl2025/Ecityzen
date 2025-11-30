@@ -7135,28 +7135,77 @@
             documents.forEach((doc, index) => {
                 const div = document.createElement('div');
                 div.className = 'p-3 border rounded-lg bg-gray-50';
+                
+                // Construire l'URL du fichier
+                let fileUrl = '';
+                let fileDisplay = '';
+                
+                if (doc.fichier) {
+                    // Si c'est un chemin relatif (uploads/demandes/...)
+                    if (doc.fichier.startsWith('uploads/') || doc.fichier.startsWith('../uploads/')) {
+                        // Construire l'URL complète par rapport à la racine du site
+                        const cleanPath = doc.fichier.replace(/^\.\.\//, '');
+                        // Utiliser le chemin relatif à la racine du site
+                        // Si on est sur localhost/Ecityzen/, le fichier sera accessible via /Ecityzen/uploads/...
+                        const basePath = window.location.pathname.split('/').slice(0, -1).join('/') || '';
+                        fileUrl = basePath + '/' + cleanPath;
+                        // Déterminer le type de fichier
+                        const extension = cleanPath.split('.').pop().toLowerCase();
+                        if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(extension)) {
+                            fileDisplay = `<img src="${fileUrl}" alt="${doc.nom || 'Document'}" class="max-w-full h-auto rounded border mt-2" style="max-height: 300px;" onerror="this.style.display='none'">`;
+                        } else {
+                            fileDisplay = `<a href="${fileUrl}" target="_blank" class="inline-flex items-center text-blue-600 hover:underline mt-2">
+                                <i class="fas fa-file-${extension === 'pdf' ? 'pdf' : 'download'} mr-2"></i>
+                                <span>Voir le document${extension === 'pdf' ? ' (PDF)' : ' (' + extension.toUpperCase() + ')'}</span>
+                            </a>`;
+                        }
+                    }
+                    // Si c'est une data URL (base64)
+                    else if (doc.fichier.startsWith('data:image') || doc.fichier.startsWith('data:application')) {
+                        fileUrl = doc.fichier;
+                        if (doc.fichier.startsWith('data:image')) {
+                            fileDisplay = `<img src="${fileUrl}" alt="${doc.nom || 'Document'}" class="max-w-full h-auto rounded border mt-2" style="max-height: 300px;" onerror="this.style.display='none'">`;
+                        } else {
+                            fileDisplay = `<a href="${fileUrl}" target="_blank" class="inline-flex items-center text-blue-600 hover:underline mt-2">
+                                <i class="fas fa-file-pdf mr-2"></i>
+                                <span>Voir le document (PDF)</span>
+                            </a>`;
+                        }
+                    }
+                    // Si c'est une URL absolue
+                    else if (doc.fichier.startsWith('http://') || doc.fichier.startsWith('https://') || doc.fichier.startsWith('/')) {
+                        fileUrl = doc.fichier;
+                        fileDisplay = `<a href="${fileUrl}" target="_blank" class="inline-flex items-center text-blue-600 hover:underline mt-2">
+                            <i class="fas fa-external-link-alt mr-2"></i>
+                            <span>Ouvrir le document</span>
+                        </a>`;
+                    }
+                    // Si c'est une longue chaîne base64 (sans préfixe data:)
+                    else if (doc.fichier.length > 100) {
+                        fileUrl = 'data:application/pdf;base64,' + doc.fichier;
+                        fileDisplay = `<a href="${fileUrl}" target="_blank" class="inline-flex items-center text-blue-600 hover:underline mt-2">
+                            <i class="fas fa-file-pdf mr-2"></i>
+                            <span>Voir le document (PDF)</span>
+                        </a>`;
+                    }
+                    // Sinon, afficher juste le nom
+                    else {
+                        fileDisplay = `<span class="text-gray-600 mt-2">Fichier: ${doc.nom_fichier || doc.fichier || 'document'}</span>`;
+                    }
+                }
+                
                 div.innerHTML = `
                     <div class="flex justify-between items-start">
                         <div class="flex-1">
-                            <div class="font-medium">${doc.nom || doc.document_name || 'Document ' + (index + 1)}</div>
-                            ${doc.fichier ? `
-                                <div class="mt-2">
-                                    ${doc.fichier.startsWith('data:image') || doc.fichier.startsWith('/') || doc.fichier.startsWith('http') ? 
-                                        `<img src="${doc.fichier}" alt="${doc.nom}" class="max-w-full h-auto rounded border" style="max-height: 200px;" onerror="this.style.display='none'">` :
-                                        doc.fichier.length > 100 ? 
-                                            `<a href="data:application/pdf;base64,${doc.fichier}" target="_blank" class="text-blue-600 hover:underline">
-                                                <i class="fas fa-file-pdf mr-1"></i>Voir le document (PDF)
-                                            </a>` :
-                                            `<span class="text-gray-600">Fichier: ${doc.nom_fichier || 'document'}</span>`
-                                    }
-                                </div>
-                            ` : ''}
+                            <div class="font-medium text-gray-800">${doc.nom || doc.document_name || 'Document ' + (index + 1)}</div>
+                            ${fileDisplay}
                             ${doc.taille ? `<div class="text-xs text-gray-500 mt-1">Taille: ${(doc.taille / 1024).toFixed(2)} KB</div>` : ''}
+                            ${doc.type ? `<div class="text-xs text-gray-500">Type: ${doc.type}</div>` : ''}
                         </div>
                         <div class="ml-4">
                             <label class="flex items-center">
                                 <input type="checkbox" class="mr-2 document-verifie" data-doc-index="${index}" ${doc.verifie ? 'checked' : ''}>
-                                <span class="text-sm">Vérifié</span>
+                                <span class="text-sm text-gray-700">Vérifié</span>
                             </label>
                         </div>
                     </div>

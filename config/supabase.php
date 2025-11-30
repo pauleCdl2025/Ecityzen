@@ -16,6 +16,7 @@ function supabaseCall($table, $method = 'GET', $data = null, $filters = [], $opt
     
     $ch = curl_init();
     
+    
     $headers = [
         'apikey: ' . SUPABASE_KEY,
         'Authorization: Bearer ' . SUPABASE_KEY,
@@ -51,7 +52,14 @@ function supabaseCall($table, $method = 'GET', $data = null, $filters = [], $opt
     if ($method === 'GET' && !empty($filters)) {
         foreach ($filters as $key => $value) {
             if ($value !== null) {
+                // Support des opérateurs Supabase (eq, in, gte, lte, etc.)
+                if (is_string($value) && strpos($value, '.') !== false) {
+                    // Format déjà avec opérateur: "gte.2024-01-01"
+                    $queryParams[] = $key . '=' . urlencode($value);
+                } else {
+                    // Format simple: égalité
                 $queryParams[] = $key . '=eq.' . urlencode($value);
+                }
             }
         }
     }
@@ -163,12 +171,42 @@ function enrichWithUserNames($items, $userIdField = 'utilisateur_id', $agentIdFi
         return $items;
     }
     
-    // Récupérer les noms des utilisateurs
+    // Récupérer les noms des utilisateurs - OPTIMISATION : requête groupée
     $users = [];
-    foreach ($userIds as $userId) {
-        $result = supabaseCall('utilisateurs', 'GET', null, ['id' => $userId]);
-        if ($result['success'] && !empty($result['data'])) {
-            $users[$userId] = $result['data'][0]['nom'];
+    
+    // Si on a beaucoup d'utilisateurs, faire des requêtes groupées (max 100 par requête)
+    $chunks = array_chunk($userIds, 100);
+    foreach ($chunks as $chunk) {
+        // Utiliser l'opérateur 'in' de Supabase pour récupérer plusieurs utilisateurs en une requête
+        // Format: id=in.(1,2,3)
+        $idsList = implode(',', array_map('intval', $chunk)); // S'assurer que ce sont des entiers
+        $url = SUPABASE_URL . '/rest/v1/utilisateurs?id=in.(' . $idsList . ')&select=id,nom';
+        
+        $ch = curl_init();
+        $headers = [
+            'apikey: ' . SUPABASE_KEY,
+            'Authorization: Bearer ' . SUPABASE_KEY,
+            'Content-Type: application/json'
+        ];
+        
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+        
+        if ($httpCode >= 200 && $httpCode < 300) {
+            $result = json_decode($response, true);
+            if (is_array($result)) {
+                foreach ($result as $user) {
+                    if (isset($user['id']) && isset($user['nom'])) {
+                        $users[$user['id']] = $user['nom'];
+                    }
+                }
+            }
         }
     }
     

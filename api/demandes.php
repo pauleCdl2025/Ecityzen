@@ -42,6 +42,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         // Enrichir avec les noms d'utilisateurs
         $demandes = enrichWithUserNames($demandes);
         
+        // Décoder les documents JSON pour chaque demande
+        foreach ($demandes as &$demande) {
+            if (isset($demande['documents']) && $demande['documents']) {
+                if (is_string($demande['documents'])) {
+                    // Décoder le JSON string
+                    $decoded = json_decode($demande['documents'], true);
+                    if (json_last_error() === JSON_ERROR_NONE) {
+                        $demande['documents'] = $decoded;
+                    } else {
+                        // Si le décodage échoue, essayer de le traiter comme un tableau
+                        error_log("Erreur décodage documents JSON pour demande " . ($demande['id'] ?? 'N/A') . ": " . json_last_error_msg());
+                        $demande['documents'] = [];
+                    }
+                } elseif (!is_array($demande['documents'])) {
+                    // Si ce n'est ni une string ni un array, initialiser à vide
+                    $demande['documents'] = [];
+                }
+                // Si c'est déjà un array, on le garde tel quel
+            } else {
+                // S'assurer que documents existe même si vide
+                $demande['documents'] = [];
+            }
+        }
+        
         sendJSONResponse(true, $demandes, 'Demandes récupérées');
         
     } catch (Exception $e) {
