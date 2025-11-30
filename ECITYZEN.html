@@ -10347,51 +10347,82 @@
             }
             
             if (!supabaseClient) {
-                throw new Error('Supabase non initialisé');
+                console.error('Supabase non initialisé');
+                return { success: false, error: 'Supabase non initialisé' };
             }
             
             try {
+                // Valider que la table est fournie
+                if (!table || typeof table !== 'string') {
+                    throw new Error('Nom de table invalide');
+                }
+                
                 let query = supabaseClient.from(table);
                 
-                // Appliquer les filtres
+                // Appliquer les filtres (ignorer les valeurs null/undefined)
                 for (const [key, value] of Object.entries(filters)) {
-                    query = query.eq(key, value);
+                    if (value !== null && value !== undefined && value !== '') {
+                        query = query.eq(key, value);
+                    }
                 }
                 
                 switch (method.toUpperCase()) {
                     case 'SELECT':
                     case 'GET':
-                        const { data: result, error } = await query.select();
-                        if (error) throw error;
-                        return { success: true, data: result };
+                        // Utiliser select('*') pour éviter les erreurs 400
+                        const { data: result, error } = await query.select('*');
+                        if (error) {
+                            console.error('Erreur Supabase SELECT:', error);
+                            throw error;
+                        }
+                        return { success: true, data: result || [] };
                         
                     case 'INSERT':
                     case 'POST':
+                        if (!data) {
+                            throw new Error('Données manquantes pour INSERT');
+                        }
                         const { data: insertData, error: insertError } = await supabaseClient
                             .from(table)
                             .insert(data)
-                            .select();
-                        if (insertError) throw insertError;
-                        return { success: true, data: insertData };
+                            .select('*');
+                        if (insertError) {
+                            console.error('Erreur Supabase INSERT:', insertError);
+                            throw insertError;
+                        }
+                        return { success: true, data: insertData || [] };
                         
                     case 'UPDATE':
                     case 'PUT':
                     case 'PATCH':
+                        if (!data) {
+                            throw new Error('Données manquantes pour UPDATE');
+                        }
                         let updateQuery = supabaseClient.from(table).update(data);
                         for (const [key, value] of Object.entries(filters)) {
-                            updateQuery = updateQuery.eq(key, value);
+                            if (value !== null && value !== undefined && value !== '') {
+                                updateQuery = updateQuery.eq(key, value);
+                            }
                         }
-                        const { data: updateData, error: updateError } = await updateQuery.select();
-                        if (updateError) throw updateError;
-                        return { success: true, data: updateData };
+                        const { data: updateData, error: updateError } = await updateQuery.select('*');
+                        if (updateError) {
+                            console.error('Erreur Supabase UPDATE:', updateError);
+                            throw updateError;
+                        }
+                        return { success: true, data: updateData || [] };
                         
                     case 'DELETE':
                         let deleteQuery = supabaseClient.from(table).delete();
                         for (const [key, value] of Object.entries(filters)) {
-                            deleteQuery = deleteQuery.eq(key, value);
+                            if (value !== null && value !== undefined && value !== '') {
+                                deleteQuery = deleteQuery.eq(key, value);
+                            }
                         }
                         const { error: deleteError } = await deleteQuery;
-                        if (deleteError) throw deleteError;
+                        if (deleteError) {
+                            console.error('Erreur Supabase DELETE:', deleteError);
+                            throw deleteError;
+                        }
                         return { success: true, data: null };
                         
                     default:
@@ -10399,7 +10430,11 @@
                 }
             } catch (error) {
                 console.error('Erreur Supabase:', error);
-                return { success: false, error: error.message };
+                return { 
+                    success: false, 
+                    error: error.message || error.toString(),
+                    details: error
+                };
             }
         }
         
@@ -10454,7 +10489,7 @@
                 const { data: newUser, error: insertError } = await supabaseClient
                     .from('utilisateurs')
                     .insert(userData)
-                    .select()
+                    .select('*')
                     .single();
                 
                 if (insertError) {
