@@ -6922,7 +6922,92 @@
                                 errorMessages.push(`Taille trop grande. Taille maximale: ${doc.tailleMax} Mo`);
                             }
                             
+                            // Vérifier la taille minimale (les documents officiels ont généralement une taille minimale)
+                            const minSize = 50 * 1024; // 50 KB minimum
+                            if (file.size < minSize) {
+                                isValid = false;
+                                errorMessages.push(`Fichier trop petit (${(file.size / 1024).toFixed(2)} KB). Les documents officiels sont généralement plus volumineux. Veuillez vérifier que c'est bien le bon document.`);
+                            }
+                            
+                            // Validation supplémentaire pour les images : vérifier les dimensions (asynchrone)
+                            if (['JPG', 'JPEG', 'PNG'].includes(fileFormat)) {
+                                const img = new Image();
+                                const fileUrl = URL.createObjectURL(file);
+                                const inputRef = this;
+                                const docRef = doc;
+                                const errorDivRef = errorDiv;
+                                const fileInfoRef = fileInfo;
+                                
+                                img.onload = function() {
+                                    const width = this.width;
+                                    const height = this.height;
+                                    const aspectRatio = width / height;
+                                    let imageValid = true;
+                                    let imageErrors = [];
+                                    
+                                    // Les pièces d'identité ont généralement un format rectangulaire (ratio entre 1.2 et 2.5)
+                                    const documentType = docRef.nom.toLowerCase();
+                                    
+                                    if (documentType.includes('pièce d\'identité') || documentType.includes('identité') || documentType.includes('carte')) {
+                                        // Pièce d'identité : format rectangulaire (carte) - ratio entre 1.2 et 2.5
+                                        if (aspectRatio < 1.2 || aspectRatio > 2.5) {
+                                            imageValid = false;
+                                            imageErrors.push(`Format d'image suspect pour une pièce d'identité (ratio ${aspectRatio.toFixed(2)}). Les pièces d'identité ont généralement un format rectangulaire.`);
+                                        }
+                                        // Dimensions minimales pour une pièce d'identité (généralement au moins 300x200px)
+                                        if (width < 300 || height < 200) {
+                                            imageValid = false;
+                                            imageErrors.push(`Image trop petite (${width}x${height}px). Une pièce d'identité doit être claire et lisible. Dimensions minimales: 300x200px.`);
+                                        }
+                                    } else if (documentType.includes('acte') || documentType.includes('certificat')) {
+                                        // Actes et certificats : format généralement rectangulaire vertical ou carré
+                                        if (aspectRatio < 0.4 || aspectRatio > 2.5) {
+                                            imageValid = false;
+                                            imageErrors.push(`Format d'image suspect pour un acte/certificat (ratio ${aspectRatio.toFixed(2)}).`);
+                                        }
+                                    }
+                                    
+                                    // Mettre à jour l'affichage avec les résultats de validation
+                                    if (!imageValid) {
+                                        errorDivRef.innerHTML = imageErrors.map(msg => `<i class="fas fa-exclamation-triangle mr-1"></i>${msg}`).join('<br>');
+                                        errorDivRef.classList.remove('hidden');
+                                        inputRef.classList.remove('border-green-500', 'border-gray-300');
+                                        inputRef.classList.add('border-red-500');
+                                        inputRef.value = ''; // Réinitialiser le champ
+                                        inputRef.removeAttribute('data-validated');
+                                        fileInfoRef.innerHTML = `<i class="fas fa-times-circle text-red-600 mr-1"></i> ${file.name} (${fileSize} MB) - Document non conforme`;
+                                        fileInfoRef.className = 'text-xs text-red-600 mt-1';
+                                    } else {
+                                        fileInfoRef.innerHTML = `<i class="fas fa-check-circle text-green-600 mr-1"></i> ${file.name} (${fileSize} MB) - ${width}x${height}px`;
+                                        fileInfoRef.className = 'text-xs text-green-600 mt-1';
+                                        inputRef.classList.remove('border-red-500', 'border-gray-300');
+                                        inputRef.classList.add('border-green-500');
+                                        inputRef.setAttribute('data-validated', 'true');
+                                    }
+                                    
+                                    URL.revokeObjectURL(fileUrl);
+                                };
+                                
+                                img.onerror = function() {
+                                    errorDivRef.innerHTML = '<i class="fas fa-exclamation-triangle mr-1"></i>Erreur lors de la lecture de l\'image. Veuillez vérifier que le fichier est valide.';
+                                    errorDivRef.classList.remove('hidden');
+                                    inputRef.classList.remove('border-green-500', 'border-gray-300');
+                                    inputRef.classList.add('border-red-500');
+                                    inputRef.value = '';
+                                    inputRef.removeAttribute('data-validated');
+                                    fileInfoRef.innerHTML = `<i class="fas fa-times-circle text-red-600 mr-1"></i> ${file.name} (${fileSize} MB) - Erreur`;
+                                    fileInfoRef.className = 'text-xs text-red-600 mt-1';
+                                    URL.revokeObjectURL(fileUrl);
+                                };
+                                
+                                img.src = fileUrl;
+                            }
+                            
                             if (isValid) {
+                                // Pour les fichiers non-images, marquer comme validé immédiatement
+                                if (!['JPG', 'JPEG', 'PNG'].includes(fileFormat)) {
+                                    this.setAttribute('data-validated', 'true');
+                                }
                                 fileInfo.innerHTML = `<i class="fas fa-check-circle text-green-600 mr-1"></i> ${file.name} (${fileSize} MB)`;
                                 fileInfo.className = 'text-xs text-green-600 mt-1';
                                 fileInfo.classList.remove('hidden');
@@ -6971,6 +7056,7 @@
                                     previewDiv.classList.remove('hidden');
                                 }
                             } else {
+                                this.removeAttribute('data-validated');
                                 fileInfo.innerHTML = `<i class="fas fa-times-circle text-red-600 mr-1"></i> ${file.name} (${fileSize} MB)`;
                                 fileInfo.className = 'text-xs text-red-600 mt-1';
                                 fileInfo.classList.remove('hidden');
@@ -7026,6 +7112,58 @@
             let allDocumentsValid = true;
             const missingDocuments = [];
             const invalidDocuments = [];
+            const notValidatedDocuments = [];
+            
+            // Vérifier que tous les fichiers ont été validés (surtout pour les images)
+            documentInputs.forEach((input, index) => {
+                if (input.files && input.files.length > 0) {
+                    const file = input.files[0];
+                    const fileExtension = file.name.split('.').pop().toUpperCase();
+                    
+                    // Pour les images, vérifier qu'elles ont été validées
+                    if (['JPG', 'JPEG', 'PNG'].includes(fileExtension)) {
+                        if (!input.hasAttribute('data-validated') || input.getAttribute('data-validated') !== 'true') {
+                            allDocumentsValid = false;
+                            notValidatedDocuments.push(input.getAttribute('data-document-name') || 'Document');
+                        }
+                    }
+                }
+            });
+            
+            if (notValidatedDocuments.length > 0) {
+                showNotification(`Veuillez attendre la validation complète des images: ${notValidatedDocuments.join(', ')}`, 'error');
+                return;
+            }
+            
+            // Vérifier qu'il n'y a pas d'erreurs visibles dans les champs
+            const errorMessages = documentsUploadContainer.querySelectorAll('[id^="errorMsg_"]');
+            errorMessages.forEach(errorDiv => {
+                if (!errorDiv.classList.contains('hidden') && errorDiv.innerHTML.trim() !== '') {
+                    allDocumentsValid = false;
+                    const inputId = errorDiv.id.replace('errorMsg_', '').split('_');
+                    const input = document.getElementById(`doc_${inputId[0]}_${inputId[1]}`);
+                    if (input) {
+                        invalidDocuments.push({
+                            nom: input.getAttribute('data-document-name') || 'Document',
+                            erreurs: [errorDiv.textContent.trim()]
+                        });
+                    }
+                }
+            });
+            
+            // Vérifier que tous les champs avec erreurs sont vides ou corrigés
+            documentInputs.forEach((input, index) => {
+                if (input.classList.contains('border-red-500')) {
+                    allDocumentsValid = false;
+                    const docName = input.getAttribute('data-document-name');
+                    if (docName && !invalidDocuments.find(d => d.nom === docName)) {
+                        invalidDocuments.push({
+                            nom: docName,
+                            erreurs: ['Document non conforme (erreur de validation détectée)']
+                        });
+                    }
+                }
+            });
             
             const formatMap = {
                 'PDF': 'PDF',

@@ -161,6 +161,13 @@ function validerDocument($file, $documentRequis) {
         return $errors;
     }
     
+    // Vérifier la taille minimale (les documents officiels ont généralement une taille minimale)
+    $minSize = 50 * 1024; // 50 KB minimum
+    if ($file['size'] < $minSize) {
+        $fileSizeKB = round($file['size'] / 1024, 2);
+        $errors[] = "Fichier trop petit pour '{$documentRequis['nom']}' ({$fileSizeKB} KB). Les documents officiels sont généralement plus volumineux. Veuillez vérifier que c'est bien le bon document.";
+    }
+    
     // Vérifier le format
     $extension = strtoupper(pathinfo($file['name'], PATHINFO_EXTENSION));
     $formatMap = [
@@ -180,11 +187,51 @@ function validerDocument($file, $documentRequis) {
         $errors[] = "Format non accepté pour '{$documentRequis['nom']}'. Formats acceptés: " . implode(', ', $documentRequis['format']);
     }
     
-    // Vérifier la taille
+    // Vérifier la taille maximale
     $maxSize = $documentRequis['tailleMax'] * 1024 * 1024; // Convertir en bytes
     if ($file['size'] > $maxSize) {
         $fileSizeMB = round($file['size'] / 1024 / 1024, 2);
         $errors[] = "Taille trop grande pour '{$documentRequis['nom']}' ({$fileSizeMB} Mo). Taille maximale: {$documentRequis['tailleMax']} Mo";
+    }
+    
+    // Validation supplémentaire pour les images : vérifier les dimensions
+    if (in_array($fileFormat, ['JPG', 'PNG'])) {
+        $imageInfo = @getimagesize($file['tmp_name']);
+        
+        if ($imageInfo === false) {
+            $errors[] = "Le fichier n'est pas une image valide pour '{$documentRequis['nom']}'";
+        } else {
+            $width = $imageInfo[0];
+            $height = $imageInfo[1];
+            $aspectRatio = $width / $height;
+            
+            $documentType = strtolower($documentRequis['nom']);
+            
+            // Validation pour les pièces d'identité
+            if (strpos($documentType, 'pièce d\'identité') !== false || 
+                strpos($documentType, 'identité') !== false || 
+                strpos($documentType, 'carte') !== false) {
+                
+                // Pièce d'identité : format rectangulaire (ratio entre 1.2 et 2.5)
+                if ($aspectRatio < 1.2 || $aspectRatio > 2.5) {
+                    $errors[] = "Format d'image suspect pour une pièce d'identité (ratio {$aspectRatio}). Les pièces d'identité ont généralement un format rectangulaire. Veuillez vérifier que c'est bien le bon document.";
+                }
+                
+                // Dimensions minimales pour une pièce d'identité
+                if ($width < 300 || $height < 200) {
+                    $errors[] = "Image trop petite pour une pièce d'identité ({$width}x{$height}px). Dimensions minimales requises: 300x200px. Veuillez vérifier que c'est bien le bon document.";
+                }
+            } 
+            // Validation pour les actes et certificats
+            elseif (strpos($documentType, 'acte') !== false || 
+                    strpos($documentType, 'certificat') !== false) {
+                
+                // Actes et certificats : format généralement rectangulaire vertical ou carré
+                if ($aspectRatio < 0.4 || $aspectRatio > 2.5) {
+                    $errors[] = "Format d'image suspect pour un acte/certificat (ratio {$aspectRatio}). Veuillez vérifier que c'est bien le bon document.";
+                }
+            }
+        }
     }
     
     return $errors;
