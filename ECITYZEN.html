@@ -1755,10 +1755,6 @@
                         <i class="fas fa-cross mb-2"></i><br>
                         Acte de Décès
                     </button>
-                    <button onclick="declarerMariage()" class="bg-pink-500 hover:bg-pink-600 text-white p-3 rounded-lg text-sm transition-all duration-300 transform hover:scale-105">
-                        <i class="fas fa-heart mb-2"></i><br>
-                        Acte de Mariage
-                    </button>
                     <button onclick="certificatNaissance()" class="bg-green-500 hover:bg-green-600 text-white p-3 rounded-lg text-sm transition-all duration-300 transform hover:scale-105">
                         <i class="fas fa-certificate mb-2"></i><br>
                         Certificat Médical
@@ -4369,16 +4365,14 @@
                 services: [
                     'Acte de Naissance (Déclaration)',
                     'Acte de Décès (Déclaration)',
-                    'Acte de Mariage (Célébration)',
                     'Certificat médical de naissance',
                     'Certificat médical de décès',
                     'Attestation d\'hospitalisation'
                 ],
-                tarifs: [0, 0, 15000, 5000, 8000, 3000],
+                tarifs: [0, 0, 5000, 8000, 3000],
                 documents: [
                     'Fiche de naissance remplie + Pièce d\'identité parents + Acte de mariage (si mariés) - Déclaration dans les 3 jours après accouchement',
                     'Certificat médical de décès + Pièce d\'identité défunt + Acte de naissance défunt - Déclaration et établissement de l\'acte',
-                    'Actes de naissance des deux époux + Pièce d\'identité + Certificat médical prénuptial + 2 témoins majeurs - Célébration et établissement de l\'acte',
                     'Rapport médical de naissance signé par médecin',
                     'Rapport médical de décès signé par médecin',
                     'Justificatif d\'hospitalisation + Pièce d\'identité patient'
@@ -5204,7 +5198,6 @@
                     d.service && (d.service.includes('Déclaration') || d.service.includes('Certificat') || 
                     d.service.includes('Naissance') || d.service.includes('naissance') ||
                     d.service.includes('Décès') || d.service.includes('décès') ||
-                    d.service.includes('Mariage') || d.service.includes('mariage') ||
                     d.service.includes('Acte'))
                 );
                 
@@ -6722,9 +6715,6 @@
                 if (serviceName.includes('Acte de Naissance') || serviceName.includes('Naissance')) {
                     infoSpeciale.classList.remove('hidden');
                     infoSpecialeText.textContent = '⚠️ Important : Déclaration obligatoire dans les 3 jours après l\'accouchement. En cas de non-déclaration dans les délais, un jugement supplétif sera nécessaire.';
-                } else if (serviceName.includes('Acte de Mariage') || serviceName.includes('Mariage')) {
-                    infoSpeciale.classList.remove('hidden');
-                    infoSpecialeText.textContent = '💒 Célébration et établissement de l\'acte de mariage. Présence des deux époux et de 2 témoins majeurs obligatoire.';
                 } else if (serviceName.includes('Acte de Décès') || serviceName.includes('Décès')) {
                     infoSpeciale.classList.remove('hidden');
                     infoSpecialeText.textContent = '⚰️ Déclaration et établissement de l\'acte de décès. Doit être effectuée dans les 24 heures suivant le décès.';
@@ -7912,17 +7902,6 @@
             document.getElementById('demandeType').dispatchEvent(new Event('change'));
             setTimeout(() => {
                 document.getElementById('demandeService').value = '3'; // Certificat médical de naissance
-                document.getElementById('demandeService').dispatchEvent(new Event('change'));
-            }, 100);
-        }
-        
-        function declarerMariage() {
-            showNotification('Formulaire d\'acte de mariage ouvert', 'info');
-            document.getElementById('demandeModal').classList.remove('hidden');
-            document.getElementById('demandeType').value = 'hopital';
-            document.getElementById('demandeType').dispatchEvent(new Event('change'));
-            setTimeout(() => {
-                document.getElementById('demandeService').value = '2'; // Acte de Mariage (Célébration)
                 document.getElementById('demandeService').dispatchEvent(new Event('change'));
             }, 100);
         }
