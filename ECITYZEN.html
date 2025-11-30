@@ -5704,6 +5704,12 @@
                 const signalements = signalementsResult.data || [];
                 const missions = missionsResult.data || [];
                 
+                // Mettre à jour le cache des demandes
+                if (demandes.length > 0) {
+                    demandesCache = demandes;
+                    demandesCacheTime = Date.now();
+                }
+                
                 // Filtrer les données pour l'agent connecté
                 const demandesAgent = demandes.filter(d => d.agent_assigné_id == currentUser.id);
                 const signalementsAgent = signalements.filter(s => s.agent_assigné_id == currentUser.id);
@@ -5808,12 +5814,13 @@
                     div.innerHTML = `
                         <div class="flex justify-between items-start">
                             <div class="flex-1">
-                                <div class="flex items-center gap-2 mb-1">
+                                <div class="flex items-center gap-2 mb-1 flex-wrap">
                                     <div class="font-medium">${demande.service || demande.type || 'Demande'}</div>
                                     ${isNouvelle ? '<span class="px-2 py-0.5 bg-red-500 text-white text-xs rounded-full animate-pulse">NOUVEAU</span>' : ''}
+                                    ${getRoleBadge(demande.utilisateur_role)}
                                 </div>
                                 <div class="text-sm text-gray-600 mb-1">
-                                    <i class="fas fa-user mr-1"></i>${demande.utilisateur_nom || 'Utilisateur'}
+                                    <i class="fas ${getRoleIcon(demande.utilisateur_role)} mr-1"></i>${demande.utilisateur_nom || 'Utilisateur'} <span class="text-xs text-gray-500">(${getRoleText(demande.utilisateur_role)})</span>
                                 </div>
                                 <div class="text-xs text-gray-500 mb-1">
                                     <i class="fas fa-file-alt mr-1"></i>${demande.numero_dossier || 'N/A'}
@@ -7000,6 +7007,13 @@
             try {
                 const result = await apiCall('demandes.php').catch(() => ({ data: [] }));
                 const demandes = result.data || [];
+                
+                // Mettre à jour le cache des demandes
+                if (demandes.length > 0) {
+                    demandesCache = demandes;
+                    demandesCacheTime = Date.now();
+                }
+                
                 const demandesAgent = demandes.filter(d => d.agent_assigné_id == currentUser.id || !d.agent_assigné_id);
                 
                 const listContainer = document.getElementById('traiterDemandesList');
@@ -7032,9 +7046,12 @@
                     div.innerHTML = `
                         <div class="flex justify-between items-start">
                             <div class="flex-1">
-                                <div class="font-semibold text-lg mb-1">${demande.service || demande.type || 'Demande'}</div>
+                                <div class="flex items-center gap-2 mb-1 flex-wrap">
+                                    <div class="font-semibold text-lg">${demande.service || demande.type || 'Demande'}</div>
+                                    ${getRoleBadge(demande.utilisateur_role)}
+                                </div>
                                 <div class="text-sm text-gray-600 mb-1">
-                                    <i class="fas fa-user mr-1"></i>${demande.utilisateur_nom || 'Utilisateur'}
+                                    <i class="fas ${getRoleIcon(demande.utilisateur_role)} mr-1"></i>${demande.utilisateur_nom || 'Utilisateur'} <span class="text-xs text-gray-500">(${getRoleText(demande.utilisateur_role)})</span>
                                 </div>
                                 <div class="text-sm text-gray-600 mb-1">
                                     <i class="fas fa-hashtag mr-1"></i>${demande.numero_dossier || 'N/A'}
@@ -7060,25 +7077,114 @@
             }
         }
         
+        // Cache local pour les demandes déjà chargées
+        let demandesCache = null;
+        let demandesCacheTime = 0;
+        const CACHE_DURATION = 30000; // 30 secondes
+        
+        // Fonctions helper pour les badges de rôle
+        function getRoleBadge(role) {
+            if (!role) return '';
+            const roleMap = {
+                'commercant': '<span class="px-2 py-1 bg-blue-500 text-white rounded text-xs font-medium"><i class="fas fa-store mr-1"></i>Business</span>',
+                'hopital': '<span class="px-2 py-1 bg-red-500 text-white rounded text-xs font-medium"><i class="fas fa-hospital mr-1"></i>Hôpital</span>',
+                'citoyen': '<span class="px-2 py-1 bg-green-500 text-white rounded text-xs font-medium"><i class="fas fa-user mr-1"></i>Citoyen</span>',
+                'chef_quartier': '<span class="px-2 py-1 bg-purple-500 text-white rounded text-xs font-medium"><i class="fas fa-users mr-1"></i>Chef Quartier</span>',
+                'societe_travaux': '<span class="px-2 py-1 bg-orange-500 text-white rounded text-xs font-medium"><i class="fas fa-hard-hat mr-1"></i>Société Travaux</span>'
+            };
+            return roleMap[role] || `<span class="px-2 py-1 bg-gray-500 text-white rounded text-xs font-medium">${role}</span>`;
+        }
+        
+        function getRoleIcon(role) {
+            if (!role) return 'fa-user';
+            const iconMap = {
+                'commercant': 'fa-store',
+                'hopital': 'fa-hospital',
+                'citoyen': 'fa-user',
+                'chef_quartier': 'fa-users',
+                'societe_travaux': 'fa-hard-hat'
+            };
+            return iconMap[role] || 'fa-user';
+        }
+        
+        function getRoleText(role) {
+            if (!role) return 'Citoyen';
+            const textMap = {
+                'commercant': 'Business',
+                'hopital': 'Hôpital',
+                'citoyen': 'Citoyen',
+                'chef_quartier': 'Chef Quartier',
+                'societe_travaux': 'Société Travaux'
+            };
+            return textMap[role] || role;
+        }
+        
         async function voirDetailsDemande(demandeId) {
+            // Ouvrir la modale immédiatement avec un indicateur de chargement
+            const modal = document.getElementById('detailsDemandeAgentModal');
+            modal.classList.remove('hidden');
+            
+            // Afficher un indicateur de chargement
+            const modalContent = modal.querySelector('.bg-white');
+            if (modalContent) {
+                const originalContent = modalContent.innerHTML;
+                modalContent.innerHTML = '<div class="p-8 text-center"><div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div><p class="mt-4 text-gray-600">Chargement des détails...</p></div>';
+            }
+            
             try {
-                const result = await apiCall('demandes.php').catch(() => ({ data: [] }));
-                const demandes = result.data || [];
-                const demande = demandes.find(d => d.id == demandeId);
+                // Vérifier le cache d'abord
+                const now = Date.now();
+                let demande = null;
+                
+                if (demandesCache && (now - demandesCacheTime) < CACHE_DURATION) {
+                    // Utiliser le cache si disponible et récent
+                    demande = demandesCache.find(d => d.id == demandeId);
+                }
+                
+                // Si pas dans le cache, récupérer seulement cette demande (optimisation)
+                if (!demande) {
+                    const result = await apiCall(`demandes.php?id=${demandeId}`).catch(async () => {
+                        // Fallback: récupérer toutes les demandes si l'endpoint avec ID ne fonctionne pas
+                        const fallbackResult = await apiCall('demandes.php').catch(() => ({ data: [] }));
+                        return fallbackResult;
+                    });
+                    
+                    if (result.data && Array.isArray(result.data) && result.data.length > 0) {
+                        // Si c'est un tableau, chercher la demande
+                        demande = result.data.find(d => d.id == demandeId);
+                        // Mettre à jour le cache
+                        if (Array.isArray(result.data) && result.data.length > 1) {
+                            demandesCache = result.data;
+                            demandesCacheTime = now;
+                        }
+                    } else if (result.data && !Array.isArray(result.data)) {
+                        // Si c'est un objet unique (retour de l'endpoint avec ID)
+                        demande = result.data;
+                    }
+                }
                 
                 if (!demande) {
+                    modal.classList.add('hidden');
                     showNotification('Demande non trouvée', 'error');
                     return;
                 }
                 
-                // Ouvrir la modale de détails
-                const modal = document.getElementById('detailsDemandeAgentModal');
-                modal.classList.remove('hidden');
-                
                 // Remplir les informations
                 document.getElementById('detailsDemandeId').textContent = demande.numero_dossier || 'N/A';
                 document.getElementById('detailsDemandeService').textContent = demande.service || demande.type || 'N/A';
-                document.getElementById('detailsDemandeUtilisateur').textContent = demande.utilisateur_nom || 'N/A';
+                
+                // Afficher l'utilisateur avec son type
+                const utilisateurElement = document.getElementById('detailsDemandeUtilisateur');
+                if (utilisateurElement) {
+                    const roleText = getRoleText(demande.utilisateur_role);
+                    utilisateurElement.innerHTML = `
+                        <div class="flex items-center gap-2">
+                            <i class="fas ${getRoleIcon(demande.utilisateur_role)}"></i>
+                            <span>${demande.utilisateur_nom || 'N/A'}</span>
+                            ${getRoleBadge(demande.utilisateur_role)}
+                        </div>
+                    `;
+                }
                 document.getElementById('detailsDemandeMotif').textContent = demande.motif || 'Non renseigné';
                 document.getElementById('detailsDemandeMontant').textContent = parseFloat(demande.montant || demande.cout || 0).toLocaleString() + ' FCFA';
                 
@@ -7871,12 +7977,57 @@
                     const dateFormatee = dateCreation.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
                     const heureFormatee = dateCreation.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
                     
+                    // Déterminer le type d'utilisateur et le badge correspondant
+                    const role = demande.utilisateur_role || 'citoyen';
+                    let roleBadge = '';
+                    let roleIcon = 'fa-user';
+                    let roleColor = 'bg-gray-500';
+                    let roleText = 'Citoyen';
+                    
+                    switch(role) {
+                        case 'commercant':
+                            roleBadge = '<span class="px-2 py-1 bg-blue-500 text-white rounded text-xs font-medium mr-2"><i class="fas fa-store mr-1"></i>Business</span>';
+                            roleIcon = 'fa-store';
+                            roleColor = 'bg-blue-500';
+                            roleText = 'Business';
+                            break;
+                        case 'hopital':
+                            roleBadge = '<span class="px-2 py-1 bg-red-500 text-white rounded text-xs font-medium mr-2"><i class="fas fa-hospital mr-1"></i>Hôpital</span>';
+                            roleIcon = 'fa-hospital';
+                            roleColor = 'bg-red-500';
+                            roleText = 'Hôpital';
+                            break;
+                        case 'citoyen':
+                            roleBadge = '<span class="px-2 py-1 bg-green-500 text-white rounded text-xs font-medium mr-2"><i class="fas fa-user mr-1"></i>Citoyen</span>';
+                            roleIcon = 'fa-user';
+                            roleColor = 'bg-green-500';
+                            roleText = 'Citoyen';
+                            break;
+                        case 'chef_quartier':
+                            roleBadge = '<span class="px-2 py-1 bg-purple-500 text-white rounded text-xs font-medium mr-2"><i class="fas fa-users mr-1"></i>Chef Quartier</span>';
+                            roleIcon = 'fa-users';
+                            roleColor = 'bg-purple-500';
+                            roleText = 'Chef Quartier';
+                            break;
+                        case 'societe_travaux':
+                            roleBadge = '<span class="px-2 py-1 bg-orange-500 text-white rounded text-xs font-medium mr-2"><i class="fas fa-hard-hat mr-1"></i>Société Travaux</span>';
+                            roleIcon = 'fa-hard-hat';
+                            roleColor = 'bg-orange-500';
+                            roleText = 'Société Travaux';
+                            break;
+                        default:
+                            roleBadge = `<span class="px-2 py-1 ${roleColor} text-white rounded text-xs font-medium mr-2"><i class="fas ${roleIcon} mr-1"></i>${roleText}</span>`;
+                    }
+                    
                     div.innerHTML = `
                         <div class="flex justify-between items-start">
                             <div class="flex-1">
-                                <div class="font-semibold text-lg mb-1">${demande.service || demande.type || 'Demande'}</div>
+                                <div class="flex items-center gap-2 mb-2">
+                                    <div class="font-semibold text-lg">${demande.service || demande.type || 'Demande'}</div>
+                                    ${roleBadge}
+                                </div>
                                 <div class="text-sm text-gray-600 mb-1">
-                                    <i class="fas fa-user mr-1"></i>${demande.utilisateur_nom || 'Utilisateur'}
+                                    <i class="fas ${roleIcon} mr-1"></i>${demande.utilisateur_nom || 'Utilisateur'} <span class="text-xs text-gray-500">(${roleText})</span>
                                 </div>
                                 <div class="text-sm text-gray-600 mb-1">
                                     <i class="fas fa-hashtag mr-1"></i>${demande.numero_dossier || 'N/A'}

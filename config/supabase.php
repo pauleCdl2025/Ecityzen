@@ -180,7 +180,7 @@ function enrichWithUserNames($items, $userIdField = 'utilisateur_id', $agentIdFi
         // Utiliser l'opérateur 'in' de Supabase pour récupérer plusieurs utilisateurs en une requête
         // Format: id=in.(1,2,3)
         $idsList = implode(',', array_map('intval', $chunk)); // S'assurer que ce sont des entiers
-        $url = SUPABASE_URL . '/rest/v1/utilisateurs?id=in.(' . $idsList . ')&select=id,nom';
+        $url = SUPABASE_URL . '/rest/v1/utilisateurs?id=in.(' . $idsList . ')&select=id,nom,role';
         
         $ch = curl_init();
         $headers = [
@@ -203,7 +203,10 @@ function enrichWithUserNames($items, $userIdField = 'utilisateur_id', $agentIdFi
             if (is_array($result)) {
                 foreach ($result as $user) {
                     if (isset($user['id']) && isset($user['nom'])) {
-                        $users[$user['id']] = $user['nom'];
+                        $users[$user['id']] = [
+                            'nom' => $user['nom'],
+                            'role' => $user['role'] ?? 'citoyen'
+                        ];
                     }
                 }
             }
@@ -213,10 +216,24 @@ function enrichWithUserNames($items, $userIdField = 'utilisateur_id', $agentIdFi
     // Enrichir les items
     foreach ($items as &$item) {
         if (isset($item[$userIdField]) && isset($users[$item[$userIdField]])) {
-            $item['utilisateur_nom'] = $users[$item[$userIdField]];
+            $userData = $users[$item[$userIdField]];
+            if (is_array($userData)) {
+                $item['utilisateur_nom'] = $userData['nom'];
+                $item['utilisateur_role'] = $userData['role'];
+            } else {
+                // Compatibilité avec l'ancien format (string)
+                $item['utilisateur_nom'] = $userData;
+            }
         }
         if (isset($item[$agentIdField]) && isset($users[$item[$agentIdField]])) {
-            $item['agent_nom'] = $users[$item[$agentIdField]];
+            $agentData = $users[$item[$agentIdField]];
+            if (is_array($agentData)) {
+                $item['agent_nom'] = $agentData['nom'];
+                $item['agent_role'] = $agentData['role'];
+            } else {
+                // Compatibilité avec l'ancien format (string)
+                $item['agent_nom'] = $agentData;
+            }
         }
     }
     

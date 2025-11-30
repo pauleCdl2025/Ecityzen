@@ -15,8 +15,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $userId = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : null;
     $role = isset($_SESSION['user_role']) ? $_SESSION['user_role'] : null;
     
+    // Si un ID spécifique est demandé, récupérer seulement cette demande (optimisation)
+    $demandeId = isset($_GET['id']) ? intval($_GET['id']) : null;
+    
     try {
-        if ($role === 'agent' || $role === 'manager' || $role === 'superadmin') {
+        if ($demandeId) {
+            // Récupérer une seule demande par ID (beaucoup plus rapide)
+            $result = supabaseCall('demandes', 'GET', null, ['id' => $demandeId]);
+            $demandes = $result['success'] && !empty($result['data']) ? $result['data'] : [];
+            
+            // Vérifier les permissions
+            if (!empty($demandes)) {
+                $demande = $demandes[0];
+                // Les agents/managers peuvent voir toutes les demandes
+                if (!in_array($role, ['agent', 'manager', 'superadmin'])) {
+                    // Les autres utilisateurs voient seulement leurs demandes
+                    if (!$userId || $demande['utilisateur_id'] != $userId) {
+                        sendJSONResponse(false, null, 'Non autorisé', 403);
+                    }
+                }
+            }
+        } elseif ($role === 'agent' || $role === 'manager' || $role === 'superadmin') {
             // Les agents/managers voient toutes les demandes
             $result = supabaseCall('demandes', 'GET', null, [], [
                 'order' => ['date_creation' => 'desc'],
