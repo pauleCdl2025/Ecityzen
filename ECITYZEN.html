@@ -6865,11 +6865,28 @@
                     errorMsg.className = 'text-xs text-red-600 mt-1 hidden';
                     errorMsg.id = `errorMsg_${serviceIndex}_${index}`;
                     
-                    // Validation du format et de la taille
+                    // Prévisualisation pour les images
+                    const previewDiv = document.createElement('div');
+                    previewDiv.className = 'mt-2 hidden';
+                    previewDiv.id = `preview_${serviceIndex}_${index}`;
+                    previewDiv.innerHTML = `
+                        <div class="bg-yellow-50 border border-yellow-200 rounded p-2 mb-2">
+                            <p class="text-xs text-yellow-800 font-semibold mb-1">
+                                <i class="fas fa-exclamation-triangle mr-1"></i>Vérifiez que c'est bien le bon document !
+                            </p>
+                            <p class="text-xs text-yellow-700">Document requis: <strong>${doc.nom}</strong></p>
+                        </div>
+                        <div class="preview-container border-2 border-gray-300 rounded p-2 bg-white max-h-64 overflow-auto"></div>
+                    `;
+                    
+                    // Validation du format et de la taille avec prévisualisation
                     input.addEventListener('change', function() {
                         const errorDiv = document.getElementById(`errorMsg_${serviceIndex}_${index}`);
+                        const previewContainer = previewDiv.querySelector('.preview-container');
                         errorDiv.classList.add('hidden');
                         errorDiv.innerHTML = '';
+                        previewDiv.classList.add('hidden');
+                        previewContainer.innerHTML = '';
                         
                         if (this.files && this.files.length > 0) {
                             const file = this.files[0];
@@ -6911,6 +6928,48 @@
                                 fileInfo.classList.remove('hidden');
                                 this.classList.remove('border-red-500', 'border-gray-300');
                                 this.classList.add('border-green-500');
+                                
+                                // Afficher la prévisualisation pour les images
+                                if (['JPG', 'JPEG', 'PNG'].includes(fileFormat)) {
+                                    const reader = new FileReader();
+                                    reader.onload = function(e) {
+                                        previewContainer.innerHTML = `
+                                            <img src="${e.target.result}" alt="Prévisualisation" class="max-w-full h-auto rounded" style="max-height: 200px;">
+                                            <p class="text-xs text-gray-600 mt-2 text-center">
+                                                <i class="fas fa-info-circle mr-1"></i>
+                                                Vérifiez que cette image correspond bien à: <strong>${doc.nom}</strong>
+                                            </p>
+                                        `;
+                                        previewDiv.classList.remove('hidden');
+                                    };
+                                    reader.readAsDataURL(file);
+                                } else if (fileFormat === 'PDF') {
+                                    previewContainer.innerHTML = `
+                                        <div class="text-center py-4">
+                                            <i class="fas fa-file-pdf text-red-600 text-4xl mb-2"></i>
+                                            <p class="text-xs text-gray-600">
+                                                <strong>${file.name}</strong>
+                                            </p>
+                                            <p class="text-xs text-gray-500 mt-1">
+                                                Vérifiez que ce PDF correspond bien à: <strong>${doc.nom}</strong>
+                                            </p>
+                                        </div>
+                                    `;
+                                    previewDiv.classList.remove('hidden');
+                                } else {
+                                    previewContainer.innerHTML = `
+                                        <div class="text-center py-4">
+                                            <i class="fas fa-file text-blue-600 text-4xl mb-2"></i>
+                                            <p class="text-xs text-gray-600">
+                                                <strong>${file.name}</strong>
+                                            </p>
+                                            <p class="text-xs text-gray-500 mt-1">
+                                                Vérifiez que ce fichier correspond bien à: <strong>${doc.nom}</strong>
+                                            </p>
+                                        </div>
+                                    `;
+                                    previewDiv.classList.remove('hidden');
+                                }
                             } else {
                                 fileInfo.innerHTML = `<i class="fas fa-times-circle text-red-600 mr-1"></i> ${file.name} (${fileSize} MB)`;
                                 fileInfo.className = 'text-xs text-red-600 mt-1';
@@ -6923,6 +6982,7 @@
                             }
                         } else {
                             fileInfo.classList.add('hidden');
+                            previewDiv.classList.add('hidden');
                             this.classList.remove('border-green-500', 'border-red-500');
                             this.classList.add('border-gray-300');
                         }
@@ -6933,6 +6993,7 @@
                     docDiv.appendChild(input);
                     docDiv.appendChild(fileInfo);
                     docDiv.appendChild(errorMsg);
+                    docDiv.appendChild(previewDiv);
                     documentsUploadContainer.appendChild(docDiv);
                 });
                 

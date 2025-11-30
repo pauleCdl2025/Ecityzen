@@ -310,39 +310,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             mkdir($uploadDir, 0755, true);
         }
         
-        $documents = [];
-        $documentIndex = 0;
+        // Initialiser le tableau des documents dans l'ordre
+        $documents = array_fill(0, count($documentsRequis), null);
         $allErrors = [];
         
-        // Traiter et valider tous les fichiers uploadés
+        // Vérifier d'abord que tous les documents requis sont présents
+        for ($i = 0; $i < count($documentsRequis); $i++) {
+            if (!isset($_POST["document_name_$i"])) {
+                $allErrors[] = "Document manquant à la position " . ($i + 1) . ". Document requis: '{$documentsRequis[$i]['nom']}'";
+            }
+        }
+        
+        // Traiter et valider tous les fichiers uploadés dans l'ordre strict
         foreach ($_FILES as $key => $file) {
             if (strpos($key, 'document_') === 0 && $file['error'] === UPLOAD_ERR_OK) {
-                $documentName = $_POST['document_name_' . $documentIndex] ?? 'document_' . $documentIndex;
+                // Extraire l'index du nom de la clé (document_0, document_1, etc.)
+                $fileIndex = intval(str_replace('document_', '', $key));
+                $documentName = $_POST['document_name_' . $fileIndex] ?? null;
                 
-                // Trouver le document requis correspondant
-                $documentRequis = null;
-                foreach ($documentsRequis as $docReq) {
-                    if ($docReq['nom'] === $documentName) {
-                        $documentRequis = $docReq;
-                        break;
-                    }
-                }
-                
-                // Si le document requis n'est pas trouvé, vérifier par index
-                if (!$documentRequis && isset($documentsRequis[$documentIndex])) {
-                    $documentRequis = $documentsRequis[$documentIndex];
-                }
-                
-                if (!$documentRequis) {
-                    $allErrors[] = "Document requis non trouvé pour '{$documentName}'";
-                    $documentIndex++;
+                // Vérifier que l'index est valide
+                if ($fileIndex < 0 || $fileIndex >= count($documentsRequis)) {
+                    $allErrors[] = "Index de document invalide: {$fileIndex}. Nombre de documents requis: " . count($documentsRequis);
                     continue;
                 }
                 
-                // Vérifier que le nom du document correspond
-                if ($documentRequis['nom'] !== $documentName) {
-                    $allErrors[] = "Document incorrect. Document requis: '{$documentRequis['nom']}', document fourni: '{$documentName}'";
-                    $documentIndex++;
+                $documentRequis = $documentsRequis[$fileIndex];
+                
+                // Vérification STRICTE: le document doit correspondre exactement au document requis à cet index
+                if (!$documentName || $documentRequis['nom'] !== $documentName) {
+                    $allErrors[] = "Document incorrect à la position " . ($fileIndex + 1) . ". Document requis: '{$documentRequis['nom']}', document fourni: '" . ($documentName ?? 'non spécifié') . "'. Veuillez vous assurer que vous avez mis le bon document dans le bon champ.";
                     continue;
                 }
                 
@@ -350,18 +346,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                 $validationErrors = validerDocument($file, $documentRequis);
                 if (!empty($validationErrors)) {
                     $allErrors = array_merge($allErrors, $validationErrors);
-                    $documentIndex++;
                     continue;
                 }
                 
                 // Générer un nom de fichier unique
                 $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
-                $fileName = 'doc_' . $_SESSION['user_id'] . '_' . time() . '_' . $documentIndex . '.' . $extension;
+                $fileName = 'doc_' . $_SESSION['user_id'] . '_' . time() . '_' . $fileIndex . '.' . $extension;
                 $filePath = $uploadDir . $fileName;
                 
                 // Déplacer le fichier
                 if (move_uploaded_file($file['tmp_name'], $filePath)) {
-                    $documents[] = [
+                    $documents[$fileIndex] = [
                         'nom' => $documentName,
                         'fichier' => 'uploads/demandes/' . $fileName,
                         'taille' => $file['size'],
@@ -371,8 +366,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                     $allErrors[] = "Erreur lors de l'upload du fichier: {$file['name']}";
                     error_log("Erreur upload fichier: " . $file['name']);
                 }
-                
-                $documentIndex++;
             }
         }
         
@@ -381,23 +374,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             sendJSONResponse(false, ['errors' => $allErrors], 'Documents non conformes: ' . implode('; ', $allErrors), 400);
         }
         
-        // Vérifier que tous les documents requis ont été fournis
-        if (count($documents) < count($documentsRequis)) {
-            $missing = [];
-            foreach ($documentsRequis as $docReq) {
-                $found = false;
-                foreach ($documents as $doc) {
-                    if ($doc['nom'] === $docReq['nom']) {
-                        $found = true;
-                        break;
-                    }
-                }
-                if (!$found) {
-                    $missing[] = $docReq['nom'];
-                }
+        // Vérification STRICTE: tous les documents doivent être présents dans le bon ordre
+        $missing = [];
+        for ($i = 0; $i < count($documentsRequis); $i++) {
+            if (!isset($documents[$i]) || $documents[$i] === null) {
+                $missing[] = "Position " . ($i + 1) . ": '{$documentsRequis[$i]['nom']}'";
+            } elseif ($documents[$i]['nom'] !== $documentsRequis[$i]['nom']) {
+                $allErrors[] = "Document incorrect à la position " . ($i + 1) . ". Attendu: '{$documentsRequis[$i]['nom']}', Reçu: '{$documents[$i]['nom']}'. Veuillez vous assurer que chaque document est dans le bon champ.";
             }
+        }
+        
+        if (!empty($missing)) {
             sendJSONResponse(false, null, 'Documents manquants: ' . implode(', ', $missing), 400);
         }
+        
+        // Filtrer les valeurs null et réindexer
+        $documents = array_values(array_filter($documents, function($doc) {
+            return $doc !== null;
+        }));
         
     } else {
         // Traitement JSON (sans fichiers - pour compatibilité)
