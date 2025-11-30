@@ -7,13 +7,8 @@
 
 require_once '../config/supabase.php';
 
-header('Content-Type: application/json; charset=utf-8');
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, POST');
-header('Access-Control-Allow-Headers: Content-Type');
-header('Access-Control-Allow-Credentials: true');
-
-session_start();
+setupCORS('GET, POST, OPTIONS');
+startSecureSession();
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     // Récupérer les paiements

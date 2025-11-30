@@ -224,6 +224,49 @@ function enrichWithUserNames($items, $userIdField = 'utilisateur_id', $agentIdFi
 }
 
 /**
+ * Configurer les headers CORS correctement
+ */
+function setupCORS($allowedMethods = 'GET, POST, PUT, DELETE, OPTIONS') {
+    // CORS: Si credentials est true, on ne peut pas utiliser '*', il faut spécifier l'origine
+    $origin = isset($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : 
+              (isset($_SERVER['HTTP_REFERER']) ? parse_url($_SERVER['HTTP_REFERER'], PHP_URL_SCHEME) . '://' . parse_url($_SERVER['HTTP_REFERER'], PHP_URL_HOST) : '*');
+    
+    header('Access-Control-Allow-Origin: ' . $origin);
+    header('Access-Control-Allow-Methods: ' . $allowedMethods);
+    header('Access-Control-Allow-Headers: Content-Type, Authorization');
+    header('Access-Control-Allow-Credentials: true');
+    header('Access-Control-Max-Age: 86400'); // Cache preflight pour 24h
+    
+    // Gérer les requêtes OPTIONS (preflight)
+    if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+        http_response_code(200);
+        exit;
+    }
+}
+
+/**
+ * Démarrer la session avec configuration améliorée
+ */
+function startSecureSession() {
+    if (session_status() === PHP_SESSION_NONE) {
+        // Configuration de session pour améliorer la sécurité et la compatibilité
+        ini_set('session.cookie_httponly', '1');
+        ini_set('session.cookie_samesite', 'Lax');
+        // Augmenter la durée de vie de la session (8 heures)
+        ini_set('session.gc_maxlifetime', 28800);
+        session_set_cookie_params([
+            'lifetime' => 28800, // 8 heures
+            'path' => '/',
+            'domain' => '',
+            'secure' => false, // Mettre à true en HTTPS
+            'httponly' => true,
+            'samesite' => 'Lax'
+        ]);
+        session_start();
+    }
+}
+
+/**
  * Réponse JSON standardisée (compatible avec l'existant)
  */
 function sendJSONResponse($success, $data = null, $message = '', $code = 200) {
