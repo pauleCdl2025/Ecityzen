@@ -10938,6 +10938,34 @@
             }, 3000);
         });
         
+        // Gestionnaire d'erreur global pour ignorer les erreurs du service worker Netlify
+        window.addEventListener('error', function(event) {
+            if (event.message && (
+                event.message.includes('service worker') || 
+                event.message.includes('cnm-sw') || 
+                event.message.includes('Response with null body') ||
+                event.message.includes('integrationSlug')
+            )) {
+                console.warn('Erreur service worker Netlify ignorée:', event.message);
+                event.preventDefault(); // Empêcher l'affichage de l'erreur dans la console
+                return true;
+            }
+        }, true);
+        
+        // Gestionnaire pour les erreurs non capturées
+        window.addEventListener('unhandledrejection', function(event) {
+            if (event.reason && (
+                event.reason.message && (
+                    event.reason.message.includes('service worker') || 
+                    event.reason.message.includes('cnm-sw') ||
+                    event.reason.message.includes('integrationSlug')
+                )
+            )) {
+                console.warn('Promesse rejetée (service worker) ignorée:', event.reason);
+                event.preventDefault(); // Empêcher l'affichage de l'erreur
+            }
+        });
+        
         document.addEventListener('DOMContentLoaded', function() {
             console.log('e-cityzen Gabon chargé avec succès');
             
