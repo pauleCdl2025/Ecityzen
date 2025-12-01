@@ -4152,20 +4152,32 @@
                     console.warn(`Erreur 502 sur ${endpointName}, tentative fallback vers API PHP...`);
                     // Si on utilise Netlify Functions et qu'on a une API_BASE_URL configurée, essayer l'API PHP
                     if (!API_BASE_URL && endpointName) {
-                        // Essayer avec l'API PHP locale si disponible
+                        // Essayer avec l'API PHP locale si disponible (uniquement en développement local)
                         const phpUrl = `api/${endpointName}.php${endpoint.includes('?') ? endpoint.substring(endpoint.indexOf('?')) : ''}`;
                         try {
                             const phpResponse = await fetch(phpUrl, options);
                             if (phpResponse.ok) {
                                 const phpText = await phpResponse.text();
-                                const phpResult = phpText ? JSON.parse(phpText) : null;
-                                if (phpResult && phpResult.success) {
-                                    console.log(`Fallback réussi vers API PHP pour ${endpointName}`);
-                                    return phpResult;
+                                // Vérifier que la réponse est bien du JSON (pas du HTML/PHP)
+                                if (phpText && phpText.trim().startsWith('{')) {
+                                    try {
+                                        const phpResult = JSON.parse(phpText);
+                                        if (phpResult && phpResult.success) {
+                                            console.log(`Fallback réussi vers API PHP pour ${endpointName}`);
+                                            return phpResult;
+                                        }
+                                    } catch (parseError) {
+                                        // La réponse n'est pas du JSON valide, ignorer le fallback
+                                        console.warn(`Fallback PHP: réponse non-JSON pour ${endpointName}`);
+                                    }
+                                } else {
+                                    // La réponse est du HTML/PHP, pas du JSON
+                                    console.warn(`Fallback PHP: réponse HTML/PHP pour ${endpointName} (APIs PHP non disponibles sur Netlify)`);
                                 }
                             }
                         } catch (phpError) {
-                            console.warn(`Fallback PHP échoué pour ${endpointName}:`, phpError);
+                            // Erreur réseau ou autre, ignorer silencieusement
+                            console.warn(`Fallback PHP échoué pour ${endpointName}:`, phpError.message || phpError);
                         }
                     }
                     // Si le fallback échoue, retourner un tableau vide pour éviter de bloquer l'application
