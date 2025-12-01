@@ -4274,6 +4274,18 @@
                 
                 return result;
             } catch (error) {
+                // Ignorer les erreurs de service worker Netlify
+                if (error.message && (error.message.includes('service worker') || error.message.includes('cnm-sw') || error.message.includes('Response with null body'))) {
+                    console.warn('Erreur service worker ignorée:', error.message);
+                    return { success: true, data: [], message: 'Service worker error ignored' };
+                }
+                
+                // Ignorer les erreurs 404 pour les intégrations Netlify inexistantes
+                if (url && url.includes('integrationSlug')) {
+                    console.warn('Intégration Netlify non disponible, ignorée');
+                    return { success: true, data: [], message: 'Integration not available' };
+                }
+                
                 // Ne pas afficher d'erreur si c'est une erreur déjà gérée
                 if (error.message === 'Non authentifié' || error.message === 'Session expirée') {
                     throw error; // Re-lancer sans afficher
