@@ -248,22 +248,9 @@ exports.handler = async (event, context) => {
         body: JSON.stringify({ success: true, data: [], message: 'Erreur lors du chargement des signalements' })
       };
     }
-  } catch (globalError) {
-    // Catch global pour éviter les 502
-    console.error('Erreur globale signalements.js:', globalError);
-    return {
-      statusCode: 200,
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*'
-      },
-      body: JSON.stringify({ success: true, data: [], message: 'Erreur serveur' })
-    };
-  }
-  }
   
-  // POST: Créer un signalement (peut être fait sans connexion)
-  if (event.httpMethod === 'POST') {
+    // POST: Créer un signalement (peut être fait sans connexion)
+    if (event.httpMethod === 'POST') {
     try {
       let data;
       try {
@@ -472,14 +459,14 @@ exports.handler = async (event, context) => {
     }
   }
   
-  return {
-    statusCode: 405,
-    headers: {
-      'Content-Type': 'application/json',
-      'Access-Control-Allow-Origin': '*'
-    },
-    body: JSON.stringify({ success: false, message: 'Méthode non autorisée' })
-  };
+    return {
+      statusCode: 405,
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      },
+      body: JSON.stringify({ success: false, message: 'Méthode non autorisée' })
+    };
   } catch (globalError) {
     // Catch global pour éviter les 502
     console.error('Erreur globale signalements.js:', globalError);
