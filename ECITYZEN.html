@@ -9712,8 +9712,6 @@
             
             const ctx = canvas.getContext('2d');
             adminChartInstance = new Chart(ctx, {
-            const ctx = document.getElementById('adminChart').getContext('2d');
-            new Chart(ctx, {
                 type: 'doughnut',
                 data: {
                     labels: ['Citoyens', 'Commerçants', 'Agents'],
