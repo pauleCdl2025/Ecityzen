@@ -126,6 +126,7 @@ exports.handler = async (event, context) => {
       const queryParams = event.queryStringParameters || {};
       const agentId = queryParams.agent_id ? parseInt(queryParams.agent_id) : null;
       
+      // Construire la requête de base
       let query = supabase.from('signalements').select('*');
       
       if (userRole === 'agent' || userRole === 'manager' || userRole === 'superadmin') {
@@ -143,27 +144,33 @@ exports.handler = async (event, context) => {
         // Les citoyens voient seulement leurs signalements
         if (!userId) {
           return {
-            statusCode: 401,
+            statusCode: 200,
             headers: {
               'Content-Type': 'application/json',
               'Access-Control-Allow-Origin': '*'
             },
-            body: JSON.stringify({ success: false, message: 'Non authentifié' })
+            body: JSON.stringify({ success: true, data: [], message: 'Non authentifié' })
           };
         }
         query = query.eq('utilisateur_id', parseInt(userId)).order('date_signalement', { ascending: false });
       }
       
-      // Exécuter la requête avec gestion d'erreur améliorée
+      // Exécuter la requête avec timeout
       let signalements = [];
       let queryError = null;
       
       try {
-        const result = await query;
+        // Timeout de 8 secondes pour éviter les 502
+        const queryPromise = query;
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Timeout')), 8000)
+        );
+        
+        const result = await Promise.race([queryPromise, timeoutPromise]);
         signalements = result.data || [];
         queryError = result.error;
       } catch (err) {
-        console.error('Erreur requête Supabase signalements:', err);
+        console.error('Erreur requête Supabase signalements:', err.message || err);
         queryError = err;
       }
       

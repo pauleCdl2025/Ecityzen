@@ -135,16 +135,22 @@ exports.handler = async (event, context) => {
         query = query.eq('utilisateur_id', parseInt(userId)).order('date_creation', { ascending: false });
       }
       
-      // Exécuter la requête avec gestion d'erreur améliorée
+      // Exécuter la requête avec timeout
       let demandes = [];
       let queryError = null;
       
       try {
-        const result = await query;
+        // Timeout de 8 secondes pour éviter les 502
+        const queryPromise = query;
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Timeout')), 8000)
+        );
+        
+        const result = await Promise.race([queryPromise, timeoutPromise]);
         demandes = result.data || [];
         queryError = result.error;
       } catch (err) {
-        console.error('Erreur requête Supabase demandes:', err);
+        console.error('Erreur requête Supabase demandes:', err.message || err);
         queryError = err;
       }
       
