@@ -56,17 +56,54 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         
         // Formater les données
         foreach ($signalements as &$sig) {
-            $dateField = isset($sig['date_signalement']) ? $sig['date_signalement'] : ($sig['date_creation'] ?? date('Y-m-d'));
-            $sig['id_formate'] = 'SIG' . date('Y', strtotime($dateField)) . '-' . str_pad($sig['id'], 6, '0', STR_PAD_LEFT);
+            // Gérer les différents noms de champs de date
+            $dateField = null;
+            if (isset($sig['date_signalement']) && !empty($sig['date_signalement'])) {
+                $dateField = $sig['date_signalement'];
+            } elseif (isset($sig['date_creation']) && !empty($sig['date_creation'])) {
+                $dateField = $sig['date_creation'];
+            } else {
+                $dateField = date('Y-m-d H:i:s');
+            }
+            
+            // Générer l'ID formaté
+            try {
+                $year = date('Y', strtotime($dateField));
+            } catch (Exception $e) {
+                $year = date('Y');
+            }
+            $sig['id_formate'] = 'SIG' . $year . '-' . str_pad($sig['id'], 6, '0', STR_PAD_LEFT);
+            
             // Assurer la compatibilité avec l'ancien champ
-            if (isset($sig['date_signalement'])) {
+            if (isset($sig['date_signalement']) && !isset($sig['date_creation'])) {
                 $sig['date_creation'] = $sig['date_signalement'];
             }
+            if (isset($sig['date_creation']) && !isset($sig['date_signalement'])) {
+                $sig['date_signalement'] = $sig['date_creation'];
+            }
+            
             // Assurer la compatibilité avec photo_url
-            if (isset($sig['photo_url'])) {
+            if (isset($sig['photo_url']) && !isset($sig['photo'])) {
                 $sig['photo'] = $sig['photo_url'];
             }
+            if (isset($sig['photo']) && !isset($sig['photo_url'])) {
+                $sig['photo_url'] = $sig['photo'];
+            }
+            
+            // S'assurer que tous les champs essentiels existent
+            if (!isset($sig['statut'])) {
+                $sig['statut'] = 'en_attente';
+            }
+            if (!isset($sig['type'])) {
+                $sig['type'] = 'Autre';
+            }
+            if (!isset($sig['description'])) {
+                $sig['description'] = '';
+            }
         }
+        
+        // Log pour débogage (à retirer en production)
+        error_log("Signalements récupérés: " . count($signalements) . " signalements");
         
         sendJSONResponse(true, $signalements, 'Signalements récupérés');
         

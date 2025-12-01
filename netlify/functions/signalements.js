@@ -135,15 +135,32 @@ exports.handler = async (event, context) => {
       
       // Formater les données
       const formatted = enriched.map(sig => {
-        const dateField = sig.date_signalement || sig.date_creation || new Date().toISOString().split('T')[0];
-        const year = new Date(dateField).getFullYear();
+        // Gérer les différents noms de champs de date
+        const dateField = sig.date_signalement || sig.date_creation || new Date().toISOString();
+        let year;
+        try {
+          year = new Date(dateField).getFullYear();
+        } catch (e) {
+          year = new Date().getFullYear();
+        }
+        
+        // S'assurer que date_creation et date_signalement existent
+        const dateValue = sig.date_signalement || sig.date_creation || new Date().toISOString();
+        
         return {
           ...sig,
           id_formate: 'SIG' + year + '-' + String(sig.id).padStart(6, '0'),
-          date_creation: sig.date_signalement || sig.date_creation,
+          date_creation: dateValue,
+          date_signalement: dateValue,
           // Mapper photo_url vers photo pour compatibilité frontend
           photo: sig.photo_url || sig.photo || null,
-          photo_url: sig.photo_url || sig.photo || null
+          photo_url: sig.photo_url || sig.photo || null,
+          // S'assurer que tous les champs essentiels existent
+          statut: sig.statut || 'en_attente',
+          type: sig.type || 'Autre',
+          sous_type: sig.sous_type || sig.type || 'Autre',
+          description: sig.description || '',
+          localisation: sig.localisation || null
         };
       });
       

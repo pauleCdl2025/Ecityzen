@@ -5408,16 +5408,24 @@
         async function loadCitoyenData() {
             try {
                 const [signalementsResult, demandesResult, notificationsResult] = await Promise.all([
-                    apiCall('signalements.php').catch(() => ({ data: [] })),
+                    apiCall('signalements.php').catch((error) => {
+                        console.error('Erreur chargement signalements:', error);
+                        return { data: [] };
+                    }),
                     apiCall('demandes.php').catch(() => ({ data: [] })),
                     apiCall('notifications.php').catch(() => ({ data: { notifications: [], non_lues: 0 } }))
                 ]);
+                
+                // Debug: vérifier les données reçues
+                console.log('Signalements reçus:', signalementsResult.data?.length || 0, signalementsResult.data);
                 
                 // Mettre à jour l'affichage des demandes
                 updateDemandesList(demandesResult.data || []);
                 
                 // Mettre à jour l'affichage des signalements
-                updateSignalementsList(signalementsResult.data || []);
+                const signalements = signalementsResult.data || [];
+                console.log('Affichage signalements:', signalements.length);
+                updateSignalementsList(signalements);
                 
                 // Mettre à jour les statistiques
                 const demandesActives = (demandesResult.data || []).filter(d => d.statut !== 'valide' && d.statut !== 'rejete' && d.statut !== 'annule').length;
@@ -5518,9 +5526,14 @@
         
         // Mettre à jour la liste des signalements
         function updateSignalementsList(signalements) {
+            console.log('updateSignalementsList appelée avec', signalements?.length || 0, 'signalements');
+            
             // Utiliser l'ID direct pour éviter les problèmes de sélection
             const listContainer = document.getElementById('citoyenSignalementsListContainer');
+            console.log('listContainer trouvé:', !!listContainer);
+            
             if (!listContainer) {
+                console.warn('citoyenSignalementsListContainer non trouvé, utilisation fallback');
                 // Fallback sur l'ancienne méthode
             const signalementsSection = Array.from(document.querySelectorAll('#citoyenDashboard .bg-white')).find(el => 
                 el.querySelector('h2') && el.querySelector('h2').textContent.includes('Signalements')
@@ -5561,11 +5574,14 @@
             
             // Afficher un message si aucun signalement
             if (!signalements || signalements.length === 0) {
+                console.log('Aucun signalement à afficher');
                 listContainer.innerHTML = '<p class="text-sm text-gray-500 text-center py-4">Aucun signalement</p>';
                 return;
             }
             
-                    signalements.slice(0, 5).forEach(sig => {
+            console.log('Affichage de', signalements.length, 'signalements');
+                    signalements.slice(0, 5).forEach((sig, index) => {
+                        console.log(`Signalement ${index}:`, sig);
                         const statutClass = sig.statut === 'resolu' ? 'bg-green-100 text-green-800' : 
                                            sig.statut === 'en_cours' ? 'bg-blue-100 text-blue-800' : 
                                            'bg-yellow-100 text-yellow-800';
@@ -6314,8 +6330,14 @@
             // Compter les demandes et signalements non assignés
             try {
                 const [demandesResult, signalementsResult, usersResult] = await Promise.all([
-                    apiCall('demandes.php').catch(() => ({ data: [] })),
-                    apiCall('signalements.php').catch(() => ({ data: [] })),
+                    apiCall('demandes.php').catch((error) => {
+                        console.error('Erreur chargement demandes manager:', error);
+                        return { data: [] };
+                    }),
+                    apiCall('signalements.php').catch((error) => {
+                        console.error('Erreur chargement signalements manager:', error);
+                        return { data: [] };
+                    }),
                     apiCall('users.php').catch(() => ({ data: [] }))
                 ]);
                 
@@ -6323,8 +6345,13 @@
                 const signalements = signalementsResult.data || [];
                 const users = usersResult.data || [];
                 
+                console.log('Manager - Demandes reçues:', demandes.length);
+                console.log('Manager - Signalements reçus:', signalements.length, signalements);
+                
                 const demandesNonAssignees = demandes.filter(d => !d.agent_assigné_id && d.statut === 'en_attente');
                 const signalementsNonAssignes = signalements.filter(s => !s.agent_assigné_id && s.statut === 'en_attente');
+                
+                console.log('Manager - Signalements non assignés:', signalementsNonAssignes.length);
                 const agentsEnAttente = users.filter(u => u.role === 'agent' && u.statut === 'en_attente');
                 
                 // Mettre à jour les badges
@@ -8589,9 +8616,14 @@
         
         async function chargerSignalementsNonAssignes() {
             try {
-                const result = await apiCall('signalements.php').catch(() => ({ data: [] }));
+                const result = await apiCall('signalements.php').catch((error) => {
+                    console.error('Erreur chargement signalements non assignés:', error);
+                    return { data: [] };
+                });
                 const signalements = result.data || [];
+                console.log('Signalements chargés pour assignation:', signalements.length, signalements);
                 const signalementsNonAssignes = signalements.filter(s => !s.agent_assigné_id && s.statut === 'en_attente');
+                console.log('Signalements non assignés filtrés:', signalementsNonAssignes.length);
                 
                 // Mettre à jour le badge
                 document.getElementById('managerSignalementsNonAssignes').textContent = signalementsNonAssignes.length;
