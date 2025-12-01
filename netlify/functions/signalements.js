@@ -123,7 +123,7 @@ exports.handler = async (event, context) => {
     if (event.httpMethod === 'GET') {
       try {
         const queryParams = event.queryStringParameters || {};
-      const agentId = queryParams.agent_id ? parseInt(queryParams.agent_id) : null;
+        const agentId = queryParams.agent_id ? parseInt(queryParams.agent_id) : null;
     
       // Construire la requête de base
       let query = supabase.from('signalements').select('*');
