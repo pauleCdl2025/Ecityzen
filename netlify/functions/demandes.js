@@ -108,8 +108,7 @@ exports.handler = async (event, context) => {
 
     // GET: Récupérer les demandes
     if (event.httpMethod === 'GET') {
-    
-    try {
+      try {
       const queryParams = event.queryStringParameters || {};
       const agentId = queryParams.agent_id ? parseInt(queryParams.agent_id) : null;
       
@@ -206,6 +205,7 @@ exports.handler = async (event, context) => {
         headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
         body: JSON.stringify({ success: true, data: [], message: 'Erreur lors du chargement des demandes' })
       };
+    }
     }
   
     // POST: Créer une demande
