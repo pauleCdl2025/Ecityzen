@@ -251,7 +251,7 @@ exports.handler = async (event, context) => {
   
     // POST: Créer un signalement (peut être fait sans connexion)
     if (event.httpMethod === 'POST') {
-    try {
+      try {
       let data;
       try {
         data = typeof event.body === 'string' ? JSON.parse(event.body) : event.body;
@@ -355,109 +355,122 @@ exports.handler = async (event, context) => {
         body: JSON.stringify({ success: false, message: 'Erreur lors de la création du signalement' })
       };
     }
-  }
+    }
   
-  // PUT: Mettre à jour un signalement
-  if (event.httpMethod === 'PUT') {
-    if (!userId || !['agent', 'manager', 'superadmin'].includes(userRole)) {
-      return {
-        statusCode: 403,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*'
-        },
-        body: JSON.stringify({ success: false, message: 'Non autorisé' })
-      };
-    }
-    
-    try {
-      const data = JSON.parse(event.body);
-      
-      if (!data.id) {
+    // PUT: Mettre à jour un signalement
+    if (event.httpMethod === 'PUT') {
+      if (!userId || !['agent', 'manager', 'superadmin'].includes(userRole)) {
         return {
-          statusCode: 400,
+          statusCode: 403,
           headers: {
             'Content-Type': 'application/json',
             'Access-Control-Allow-Origin': '*'
           },
-          body: JSON.stringify({ success: false, message: 'ID manquant' })
+          body: JSON.stringify({ success: false, message: 'Non autorisé' })
         };
       }
       
-      const updateData = {};
-      
-      // Mettre à jour le statut si fourni
-      if (data.statut) {
-        updateData.statut = data.statut;
-        if (data.statut === 'resolu') {
-          updateData.date_modification = new Date().toISOString();
-          updateData.date_resolution = new Date().toISOString();
+      try {
+        let data;
+        try {
+          data = typeof event.body === 'string' ? JSON.parse(event.body) : event.body;
+        } catch (parseError) {
+          console.error('Erreur parsing body signalement (PUT):', parseError);
+          return {
+            statusCode: 400,
+            headers: {
+              'Content-Type': 'application/json',
+              'Access-Control-Allow-Origin': '*'
+            },
+            body: JSON.stringify({ success: false, message: 'Données JSON invalides' })
+          };
         }
-      }
-      
-      // Mettre à jour l'agent assigné si fourni (pour le manager)
-      if (data.agent_assigné_id !== undefined) {
-        updateData.agent_assigné_id = data.agent_assigné_id ? parseInt(data.agent_assigné_id) : null;
-      }
-      
-      if (Object.keys(updateData).length === 0) {
+        
+        if (!data.id) {
+          return {
+            statusCode: 400,
+            headers: {
+              'Content-Type': 'application/json',
+              'Access-Control-Allow-Origin': '*'
+            },
+            body: JSON.stringify({ success: false, message: 'ID manquant' })
+          };
+        }
+        
+        const updateData = {};
+        
+        // Mettre à jour le statut si fourni
+        if (data.statut) {
+          updateData.statut = data.statut;
+          if (data.statut === 'resolu') {
+            updateData.date_modification = new Date().toISOString();
+            updateData.date_resolution = new Date().toISOString();
+          }
+        }
+        
+        // Mettre à jour l'agent assigné si fourni (pour le manager)
+        if (data.agent_assigné_id !== undefined) {
+          updateData.agent_assigné_id = data.agent_assigné_id ? parseInt(data.agent_assigné_id) : null;
+        }
+        
+        if (Object.keys(updateData).length === 0) {
+          return {
+            statusCode: 400,
+            headers: {
+              'Content-Type': 'application/json',
+              'Access-Control-Allow-Origin': '*'
+            },
+            body: JSON.stringify({ success: false, message: 'Aucune donnée à mettre à jour' })
+          };
+        }
+        
+        const { error } = await supabase
+          .from('signalements')
+          .update(updateData)
+          .eq('id', data.id);
+        
+        if (error) throw error;
+        
+        // Récupérer le signalement mis à jour
+        const { data: signalement, error: getError } = await supabase
+          .from('signalements')
+          .select('*')
+          .eq('id', data.id)
+          .single();
+        
+        if (getError) throw getError;
+        
+        const enriched = await enrichWithUserNames(supabase, [signalement]);
+        const formatted = enriched[0];
+        
+        const dateField = formatted.date_signalement || formatted.date_creation || new Date().toISOString().split('T')[0];
+        const year = new Date(dateField).getFullYear();
+        formatted.id_formate = 'SIG' + year + '-' + String(formatted.id).padStart(6, '0');
+        formatted.date_creation = formatted.date_signalement || formatted.date_creation;
+        // Mapper photo_url vers photo pour compatibilité frontend
+        formatted.photo = formatted.photo_url || formatted.photo || null;
+        formatted.photo_url = formatted.photo_url || formatted.photo || null;
+        
         return {
-          statusCode: 400,
+          statusCode: 200,
           headers: {
             'Content-Type': 'application/json',
             'Access-Control-Allow-Origin': '*'
           },
-          body: JSON.stringify({ success: false, message: 'Aucune donnée à mettre à jour' })
+          body: JSON.stringify({ success: true, data: formatted, message: 'Statut mis à jour' })
+        };
+      } catch (error) {
+        console.error('Erreur mise à jour signalement:', error);
+        return {
+          statusCode: 500,
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
+          },
+          body: JSON.stringify({ success: false, message: 'Erreur lors de la mise à jour' })
         };
       }
-      
-      const { error } = await supabase
-        .from('signalements')
-        .update(updateData)
-        .eq('id', data.id);
-      
-      if (error) throw error;
-      
-      // Récupérer le signalement mis à jour
-      const { data: signalement, error: getError } = await supabase
-        .from('signalements')
-        .select('*')
-        .eq('id', data.id)
-        .single();
-      
-      if (getError) throw getError;
-      
-      const enriched = await enrichWithUserNames(supabase, [signalement]);
-      const formatted = enriched[0];
-      
-      const dateField = formatted.date_signalement || formatted.date_creation || new Date().toISOString().split('T')[0];
-      const year = new Date(dateField).getFullYear();
-      formatted.id_formate = 'SIG' + year + '-' + String(formatted.id).padStart(6, '0');
-      formatted.date_creation = formatted.date_signalement || formatted.date_creation;
-      // Mapper photo_url vers photo pour compatibilité frontend
-      formatted.photo = formatted.photo_url || formatted.photo || null;
-      formatted.photo_url = formatted.photo_url || formatted.photo || null;
-      
-      return {
-        statusCode: 200,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*'
-        },
-        body: JSON.stringify({ success: true, data: formatted, message: 'Statut mis à jour' })
-      };
-    } catch (error) {
-      console.error('Erreur mise à jour signalement:', error);
-      return {
-        statusCode: 500,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*'
-        },
-        body: JSON.stringify({ success: false, message: 'Erreur lors de la mise à jour' })
-      };
     }
-  }
   
     return {
       statusCode: 405,
