@@ -217,9 +217,20 @@ exports.handler = async (event, context) => {
     }
     
     try {
-      const data = JSON.parse(event.body);
+      let data;
+      try {
+        data = typeof event.body === 'string' ? JSON.parse(event.body) : event.body;
+      } catch (parseError) {
+        console.error('Erreur parsing body:', parseError);
+        return {
+          statusCode: 400,
+          headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+          body: JSON.stringify({ success: false, message: 'Données invalides (JSON mal formé)' })
+        };
+      }
       
       if (!data.type || !data.service || data.cout === undefined) {
+        console.error('Champs manquants:', { type: data.type, service: data.service, cout: data.cout });
         return {
           statusCode: 400,
           headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },

@@ -4185,6 +4185,19 @@
                     return { success: true, data: [], message: 'Service temporairement indisponible' };
                 }
                 
+                // Gérer les erreurs 400 (Bad Request)
+                if (response.status === 400) {
+                    const text = await response.text();
+                    let errorMessage = 'Requête invalide';
+                    try {
+                        const errorData = JSON.parse(text);
+                        errorMessage = errorData.message || errorMessage;
+                    } catch (e) {
+                        // Ignorer l'erreur de parsing
+                    }
+                    throw new Error(errorMessage);
+                }
+                
                 // Gérer les erreurs 404 (Endpoint non trouvé)
                 if (response.status === 404) {
                     // Si c'est un endpoint qui nécessite un serveur PHP, ne pas afficher d'erreur pour les endpoints optionnels
