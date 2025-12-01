@@ -59,53 +59,55 @@ async function enrichWithUserNames(supabase, items) {
 }
 
 exports.handler = async (event, context) => {
-  if (event.httpMethod === 'OPTIONS') {
-    return {
-      statusCode: 200,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, POST, PUT, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-        'Access-Control-Allow-Credentials': 'true'
-      },
-      body: ''
-    };
-  }
+  // Gestion globale des erreurs pour éviter les 502
+  try {
+    if (event.httpMethod === 'OPTIONS') {
+      return {
+        statusCode: 200,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'GET, POST, PUT, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+          'Access-Control-Allow-Credentials': 'true'
+        },
+        body: ''
+      };
+    }
 
-  const supabaseUrl = process.env.SUPABASE_URL || 'https://srbzvjrqbhtuyzlwdghn.supabase.co';
-  const supabaseKey = process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNyYnp2anJxYmh0dXl6bHdkZ2huIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQwNTg3NzQsImV4cCI6MjA3OTYzNDc3NH0.5KOkXAANWV_WLWPx02ozeC_xPCINd6boVtm3ia9iSmM';
-  
-  if (!supabaseUrl || !supabaseKey) {
-    console.error('Configuration Supabase manquante');
-    return {
-      statusCode: 200,
-      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
-      body: JSON.stringify({ success: true, data: [], message: 'Configuration manquante' })
-    };
-  }
+    const supabaseUrl = process.env.SUPABASE_URL || 'https://srbzvjrqbhtuyzlwdghn.supabase.co';
+    const supabaseKey = process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNyYnp2anJxYmh0dXl6bHdkZ2huIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQwNTg3NzQsImV4cCI6MjA3OTYzNDc3NH0.5KOkXAANWV_WLWPx02ozeC_xPCINd6boVtm3ia9iSmM';
+    
+    if (!supabaseUrl || !supabaseKey) {
+      console.error('Configuration Supabase manquante');
+      return {
+        statusCode: 200,
+        headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+        body: JSON.stringify({ success: true, data: [], message: 'Configuration manquante' })
+      };
+    }
 
-  const supabase = createClient(supabaseUrl, supabaseKey);
-  
-  let userId = null;
-  let userRole = null;
-  
-  // Pour GET, récupérer d'abord depuis query string
-  if (event.httpMethod === 'GET' && event.queryStringParameters) {
-    userId = event.queryStringParameters._user_id || null;
-    userRole = event.queryStringParameters._user_role || null;
-  }
-  
-  // Sinon, essayer depuis le body (pour POST/PUT)
-  if (!userId && event.body) {
-    try {
-      const body = JSON.parse(event.body);
-      userId = body._user_id || null;
-      userRole = body._user_role || null;
-    } catch (e) {}
-  }
+    const supabase = createClient(supabaseUrl, supabaseKey);
+    
+    let userId = null;
+    let userRole = null;
+    
+    // Pour GET, récupérer d'abord depuis query string
+    if (event.httpMethod === 'GET' && event.queryStringParameters) {
+      userId = event.queryStringParameters._user_id || null;
+      userRole = event.queryStringParameters._user_role || null;
+    }
+    
+    // Sinon, essayer depuis le body (pour POST/PUT)
+    if (!userId && event.body) {
+      try {
+        const body = JSON.parse(event.body);
+        userId = body._user_id || null;
+        userRole = body._user_role || null;
+      } catch (e) {}
+    }
 
-  // GET: Récupérer les demandes
-  if (event.httpMethod === 'GET') {
+    // GET: Récupérer les demandes
+    if (event.httpMethod === 'GET') {
     
     try {
       const queryParams = event.queryStringParameters || {};
@@ -206,9 +208,9 @@ exports.handler = async (event, context) => {
       };
     }
   
-  // POST: Créer une demande
-  if (event.httpMethod === 'POST') {
-    if (!userId) {
+    // POST: Créer une demande
+    if (event.httpMethod === 'POST') {
+      if (!userId) {
       return {
         statusCode: 401,
         headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
@@ -296,11 +298,11 @@ exports.handler = async (event, context) => {
         body: JSON.stringify({ success: false, message: 'Erreur lors de la création de la demande' })
       };
     }
-  }
+    }
   
-  // PUT: Mettre à jour une demande
-  if (event.httpMethod === 'PUT') {
-    if (!userId || !['agent', 'manager', 'superadmin'].includes(userRole)) {
+    // PUT: Mettre à jour une demande
+    if (event.httpMethod === 'PUT') {
+      if (!userId || !['agent', 'manager', 'superadmin'].includes(userRole)) {
       return {
         statusCode: 403,
         headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
@@ -372,13 +374,13 @@ exports.handler = async (event, context) => {
         body: JSON.stringify({ success: false, message: 'Erreur lors de la mise à jour' })
       };
     }
-  }
+    }
   
-  return {
-    statusCode: 405,
-    headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
-    body: JSON.stringify({ success: false, message: 'Méthode non autorisée' })
-  };
+    return {
+      statusCode: 405,
+      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+      body: JSON.stringify({ success: false, message: 'Méthode non autorisée' })
+    };
   } catch (globalError) {
     // Catch global pour éviter les 502
     console.error('Erreur globale demandes.js:', globalError);
