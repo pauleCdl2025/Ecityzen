@@ -4147,6 +4147,32 @@
             try {
                 const response = await fetch(url, options);
                 
+                // Gérer les erreurs 502 (Bad Gateway) - Fallback vers API PHP si disponible
+                if (response.status === 502) {
+                    console.warn(`Erreur 502 sur ${endpointName}, tentative fallback vers API PHP...`);
+                    // Si on utilise Netlify Functions et qu'on a une API_BASE_URL configurée, essayer l'API PHP
+                    if (!API_BASE_URL && endpointName) {
+                        // Essayer avec l'API PHP locale si disponible
+                        const phpUrl = `api/${endpointName}.php${endpoint.includes('?') ? endpoint.substring(endpoint.indexOf('?')) : ''}`;
+                        try {
+                            const phpResponse = await fetch(phpUrl, options);
+                            if (phpResponse.ok) {
+                                const phpText = await phpResponse.text();
+                                const phpResult = phpText ? JSON.parse(phpText) : null;
+                                if (phpResult && phpResult.success) {
+                                    console.log(`Fallback réussi vers API PHP pour ${endpointName}`);
+                                    return phpResult;
+                                }
+                            }
+                        } catch (phpError) {
+                            console.warn(`Fallback PHP échoué pour ${endpointName}:`, phpError);
+                        }
+                    }
+                    // Si le fallback échoue, retourner un tableau vide pour éviter de bloquer l'application
+                    console.warn(`Erreur 502 sur ${endpointName}, retour tableau vide`);
+                    return { success: true, data: [], message: 'Service temporairement indisponible' };
+                }
+                
                 // Gérer les erreurs 404 (Endpoint non trouvé)
                 if (response.status === 404) {
                     // Si c'est un endpoint qui nécessite un serveur PHP, ne pas afficher d'erreur pour les endpoints optionnels
