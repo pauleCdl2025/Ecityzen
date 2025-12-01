@@ -97,30 +97,30 @@ exports.handler = async (event, context) => {
     }
 
     const supabase = createClient(supabaseUrl, supabaseKey);
-  
-  // Récupérer l'utilisateur depuis les query params (GET) ou le body (POST/PUT)
-  let userId = null;
-  let userRole = null;
-  
-  // Pour GET, récupérer d'abord depuis query string
-  if (event.httpMethod === 'GET' && event.queryStringParameters) {
-    userId = event.queryStringParameters._user_id || null;
-    userRole = event.queryStringParameters._user_role || null;
-  }
-  
-  // Sinon, essayer depuis le body (pour POST/PUT)
-  if (!userId && event.body) {
-    try {
-      const body = JSON.parse(event.body);
-      userId = body._user_id || null;
-      userRole = body._user_role || null;
-    } catch (e) {
-      // Ignorer
+    
+    // Récupérer l'utilisateur depuis les query params (GET) ou le body (POST/PUT)
+    let userId = null;
+    let userRole = null;
+    
+    // Pour GET, récupérer d'abord depuis query string
+    if (event.httpMethod === 'GET' && event.queryStringParameters) {
+      userId = event.queryStringParameters._user_id || null;
+      userRole = event.queryStringParameters._user_role || null;
     }
-  }
+    
+    // Sinon, essayer depuis le body (pour POST/PUT)
+    if (!userId && event.body) {
+      try {
+        const body = JSON.parse(event.body);
+        userId = body._user_id || null;
+        userRole = body._user_role || null;
+      } catch (e) {
+        // Ignorer
+      }
+    }
 
-  // GET: Récupérer les signalements
-  if (event.httpMethod === 'GET') {
+    // GET: Récupérer les signalements
+    if (event.httpMethod === 'GET') {
       try {
         const queryParams = event.queryStringParameters || {};
       const agentId = queryParams.agent_id ? parseInt(queryParams.agent_id) : null;
