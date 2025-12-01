@@ -235,17 +235,18 @@ exports.handler = async (event, context) => {
           body: JSON.stringify({ success: true, data: formatted, message: 'Signalements récupérés' })
         };
       } catch (error) {
-      console.error('Erreur récupération signalements:', error);
-      console.error('Détails erreur:', error.message, error.stack);
-      // Retourner un tableau vide plutôt qu'une erreur 500 pour éviter les 502
-      return {
-        statusCode: 200,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*'
-        },
-        body: JSON.stringify({ success: true, data: [], message: 'Erreur lors du chargement des signalements' })
-      };
+        console.error('Erreur récupération signalements:', error);
+        console.error('Détails erreur:', error.message, error.stack);
+        // Retourner un tableau vide plutôt qu'une erreur 500 pour éviter les 502
+        return {
+          statusCode: 200,
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
+          },
+          body: JSON.stringify({ success: true, data: [], message: 'Erreur lors du chargement des signalements' })
+        };
+      }
     }
   
     // POST: Créer un signalement (peut être fait sans connexion)
