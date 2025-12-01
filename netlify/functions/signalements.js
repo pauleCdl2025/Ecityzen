@@ -246,10 +246,10 @@ exports.handler = async (event, context) => {
         },
         body: JSON.stringify({ success: true, data: [], message: 'Erreur lors du chargement des signalements' })
       };
-  }
+    }
   
-  // POST: Créer un signalement (peut être fait sans connexion)
-  if (event.httpMethod === 'POST') {
+    // POST: Créer un signalement (peut être fait sans connexion)
+    if (event.httpMethod === 'POST') {
     try {
         let data;
         try {
@@ -354,10 +354,11 @@ exports.handler = async (event, context) => {
         body: JSON.stringify({ success: false, message: 'Erreur lors de la création du signalement' })
       };
     }
-  }
+    }
+    }
   
-  // PUT: Mettre à jour un signalement
-  if (event.httpMethod === 'PUT') {
+    // PUT: Mettre à jour un signalement
+    if (event.httpMethod === 'PUT') {
     if (!userId || !['agent', 'manager', 'superadmin'].includes(userRole)) {
       return {
         statusCode: 403,
