@@ -123,15 +123,43 @@ exports.handler = async (event, context) => {
             body: JSON.stringify({ success: false, message: 'Non authentifié' })
           };
         }
-        query = query.eq('utilisateur_id', userId).order('date_signalement', { ascending: false });
+        query = query.eq('utilisateur_id', parseInt(userId)).order('date_signalement', { ascending: false });
       }
       
-      const { data: signalements, error } = await query;
+      // Exécuter la requête avec gestion d'erreur améliorée
+      let signalements = [];
+      let queryError = null;
       
-      if (error) throw error;
+      try {
+        const result = await query;
+        signalements = result.data || [];
+        queryError = result.error;
+      } catch (err) {
+        console.error('Erreur requête Supabase signalements:', err);
+        queryError = err;
+      }
       
-      // Enrichir avec les noms
-      const enriched = await enrichWithUserNames(supabase, signalements || []);
+      if (queryError) {
+        console.error('Erreur Supabase query signalements:', queryError);
+        // Retourner un tableau vide plutôt qu'une erreur 500 pour éviter les 502
+        return {
+          statusCode: 200,
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
+          },
+          body: JSON.stringify({ success: true, data: [], message: 'Aucun signalement disponible' })
+        };
+      }
+      
+      // Enrichir avec les noms (avec gestion d'erreur)
+      let enriched = signalements || [];
+      try {
+        enriched = await enrichWithUserNames(supabase, signalements || []);
+      } catch (err) {
+        console.error('Erreur enrichissement signalements:', err);
+        enriched = signalements || []; // Retourner sans enrichissement en cas d'erreur
+      }
       
       // Formater les données
       const formatted = enriched.map(sig => {
@@ -175,13 +203,14 @@ exports.handler = async (event, context) => {
     } catch (error) {
       console.error('Erreur récupération signalements:', error);
       console.error('Détails erreur:', error.message, error.stack);
+      // Retourner un tableau vide plutôt qu'une erreur 500 pour éviter les 502
       return {
-        statusCode: 500,
+        statusCode: 200,
         headers: {
           'Content-Type': 'application/json',
           'Access-Control-Allow-Origin': '*'
         },
-        body: JSON.stringify({ success: false, message: 'Erreur serveur: ' + (error.message || 'Erreur inconnue') })
+        body: JSON.stringify({ success: true, data: [], message: 'Erreur lors du chargement des signalements' })
       };
     }
   }

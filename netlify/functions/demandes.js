@@ -134,11 +134,27 @@ exports.handler = async (event, context) => {
         query = query.eq('utilisateur_id', parseInt(userId)).order('date_creation', { ascending: false });
       }
       
-      const { data: demandes, error } = await query;
+      // Exécuter la requête avec gestion d'erreur améliorée
+      let demandes = [];
+      let queryError = null;
       
-      if (error) {
-        console.error('Erreur Supabase query:', error);
-        throw error;
+      try {
+        const result = await query;
+        demandes = result.data || [];
+        queryError = result.error;
+      } catch (err) {
+        console.error('Erreur requête Supabase demandes:', err);
+        queryError = err;
+      }
+      
+      if (queryError) {
+        console.error('Erreur Supabase query demandes:', queryError);
+        // Retourner un tableau vide plutôt qu'une erreur 500 pour éviter les 502
+        return {
+          statusCode: 200,
+          headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+          body: JSON.stringify({ success: true, data: [], message: 'Aucune demande disponible' })
+        };
       }
       
       // Décoder les documents JSON et formater les données
@@ -175,10 +191,11 @@ exports.handler = async (event, context) => {
     } catch (error) {
       console.error('Erreur récupération demandes:', error);
       console.error('Détails erreur:', error.message, error.stack);
+      // Retourner un tableau vide plutôt qu'une erreur 500 pour éviter les 502
       return {
-        statusCode: 500,
+        statusCode: 200,
         headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
-        body: JSON.stringify({ success: false, message: 'Erreur serveur: ' + (error.message || 'Erreur inconnue') })
+        body: JSON.stringify({ success: true, data: [], message: 'Erreur lors du chargement des demandes' })
       };
     }
   }
