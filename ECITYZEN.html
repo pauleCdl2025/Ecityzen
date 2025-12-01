@@ -9657,9 +9657,22 @@
         }
 
         // Graphiques
+        let managerChartInstance = null;
         function initManagerChart() {
-            const ctx = document.getElementById('managerChart').getContext('2d');
-            new Chart(ctx, {
+            // Détruire le graphique existant s'il existe
+            if (managerChartInstance) {
+                managerChartInstance.destroy();
+                managerChartInstance = null;
+            }
+            
+            const canvas = document.getElementById('managerChart');
+            if (!canvas) {
+                console.warn('Canvas managerChart non trouvé');
+                return;
+            }
+            
+            const ctx = canvas.getContext('2d');
+            managerChartInstance = new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun'],
@@ -9683,7 +9696,22 @@
             });
         }
         
+        let adminChartInstance = null;
         function initAdminChart() {
+            // Détruire le graphique existant s'il existe
+            if (adminChartInstance) {
+                adminChartInstance.destroy();
+                adminChartInstance = null;
+            }
+            
+            const canvas = document.getElementById('adminChart');
+            if (!canvas) {
+                console.warn('Canvas adminChart non trouvé');
+                return;
+            }
+            
+            const ctx = canvas.getContext('2d');
+            adminChartInstance = new Chart(ctx, {
             const ctx = document.getElementById('adminChart').getContext('2d');
             new Chart(ctx, {
                 type: 'doughnut',
