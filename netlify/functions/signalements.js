@@ -250,7 +250,7 @@ exports.handler = async (event, context) => {
   
     // POST: Créer un signalement (peut être fait sans connexion)
     if (event.httpMethod === 'POST') {
-    try {
+      try {
         let data;
         try {
           data = typeof event.body === 'string' ? JSON.parse(event.body) : event.body;
@@ -267,44 +267,44 @@ exports.handler = async (event, context) => {
         }
         
         console.log('Données signalement reçues:', { type: data.type, sous_type: data.sous_type, has_description: !!data.description });
-      
-      if (!data.type || !data.sous_type || !data.description) {
+        
+        if (!data.type || !data.sous_type || !data.description) {
           console.error('Champs manquants:', { type: data.type, sous_type: data.sous_type, description: data.description });
-        return {
-          statusCode: 400,
-          headers: {
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*'
-          },
+          return {
+            statusCode: 400,
+            headers: {
+              'Content-Type': 'application/json',
+              'Access-Control-Allow-Origin': '*'
+            },
             body: JSON.stringify({ success: false, message: 'Champs manquants: type, sous_type, description' })
+          };
+        }
+        
+        // userId peut être null pour les signalements anonymes
+        // Ne pas assigner automatiquement - le manager assignera
+        // Les signalements arrivent d'abord chez le manager
+        const signalementData = {
+          utilisateur_id: userId || null, // Permettre les signalements anonymes
+          type: data.type,
+          sous_type: data.sous_type,
+          description: data.description,
+          localisation: data.localisation || null,
+          latitude: data.latitude ? parseFloat(data.latitude) : null,
+          longitude: data.longitude ? parseFloat(data.longitude) : null,
+          photo_url: data.photo || null,
+          statut: 'en_attente',
+          agent_assigné_id: null, // Le manager assignera
+          date_signalement: new Date().toISOString()
         };
-      }
-      
-      // userId peut être null pour les signalements anonymes
-      // Ne pas assigner automatiquement - le manager assignera
-      // Les signalements arrivent d'abord chez le manager
-      const signalementData = {
-        utilisateur_id: userId || null, // Permettre les signalements anonymes
-        type: data.type,
-        sous_type: data.sous_type,
-        description: data.description,
-        localisation: data.localisation || null,
-        latitude: data.latitude ? parseFloat(data.latitude) : null,
-        longitude: data.longitude ? parseFloat(data.longitude) : null,
-        photo_url: data.photo || null,
-        statut: 'en_attente',
-        agent_assigné_id: null, // Le manager assignera
-        date_signalement: new Date().toISOString()
-      };
         
         console.log('Insertion signalement dans Supabase:', signalementData);
-      
-      const { data: newSignalement, error } = await supabase
-        .from('signalements')
-        .insert(signalementData)
-        .select()
-        .single();
-      
+        
+        const { data: newSignalement, error } = await supabase
+          .from('signalements')
+          .insert(signalementData)
+          .select()
+          .single();
+        
         if (error) {
           console.error('Erreur Supabase insertion signalement:', error);
           throw error;
@@ -323,38 +323,37 @@ exports.handler = async (event, context) => {
         }
         
         console.log('Signalement créé avec succès:', newSignalement.id);
-      
-      // Enrichir avec les noms
-      const enriched = await enrichWithUserNames(supabase, [newSignalement]);
-      const signalement = enriched[0];
-      
-      const year = new Date().getFullYear();
-      signalement.id_formate = 'SIG' + year + '-' + String(signalement.id).padStart(6, '0');
-      signalement.date_creation = signalement.date_signalement || signalement.date_creation;
-      // Mapper photo_url vers photo pour compatibilité frontend
-      signalement.photo = signalement.photo_url || signalement.photo || null;
-      signalement.photo_url = signalement.photo_url || signalement.photo || null;
-      
-      return {
-        statusCode: 200,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*'
-        },
-        body: JSON.stringify({ success: true, data: signalement, message: 'Signalement créé avec succès' })
-      };
-    } catch (error) {
-      console.error('Erreur création signalement:', error);
-      return {
-        statusCode: 500,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*'
-        },
-        body: JSON.stringify({ success: false, message: 'Erreur lors de la création du signalement' })
-      };
-    }
-    }
+        
+        // Enrichir avec les noms
+        const enriched = await enrichWithUserNames(supabase, [newSignalement]);
+        const signalement = enriched[0];
+        
+        const year = new Date().getFullYear();
+        signalement.id_formate = 'SIG' + year + '-' + String(signalement.id).padStart(6, '0');
+        signalement.date_creation = signalement.date_signalement || signalement.date_creation;
+        // Mapper photo_url vers photo pour compatibilité frontend
+        signalement.photo = signalement.photo_url || signalement.photo || null;
+        signalement.photo_url = signalement.photo_url || signalement.photo || null;
+        
+        return {
+          statusCode: 200,
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
+          },
+          body: JSON.stringify({ success: true, data: signalement, message: 'Signalement créé avec succès' })
+        };
+      } catch (error) {
+        console.error('Erreur création signalement:', error);
+        return {
+          statusCode: 500,
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
+          },
+          body: JSON.stringify({ success: false, message: 'Erreur lors de la création du signalement' })
+        };
+      }
     }
   
     // PUT: Mettre à jour un signalement
