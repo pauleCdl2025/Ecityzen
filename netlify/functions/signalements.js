@@ -469,16 +469,16 @@ exports.handler = async (event, context) => {
         body: JSON.stringify({ success: false, message: 'Erreur lors de la mise à jour' })
       };
     }
-  }
+    }
   
-  return {
-    statusCode: 405,
-    headers: {
-      'Content-Type': 'application/json',
-      'Access-Control-Allow-Origin': '*'
-    },
-    body: JSON.stringify({ success: false, message: 'Méthode non autorisée' })
-  };
+    return {
+      statusCode: 405,
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      },
+      body: JSON.stringify({ success: false, message: 'Méthode non autorisée' })
+    };
   } catch (globalError) {
     // Catch global pour éviter les 502
     console.error('Erreur globale signalements.js:', globalError);
