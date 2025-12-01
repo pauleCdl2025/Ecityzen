@@ -2,40 +2,60 @@
 const { createClient } = require('@supabase/supabase-js');
 
 async function enrichWithUserNames(supabase, items) {
-  const userIds = new Set();
-  items.forEach(item => {
-    if (item.utilisateur_id) userIds.add(item.utilisateur_id);
-    if (item.agent_assigné_id) userIds.add(item.agent_assigné_id);
-  });
-  
-  if (userIds.size === 0) return items;
-  
-  const { data: users, error } = await supabase
-    .from('utilisateurs')
-    .select('id, nom')
-    .in('id', Array.from(userIds));
-  
-  if (error) {
-    console.error('Erreur récupération utilisateurs:', error);
+  try {
+    const userIds = new Set();
+    items.forEach(item => {
+      if (item.utilisateur_id) userIds.add(parseInt(item.utilisateur_id));
+      if (item.agent_assigné_id) userIds.add(parseInt(item.agent_assigné_id));
+    });
+    
+    if (userIds.size === 0) return items;
+    
+    // Traiter par lots de 100 pour éviter les limites Supabase
+    const userIdsArray = Array.from(userIds);
+    const chunks = [];
+    for (let i = 0; i < userIdsArray.length; i += 100) {
+      chunks.push(userIdsArray.slice(i, i + 100));
+    }
+    
+    const userMap = {};
+    
+    for (const chunk of chunks) {
+      const { data: users, error } = await supabase
+        .from('utilisateurs')
+        .select('id, nom, role')
+        .in('id', chunk);
+      
+      if (error) {
+        console.error('Erreur récupération utilisateurs:', error);
+        continue; // Continuer avec les autres chunks
+      }
+      
+      if (users) {
+        users.forEach(user => {
+          userMap[user.id] = { nom: user.nom, role: user.role || null };
+        });
+      }
+    }
+    
+    return items.map(item => {
+      const userId = item.utilisateur_id ? parseInt(item.utilisateur_id) : null;
+      const agentId = item.agent_assigné_id ? parseInt(item.agent_assigné_id) : null;
+      
+      if (userId && userMap[userId]) {
+        item.utilisateur_nom = userMap[userId].nom;
+        item.utilisateur_role = userMap[userId].role;
+      }
+      if (agentId && userMap[agentId]) {
+        item.agent_nom = userMap[agentId].nom;
+        item.agent_role = userMap[agentId].role;
+      }
+      return item;
+    });
+  } catch (error) {
+    console.error('Erreur enrichWithUserNames:', error);
     return items; // Retourner les items sans enrichissement en cas d'erreur
   }
-  
-  const userMap = {};
-  if (users) {
-    users.forEach(user => {
-      userMap[user.id] = user.nom;
-    });
-  }
-  
-  return items.map(item => {
-    if (item.utilisateur_id && userMap[item.utilisateur_id]) {
-      item.utilisateur_nom = userMap[item.utilisateur_id];
-    }
-    if (item.agent_assigné_id && userMap[item.agent_assigné_id]) {
-      item.agent_nom = userMap[item.agent_assigné_id];
-    }
-    return item;
-  });
 }
 
 exports.handler = async (event, context) => {
@@ -99,12 +119,15 @@ exports.handler = async (event, context) => {
             body: JSON.stringify({ success: false, message: 'Non authentifié' })
           };
         }
-        query = query.eq('utilisateur_id', userId).order('date_creation', { ascending: false });
+        query = query.eq('utilisateur_id', parseInt(userId)).order('date_creation', { ascending: false });
       }
       
       const { data: demandes, error } = await query;
       
-      if (error) throw error;
+      if (error) {
+        console.error('Erreur Supabase query:', error);
+        throw error;
+      }
       
       // Décoder les documents JSON et formater les données
       const formatted = (demandes || []).map(d => {
