@@ -199,16 +199,6 @@ exports.handler = async (event, context) => {
         body: JSON.stringify({ success: true, data: [], message: 'Erreur lors du chargement des demandes' })
       };
     }
-  } catch (globalError) {
-    // Catch global pour éviter les 502
-    console.error('Erreur globale demandes.js:', globalError);
-    return {
-      statusCode: 200,
-      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
-      body: JSON.stringify({ success: true, data: [], message: 'Erreur serveur' })
-    };
-  }
-  }
   
   // POST: Créer une demande
   if (event.httpMethod === 'POST') {
@@ -372,5 +362,14 @@ exports.handler = async (event, context) => {
     headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
     body: JSON.stringify({ success: false, message: 'Méthode non autorisée' })
   };
+  } catch (globalError) {
+    // Catch global pour éviter les 502
+    console.error('Erreur globale demandes.js:', globalError);
+    return {
+      statusCode: 200,
+      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+      body: JSON.stringify({ success: true, data: [], message: 'Erreur serveur' })
+    };
+  }
 };
 
