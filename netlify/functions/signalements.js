@@ -358,7 +358,7 @@ exports.handler = async (event, context) => {
   
     // PUT: Mettre à jour un signalement
     if (event.httpMethod === 'PUT') {
-    if (!userId || !['agent', 'manager', 'superadmin'].includes(userRole)) {
+      if (!userId || !['agent', 'manager', 'superadmin'].includes(userRole)) {
       return {
         statusCode: 403,
         headers: {
