@@ -2081,6 +2081,19 @@
                 </div>
             </div>
             
+            <!-- Liste des Signalements -->
+            <div class="mt-6 bg-white rounded-lg p-6 shadow" id="managerSignalementsSection">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-bold">Tous les Signalements</h2>
+                    <button onclick="chargerSignalementsManager()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors">
+                        <i class="fas fa-sync-alt mr-2"></i>Actualiser
+                    </button>
+                </div>
+                <div class="space-y-3" id="managerSignalementsList">
+                    <p class="text-center text-gray-500 py-4">Chargement des signalements...</p>
+                </div>
+            </div>
+            
             <!-- Gestion Marchés -->
             <div class="mt-6 bg-white rounded-lg p-6 shadow" id="managerMarchesSection">
                 <h2 class="text-xl font-bold mb-4">Supervision Marchés</h2>
@@ -6358,6 +6371,9 @@
                 const badgeDemandes = document.getElementById('managerDemandesNonAssignees');
                 const badgeSignalements = document.getElementById('managerSignalementsNonAssignes');
                 const badgeAgents = document.getElementById('managerAgentsEnAttente');
+                
+                // Afficher tous les signalements
+                updateManagerSignalementsList(signalements);
                 const alertBox = document.getElementById('managerAgentsAlert');
                 const alertText = document.getElementById('managerAgentsAlertText');
                 if (badgeDemandes) badgeDemandes.textContent = demandesNonAssignees.length;
@@ -7068,11 +7084,11 @@
                                 if (!['JPG', 'JPEG', 'PNG'].includes(fileFormat)) {
                                     this.setAttribute('data-validated', 'true');
                                 }
-                                fileInfo.innerHTML = `<i class="fas fa-check-circle text-green-600 mr-1"></i> ${file.name} (${fileSize} MB)`;
+                            fileInfo.innerHTML = `<i class="fas fa-check-circle text-green-600 mr-1"></i> ${file.name} (${fileSize} MB)`;
                                 fileInfo.className = 'text-xs text-green-600 mt-1';
-                                fileInfo.classList.remove('hidden');
-                                this.classList.remove('border-red-500', 'border-gray-300');
-                                this.classList.add('border-green-500');
+                            fileInfo.classList.remove('hidden');
+                            this.classList.remove('border-red-500', 'border-gray-300');
+                            this.classList.add('border-green-500');
                                 
                                 // Afficher la prévisualisation pour les images
                                 if (['JPG', 'JPEG', 'PNG'].includes(fileFormat)) {
@@ -7101,7 +7117,7 @@
                                         </div>
                                     `;
                                     previewDiv.classList.remove('hidden');
-                                } else {
+                        } else {
                                     previewContainer.innerHTML = `
                                         <div class="text-center py-4">
                                             <i class="fas fa-file text-blue-600 text-4xl mb-2"></i>
@@ -7123,7 +7139,7 @@
                                 errorDiv.innerHTML = errorMessages.map(msg => `<i class="fas fa-exclamation-triangle mr-1"></i>${msg}`).join('<br>');
                                 errorDiv.classList.remove('hidden');
                                 this.classList.remove('border-green-500', 'border-gray-300');
-                                this.classList.add('border-red-500');
+                            this.classList.add('border-red-500');
                                 this.value = ''; // Réinitialiser le champ
                             }
                         } else {
@@ -7275,9 +7291,9 @@
                     }
                     
                     if (isValid) {
-                        input.classList.remove('border-red-500');
-                        input.classList.remove('ring-2');
-                        input.classList.remove('ring-red-300');
+                    input.classList.remove('border-red-500');
+                    input.classList.remove('ring-2');
+                    input.classList.remove('ring-red-300');
                         input.classList.add('border-green-500');
                     } else {
                         allDocumentsValid = false;
@@ -7716,20 +7732,20 @@
                 
                 const dateElement = document.getElementById('detailsDemandeDate');
                 if (dateElement && demande.date_creation) {
-                    const dateCreation = new Date(demande.date_creation);
+                const dateCreation = new Date(demande.date_creation);
                     dateElement.textContent = dateCreation.toLocaleDateString('fr-FR', { 
-                        day: '2-digit', 
-                        month: '2-digit', 
-                        year: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                    });
+                    day: '2-digit', 
+                    month: '2-digit', 
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
                 }
                 
                 // Afficher le statut
                 const statutSelect = document.getElementById('detailsDemandeStatut');
                 if (statutSelect) {
-                    statutSelect.value = demande.statut || 'en_attente';
+                statutSelect.value = demande.statut || 'en_attente';
                 }
                 
                 // Stocker l'ID de la demande
@@ -8710,6 +8726,139 @@
                 }
             } catch (error) {
                 showNotification('Erreur lors de l\'assignation: ' + error.message, 'error');
+            }
+        }
+        
+        // Fonction pour charger et afficher tous les signalements dans le dashboard manager
+        async function chargerSignalementsManager() {
+            try {
+                const result = await apiCall('signalements.php').catch((error) => {
+                    console.error('Erreur chargement signalements manager:', error);
+                    return { data: [] };
+                });
+                const signalements = result.data || [];
+                updateManagerSignalementsList(signalements);
+            } catch (error) {
+                console.error('Erreur chargement signalements manager:', error);
+                showNotification('Erreur lors du chargement des signalements', 'error');
+            }
+        }
+        
+        // Fonction pour mettre à jour la liste des signalements dans le dashboard manager
+        function updateManagerSignalementsList(signalements) {
+            const listContainer = document.getElementById('managerSignalementsList');
+            if (!listContainer) {
+                console.warn('managerSignalementsList non trouvé');
+                return;
+            }
+            
+            listContainer.innerHTML = '';
+            
+            if (!signalements || signalements.length === 0) {
+                listContainer.innerHTML = '<p class="text-center text-gray-500 py-8">Aucun signalement</p>';
+                return;
+            }
+            
+            // Trier par date (plus récent en premier)
+            signalements.sort((a, b) => {
+                const dateA = new Date(a.date_signalement || a.date_creation || 0);
+                const dateB = new Date(b.date_signalement || b.date_creation || 0);
+                return dateB - dateA;
+            });
+            
+            signalements.forEach(signalement => {
+                const div = document.createElement('div');
+                div.className = 'p-4 border rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors';
+                
+                const dateCreation = new Date(signalement.date_signalement || signalement.date_creation);
+                const dateFormatee = dateCreation.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                const heureFormatee = dateCreation.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+                
+                const idFormate = signalement.id_formate || 'SIG' + dateCreation.getFullYear() + '-' + String(signalement.id).padStart(6, '0');
+                
+                const statutClass = signalement.statut === 'resolu' ? 'bg-green-100 text-green-800' : 
+                                   signalement.statut === 'en_cours' ? 'bg-blue-100 text-blue-800' : 
+                                   'bg-yellow-100 text-yellow-800';
+                const statutText = signalement.statut === 'resolu' ? 'Résolu' : 
+                                 signalement.statut === 'en_cours' ? 'En cours' : 
+                                 signalement.statut === 'en_attente' ? 'En attente' : 
+                                 signalement.statut || 'Non défini';
+                
+                // Badge pour signalements non assignés
+                const nonAssigneBadge = !signalement.agent_assigné_id ? 
+                    '<span class="ml-2 px-2 py-0.5 bg-red-500 text-white text-xs rounded-full">Non assigné</span>' : 
+                    '';
+                
+                div.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-2 mb-2">
+                                <div class="font-semibold text-lg">${signalement.sous_type || signalement.type || 'Signalement'}</div>
+                                ${nonAssigneBadge}
+                            </div>
+                            <div class="text-sm text-gray-600 mb-1">
+                                <i class="fas fa-hashtag mr-1"></i>${idFormate}
+                            </div>
+                            <div class="text-sm text-gray-600 mb-1">
+                                <i class="fas fa-user mr-1"></i>${signalement.utilisateur_nom || 'Utilisateur inconnu'}
+                                ${signalement.utilisateur_role ? `<span class="text-xs text-gray-500">(${getRoleText(signalement.utilisateur_role)})</span>` : ''}
+                            </div>
+                            ${signalement.agent_nom ? `
+                                <div class="text-sm text-gray-600 mb-1">
+                                    <i class="fas fa-user-tie mr-1"></i>Agent: ${signalement.agent_nom}
+                                </div>
+                            ` : ''}
+                            <div class="text-xs text-gray-500 mb-2">
+                                <i class="fas fa-clock mr-1"></i>${dateFormatee} à ${heureFormatee}
+                            </div>
+                            ${signalement.description ? `
+                                <div class="text-sm text-gray-700 mb-2">
+                                    ${signalement.description.length > 100 ? signalement.description.substring(0, 100) + '...' : signalement.description}
+                                </div>
+                            ` : ''}
+                            ${signalement.localisation ? `
+                                <div class="text-xs text-gray-500 mb-2">
+                                    <i class="fas fa-map-marker-alt mr-1"></i>${signalement.localisation}
+                                </div>
+                            ` : ''}
+                            ${(signalement.photo || signalement.photo_url) ? `
+                                <div class="mt-2">
+                                    <img src="${signalement.photo || signalement.photo_url}" alt="Photo signalement" 
+                                         class="w-24 h-24 object-cover rounded border" 
+                                         onerror="this.style.display='none'">
+                                </div>
+                            ` : ''}
+                        </div>
+                        <div class="ml-4 flex flex-col items-end gap-2">
+                            <span class="px-2 py-1 ${statutClass} rounded text-xs whitespace-nowrap">${statutText}</span>
+                            <button onclick="voirSignalementManager(${signalement.id})" 
+                                    class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm transition-colors whitespace-nowrap">
+                                <i class="fas fa-eye mr-1"></i>Voir détails
+                            </button>
+                        </div>
+                    </div>
+                `;
+                listContainer.appendChild(div);
+            });
+        }
+        
+        // Fonction pour voir les détails d'un signalement (manager)
+        async function voirSignalementManager(signalementId) {
+            try {
+                const result = await apiCall('signalements.php');
+                const signalements = result.data || [];
+                const signalement = signalements.find(s => s.id == signalementId);
+                
+                if (!signalement) {
+                    showNotification('Signalement introuvable', 'error');
+                    return;
+                }
+                
+                // Afficher la modale avec les détails (réutiliser la fonction existante)
+                afficherDetailsSignalement(signalement);
+            } catch (error) {
+                console.error('Erreur chargement détails signalement:', error);
+                showNotification('Erreur lors du chargement des détails', 'error');
             }
         }
         
@@ -10471,7 +10620,7 @@
                 // Appliquer les filtres (ignorer les valeurs null/undefined)
                 for (const [key, value] of Object.entries(filters)) {
                     if (value !== null && value !== undefined && value !== '') {
-                        query = query.eq(key, value);
+                    query = query.eq(key, value);
                     }
                 }
                 
@@ -10510,8 +10659,8 @@
                         let updateQuery = supabaseClient.from(table).update(data);
                         for (const [key, value] of Object.entries(filters)) {
                             if (value !== null && value !== undefined && value !== '') {
-                                updateQuery = updateQuery.eq(key, value);
-                            }
+                            updateQuery = updateQuery.eq(key, value);
+                        }
                         }
                         const { data: updateData, error: updateError } = await updateQuery.select('*');
                         if (updateError) {
@@ -10524,7 +10673,7 @@
                         let deleteQuery = supabaseClient.from(table).delete();
                         for (const [key, value] of Object.entries(filters)) {
                             if (value !== null && value !== undefined && value !== '') {
-                                deleteQuery = deleteQuery.eq(key, value);
+                            deleteQuery = deleteQuery.eq(key, value);
                             }
                         }
                         const { error: deleteError } = await deleteQuery;
