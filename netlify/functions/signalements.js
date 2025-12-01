@@ -4,14 +4,14 @@ const { createClient } = require('@supabase/supabase-js');
 // Fonction helper pour enrichir avec les noms d'utilisateurs
 async function enrichWithUserNames(supabase, items, userField = 'utilisateur_id', agentField = 'agent_assigné_id') {
   try {
-    const userIds = new Set();
-    items.forEach(item => {
+  const userIds = new Set();
+  items.forEach(item => {
       if (item[userField]) userIds.add(parseInt(item[userField]));
       if (item[agentField]) userIds.add(parseInt(item[agentField]));
-    });
-    
-    if (userIds.size === 0) return items;
-    
+  });
+  
+  if (userIds.size === 0) return items;
+  
     // Traiter par lots de 100 pour éviter les limites Supabase
     const userIdsArray = Array.from(userIds);
     const chunks = [];
@@ -23,28 +23,28 @@ async function enrichWithUserNames(supabase, items, userField = 'utilisateur_id'
     
     for (const chunk of chunks) {
       try {
-        const { data: users, error } = await supabase
-          .from('utilisateurs')
+  const { data: users, error } = await supabase
+    .from('utilisateurs')
           .select('id, nom, role')
           .in('id', chunk);
-        
-        if (error) {
+  
+  if (error) {
           console.error('Erreur récupération utilisateurs (chunk):', error);
           continue; // Continuer avec les autres chunks
-        }
-        
-        if (users) {
-          users.forEach(user => {
+  }
+  
+  if (users) {
+    users.forEach(user => {
             userMap[user.id] = { nom: user.nom, role: user.role || null };
-          });
+    });
         }
       } catch (chunkError) {
         console.error('Erreur chunk enrichWithUserNames:', chunkError);
         continue;
       }
-    }
-    
-    return items.map(item => {
+  }
+  
+  return items.map(item => {
       const userId = item[userField] ? parseInt(item[userField]) : null;
       const agentId = item[agentField] ? parseInt(item[agentField]) : null;
       
@@ -55,9 +55,9 @@ async function enrichWithUserNames(supabase, items, userField = 'utilisateur_id'
       if (agentId && userMap[agentId]) {
         item['agent_nom'] = userMap[agentId].nom;
         item['agent_role'] = userMap[agentId].role;
-      }
-      return item;
-    });
+    }
+    return item;
+  });
   } catch (error) {
     console.error('Erreur enrichWithUserNames:', error);
     return items; // Retourner les items sans enrichissement en cas d'erreur
@@ -67,65 +67,64 @@ async function enrichWithUserNames(supabase, items, userField = 'utilisateur_id'
 exports.handler = async (event, context) => {
   // Gestion globale des erreurs pour éviter les 502
   try {
-    // CORS preflight
-    if (event.httpMethod === 'OPTIONS') {
-      return {
-        statusCode: 200,
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'GET, POST, PUT, OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-          'Access-Control-Allow-Credentials': 'true'
-        },
-        body: ''
-      };
-    }
+  // CORS preflight
+  if (event.httpMethod === 'OPTIONS') {
+    return {
+      statusCode: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, PUT, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+        'Access-Control-Allow-Credentials': 'true'
+      },
+      body: ''
+    };
+  }
 
     const supabaseUrl = process.env.SUPABASE_URL || 'https://srbzvjrqbhtuyzlwdghn.supabase.co';
     const supabaseKey = process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNyYnp2anJxYmh0dXl6bHdkZ2huIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQwNTg3NzQsImV4cCI6MjA3OTYzNDc3NH0.5KOkXAANWV_WLWPx02ozeC_xPCINd6boVtm3ia9iSmM';
-    
-    if (!supabaseUrl || !supabaseKey) {
+  
+  if (!supabaseUrl || !supabaseKey) {
       console.error('Configuration Supabase manquante');
-      return {
+    return {
         statusCode: 200,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*'
-        },
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      },
         body: JSON.stringify({ success: true, data: [], message: 'Configuration manquante' })
-      };
-    }
+    };
+  }
 
-    const supabase = createClient(supabaseUrl, supabaseKey);
-    
-    // Récupérer l'utilisateur depuis les query params (GET) ou le body (POST/PUT)
-    let userId = null;
-    let userRole = null;
-    
-    // Pour GET, récupérer d'abord depuis query string
-    if (event.httpMethod === 'GET' && event.queryStringParameters) {
-      userId = event.queryStringParameters._user_id || null;
-      userRole = event.queryStringParameters._user_role || null;
+  const supabase = createClient(supabaseUrl, supabaseKey);
+  
+  // Récupérer l'utilisateur depuis les query params (GET) ou le body (POST/PUT)
+  let userId = null;
+  let userRole = null;
+  
+  // Pour GET, récupérer d'abord depuis query string
+  if (event.httpMethod === 'GET' && event.queryStringParameters) {
+    userId = event.queryStringParameters._user_id || null;
+    userRole = event.queryStringParameters._user_role || null;
+  }
+  
+  // Sinon, essayer depuis le body (pour POST/PUT)
+  if (!userId && event.body) {
+    try {
+      const body = JSON.parse(event.body);
+      userId = body._user_id || null;
+      userRole = body._user_role || null;
+    } catch (e) {
+      // Ignorer
     }
-    
-    // Sinon, essayer depuis le body (pour POST/PUT)
-    if (!userId && event.body) {
-      try {
-        const body = JSON.parse(event.body);
-        userId = body._user_id || null;
-        userRole = body._user_role || null;
-      } catch (e) {
-        // Ignorer
-      }
-    }
+  }
 
-    // GET: Récupérer les signalements
-    if (event.httpMethod === 'GET') {
-      
+  // GET: Récupérer les signalements
+  if (event.httpMethod === 'GET') {
       try {
-      const queryParams = event.queryStringParameters || {};
+        const queryParams = event.queryStringParameters || {};
       const agentId = queryParams.agent_id ? parseInt(queryParams.agent_id) : null;
-      
+    
       // Construire la requête de base
       let query = supabase.from('signalements').select('*');
       
@@ -138,7 +137,7 @@ exports.handler = async (event, context) => {
                        .limit(100);
         } else {
           // Manager/Superadmin ou agent sans filtre : voir tous les signalements
-          query = query.order('date_signalement', { ascending: false }).limit(50);
+        query = query.order('date_signalement', { ascending: false }).limit(50);
         }
       } else {
         // Les citoyens voient seulement leurs signalements
@@ -247,14 +246,14 @@ exports.handler = async (event, context) => {
         },
         body: JSON.stringify({ success: true, data: [], message: 'Erreur lors du chargement des signalements' })
       };
-    }
+  }
   
-    // POST: Créer un signalement (peut être fait sans connexion)
-    if (event.httpMethod === 'POST') {
-      try {
-      let data;
-      try {
-        data = typeof event.body === 'string' ? JSON.parse(event.body) : event.body;
+  // POST: Créer un signalement (peut être fait sans connexion)
+  if (event.httpMethod === 'POST') {
+    try {
+        let data;
+        try {
+          data = typeof event.body === 'string' ? JSON.parse(event.body) : event.body;
       } catch (parseError) {
         console.error('Erreur parsing body signalement:', parseError);
         return {
@@ -265,19 +264,19 @@ exports.handler = async (event, context) => {
           },
           body: JSON.stringify({ success: false, message: 'Données JSON invalides' })
         };
-      }
-      
-      console.log('Données signalement reçues:', { type: data.type, sous_type: data.sous_type, has_description: !!data.description });
+        }
+        
+        console.log('Données signalement reçues:', { type: data.type, sous_type: data.sous_type, has_description: !!data.description });
       
       if (!data.type || !data.sous_type || !data.description) {
-        console.error('Champs manquants:', { type: data.type, sous_type: data.sous_type, description: data.description });
+          console.error('Champs manquants:', { type: data.type, sous_type: data.sous_type, description: data.description });
         return {
           statusCode: 400,
           headers: {
             'Content-Type': 'application/json',
             'Access-Control-Allow-Origin': '*'
           },
-          body: JSON.stringify({ success: false, message: 'Champs manquants: type, sous_type, description' })
+            body: JSON.stringify({ success: false, message: 'Champs manquants: type, sous_type, description' })
         };
       }
       
@@ -297,8 +296,8 @@ exports.handler = async (event, context) => {
         agent_assigné_id: null, // Le manager assignera
         date_signalement: new Date().toISOString()
       };
-      
-      console.log('Insertion signalement dans Supabase:', signalementData);
+        
+        console.log('Insertion signalement dans Supabase:', signalementData);
       
       const { data: newSignalement, error } = await supabase
         .from('signalements')
@@ -306,24 +305,24 @@ exports.handler = async (event, context) => {
         .select()
         .single();
       
-      if (error) {
-        console.error('Erreur Supabase insertion signalement:', error);
-        throw error;
-      }
-      
-      if (!newSignalement) {
-        console.error('Erreur: Supabase a retourné success mais newSignalement est null');
-        return {
-          statusCode: 500,
-          headers: {
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*'
-          },
-          body: JSON.stringify({ success: false, message: 'Erreur: signalement créé mais données non retournées' })
-        };
-      }
-      
-      console.log('Signalement créé avec succès:', newSignalement.id);
+        if (error) {
+          console.error('Erreur Supabase insertion signalement:', error);
+          throw error;
+        }
+        
+        if (!newSignalement) {
+          console.error('Erreur: Supabase a retourné success mais newSignalement est null');
+          return {
+            statusCode: 500,
+            headers: {
+              'Content-Type': 'application/json',
+              'Access-Control-Allow-Origin': '*'
+            },
+            body: JSON.stringify({ success: false, message: 'Erreur: signalement créé mais données non retournées' })
+          };
+        }
+        
+        console.log('Signalement créé avec succès:', newSignalement.id);
       
       // Enrichir avec les noms
       const enriched = await enrichWithUserNames(supabase, [newSignalement]);
@@ -355,22 +354,22 @@ exports.handler = async (event, context) => {
         body: JSON.stringify({ success: false, message: 'Erreur lors de la création du signalement' })
       };
     }
-    }
+  }
   
-    // PUT: Mettre à jour un signalement
-    if (event.httpMethod === 'PUT') {
-      if (!userId || !['agent', 'manager', 'superadmin'].includes(userRole)) {
-        return {
-          statusCode: 403,
-          headers: {
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*'
-          },
-          body: JSON.stringify({ success: false, message: 'Non autorisé' })
-        };
-      }
-      
-      try {
+  // PUT: Mettre à jour un signalement
+  if (event.httpMethod === 'PUT') {
+    if (!userId || !['agent', 'manager', 'superadmin'].includes(userRole)) {
+      return {
+        statusCode: 403,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        },
+        body: JSON.stringify({ success: false, message: 'Non autorisé' })
+      };
+    }
+    
+    try {
         let data;
         try {
           data = typeof event.body === 'string' ? JSON.parse(event.body) : event.body;
@@ -385,101 +384,101 @@ exports.handler = async (event, context) => {
             body: JSON.stringify({ success: false, message: 'Données JSON invalides' })
           };
         }
-        
-        if (!data.id) {
-          return {
-            statusCode: 400,
-            headers: {
-              'Content-Type': 'application/json',
-              'Access-Control-Allow-Origin': '*'
-            },
-            body: JSON.stringify({ success: false, message: 'ID manquant' })
-          };
-        }
-        
-        const updateData = {};
-        
-        // Mettre à jour le statut si fourni
-        if (data.statut) {
-          updateData.statut = data.statut;
-          if (data.statut === 'resolu') {
-            updateData.date_modification = new Date().toISOString();
-            updateData.date_resolution = new Date().toISOString();
-          }
-        }
-        
-        // Mettre à jour l'agent assigné si fourni (pour le manager)
-        if (data.agent_assigné_id !== undefined) {
-          updateData.agent_assigné_id = data.agent_assigné_id ? parseInt(data.agent_assigné_id) : null;
-        }
-        
-        if (Object.keys(updateData).length === 0) {
-          return {
-            statusCode: 400,
-            headers: {
-              'Content-Type': 'application/json',
-              'Access-Control-Allow-Origin': '*'
-            },
-            body: JSON.stringify({ success: false, message: 'Aucune donnée à mettre à jour' })
-          };
-        }
-        
-        const { error } = await supabase
-          .from('signalements')
-          .update(updateData)
-          .eq('id', data.id);
-        
-        if (error) throw error;
-        
-        // Récupérer le signalement mis à jour
-        const { data: signalement, error: getError } = await supabase
-          .from('signalements')
-          .select('*')
-          .eq('id', data.id)
-          .single();
-        
-        if (getError) throw getError;
-        
-        const enriched = await enrichWithUserNames(supabase, [signalement]);
-        const formatted = enriched[0];
-        
-        const dateField = formatted.date_signalement || formatted.date_creation || new Date().toISOString().split('T')[0];
-        const year = new Date(dateField).getFullYear();
-        formatted.id_formate = 'SIG' + year + '-' + String(formatted.id).padStart(6, '0');
-        formatted.date_creation = formatted.date_signalement || formatted.date_creation;
-        // Mapper photo_url vers photo pour compatibilité frontend
-        formatted.photo = formatted.photo_url || formatted.photo || null;
-        formatted.photo_url = formatted.photo_url || formatted.photo || null;
-        
+      
+      if (!data.id) {
         return {
-          statusCode: 200,
+          statusCode: 400,
           headers: {
             'Content-Type': 'application/json',
             'Access-Control-Allow-Origin': '*'
           },
-          body: JSON.stringify({ success: true, data: formatted, message: 'Statut mis à jour' })
-        };
-      } catch (error) {
-        console.error('Erreur mise à jour signalement:', error);
-        return {
-          statusCode: 500,
-          headers: {
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*'
-          },
-          body: JSON.stringify({ success: false, message: 'Erreur lors de la mise à jour' })
+          body: JSON.stringify({ success: false, message: 'ID manquant' })
         };
       }
+      
+      const updateData = {};
+      
+      // Mettre à jour le statut si fourni
+      if (data.statut) {
+        updateData.statut = data.statut;
+        if (data.statut === 'resolu') {
+          updateData.date_modification = new Date().toISOString();
+          updateData.date_resolution = new Date().toISOString();
+        }
+      }
+      
+      // Mettre à jour l'agent assigné si fourni (pour le manager)
+      if (data.agent_assigné_id !== undefined) {
+        updateData.agent_assigné_id = data.agent_assigné_id ? parseInt(data.agent_assigné_id) : null;
+      }
+      
+      if (Object.keys(updateData).length === 0) {
+        return {
+          statusCode: 400,
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
+          },
+          body: JSON.stringify({ success: false, message: 'Aucune donnée à mettre à jour' })
+        };
+      }
+      
+      const { error } = await supabase
+        .from('signalements')
+        .update(updateData)
+        .eq('id', data.id);
+      
+      if (error) throw error;
+      
+      // Récupérer le signalement mis à jour
+      const { data: signalement, error: getError } = await supabase
+        .from('signalements')
+        .select('*')
+        .eq('id', data.id)
+        .single();
+      
+      if (getError) throw getError;
+      
+      const enriched = await enrichWithUserNames(supabase, [signalement]);
+      const formatted = enriched[0];
+      
+      const dateField = formatted.date_signalement || formatted.date_creation || new Date().toISOString().split('T')[0];
+      const year = new Date(dateField).getFullYear();
+      formatted.id_formate = 'SIG' + year + '-' + String(formatted.id).padStart(6, '0');
+      formatted.date_creation = formatted.date_signalement || formatted.date_creation;
+      // Mapper photo_url vers photo pour compatibilité frontend
+      formatted.photo = formatted.photo_url || formatted.photo || null;
+      formatted.photo_url = formatted.photo_url || formatted.photo || null;
+      
+      return {
+        statusCode: 200,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        },
+        body: JSON.stringify({ success: true, data: formatted, message: 'Statut mis à jour' })
+      };
+    } catch (error) {
+      console.error('Erreur mise à jour signalement:', error);
+      return {
+        statusCode: 500,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        },
+        body: JSON.stringify({ success: false, message: 'Erreur lors de la mise à jour' })
+      };
     }
+  }
   
-    return {
-      statusCode: 405,
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*'
-      },
-      body: JSON.stringify({ success: false, message: 'Méthode non autorisée' })
-    };
+  return {
+    statusCode: 405,
+    headers: {
+      'Content-Type': 'application/json',
+      'Access-Control-Allow-Origin': '*'
+    },
+    body: JSON.stringify({ success: false, message: 'Méthode non autorisée' })
+  };
   } catch (globalError) {
     // Catch global pour éviter les 502
     console.error('Erreur globale signalements.js:', globalError);
