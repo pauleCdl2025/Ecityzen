@@ -7588,13 +7588,25 @@
         async function voirDetailsDemande(demandeId) {
             // Ouvrir la modale immédiatement avec un indicateur de chargement
             const modal = document.getElementById('detailsDemandeAgentModal');
+            if (!modal) {
+                console.error('Modal detailsDemandeAgentModal non trouvée');
+                return;
+            }
+            
             modal.classList.remove('hidden');
             
-            // Afficher un indicateur de chargement
-            const modalContent = modal.querySelector('.bg-white');
-            if (modalContent) {
-                const originalContent = modalContent.innerHTML;
-                modalContent.innerHTML = '<div class="p-8 text-center"><div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div><p class="mt-4 text-gray-600">Chargement des détails...</p></div>';
+            // Sauvegarder le contenu original du modal (une seule fois)
+            if (!modal.dataset.originalContent) {
+                const modalContent = modal.querySelector('.bg-white');
+                if (modalContent) {
+                    modal.dataset.originalContent = modalContent.innerHTML;
+                }
+            }
+            
+            // Afficher un indicateur de chargement dans la zone de contenu principale seulement
+            const documentsContainer = document.getElementById('detailsDemandeDocuments');
+            if (documentsContainer) {
+                documentsContainer.innerHTML = '<div class="text-center py-4"><div class="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div><p class="mt-2 text-sm text-gray-600">Chargement des détails...</p></div>';
             }
             
             try {
@@ -7635,9 +7647,22 @@
                     return;
                 }
                 
-                // Remplir les informations
-                document.getElementById('detailsDemandeId').textContent = demande.numero_dossier || 'N/A';
-                document.getElementById('detailsDemandeService').textContent = demande.service || demande.type || 'N/A';
+                // Restaurer le contenu original si nécessaire (au cas où il aurait été modifié)
+                const modalContent = modal.querySelector('.bg-white');
+                if (modalContent && modal.dataset.originalContent) {
+                    modalContent.innerHTML = modal.dataset.originalContent;
+                }
+                
+                // Remplir les informations avec vérifications
+                const idElement = document.getElementById('detailsDemandeId');
+                if (idElement) {
+                    idElement.textContent = demande.numero_dossier || 'N/A';
+                }
+                
+                const serviceElement = document.getElementById('detailsDemandeService');
+                if (serviceElement) {
+                    serviceElement.textContent = demande.service || demande.type || 'N/A';
+                }
                 
                 // Afficher l'utilisateur avec son type
                 const utilisateurElement = document.getElementById('detailsDemandeUtilisateur');
@@ -7651,21 +7676,34 @@
                         </div>
                     `;
                 }
-                document.getElementById('detailsDemandeMotif').textContent = demande.motif || 'Non renseigné';
-                document.getElementById('detailsDemandeMontant').textContent = parseFloat(demande.montant || demande.cout || 0).toLocaleString() + ' FCFA';
                 
-                const dateCreation = new Date(demande.date_creation);
-                document.getElementById('detailsDemandeDate').textContent = dateCreation.toLocaleDateString('fr-FR', { 
-                    day: '2-digit', 
-                    month: '2-digit', 
-                    year: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                });
+                const motifElement = document.getElementById('detailsDemandeMotif');
+                if (motifElement) {
+                    motifElement.textContent = demande.motif || 'Non renseigné';
+                }
+                
+                const montantElement = document.getElementById('detailsDemandeMontant');
+                if (montantElement) {
+                    montantElement.textContent = parseFloat(demande.montant || demande.cout || 0).toLocaleString() + ' FCFA';
+                }
+                
+                const dateElement = document.getElementById('detailsDemandeDate');
+                if (dateElement && demande.date_creation) {
+                    const dateCreation = new Date(demande.date_creation);
+                    dateElement.textContent = dateCreation.toLocaleDateString('fr-FR', { 
+                        day: '2-digit', 
+                        month: '2-digit', 
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                }
                 
                 // Afficher le statut
                 const statutSelect = document.getElementById('detailsDemandeStatut');
-                statutSelect.value = demande.statut || 'en_attente';
+                if (statutSelect) {
+                    statutSelect.value = demande.statut || 'en_attente';
+                }
                 
                 // Stocker l'ID de la demande
                 modal.dataset.demandeId = demandeId;
@@ -7679,6 +7717,12 @@
             } catch (error) {
                 console.error('Erreur chargement détails:', error);
                 showNotification('Erreur lors du chargement des détails', 'error');
+                
+                // Restaurer le contenu original en cas d'erreur
+                const modalContent = modal.querySelector('.bg-white');
+                if (modalContent && modal.dataset.originalContent) {
+                    modalContent.innerHTML = modal.dataset.originalContent;
+                }
             }
         }
         
