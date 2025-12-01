@@ -23,11 +23,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     
     try {
         if ($role === 'agent' || $role === 'manager' || $role === 'superadmin') {
-            // Les agents/managers voient tous les signalements
-            $result = supabaseCall('signalements', 'GET', null, [], [
-                'order' => ['date_signalement' => 'desc'],
-                'limit' => 50
-            ]);
+            // Optimisation : si un agent_id est spécifié, filtrer directement
+            $agentId = isset($_GET['agent_id']) ? intval($_GET['agent_id']) : null;
+            
+            if ($agentId && $role === 'agent') {
+                // Agent : charger seulement ses signalements assignés (beaucoup plus rapide)
+                $result = supabaseCall('signalements', 'GET', null, ['agent_assigné_id' => $agentId], [
+                    'order' => ['date_signalement' => 'desc'],
+                    'limit' => 100
+                ]);
+            } else {
+                // Manager/Superadmin ou agent sans filtre : voir tous les signalements
+                $result = supabaseCall('signalements', 'GET', null, [], [
+                    'order' => ['date_signalement' => 'desc'],
+                    'limit' => 50
+                ]);
+            }
             $signalements = $result['success'] ? $result['data'] : [];
         } else {
             // Les citoyens voient seulement leurs signalements

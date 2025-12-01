@@ -5763,15 +5763,36 @@
             emplacementsList.appendChild(buttonDiv);
         }
         
-        // Charger les données agent
+        // Charger les données agent (optimisé : filtre côté serveur)
         async function loadAgentData() {
+            const agentDashboardEl = document.getElementById('agentDashboard');
+            
             try {
+                if (!currentUser || !currentUser.id) {
+                    console.error('Utilisateur non connecté');
+                    return;
+                }
+                
+                // Afficher un indicateur de chargement
+                if (agentDashboardEl) {
+                    const loadingIndicator = agentDashboardEl.querySelector('.loading-indicator');
+                    if (loadingIndicator) {
+                        loadingIndicator.classList.remove('hidden');
+                    }
+                }
+                
+                // Optimisation : passer agent_id pour filtrer directement côté serveur
+                // Cela évite de charger toutes les demandes/signalements puis de filtrer côté client
+                const agentId = currentUser.id;
+                
+                // Charger en parallèle avec filtrage côté serveur (beaucoup plus rapide)
                 const [demandesResult, signalementsResult] = await Promise.all([
-                    apiCall('demandes.php'),
-                    apiCall('signalements.php')
+                    apiCall(`demandes.php?agent_id=${agentId}`),
+                    apiCall(`signalements.php?agent_id=${agentId}`)
                 ]);
                 
                 // Charger les missions séparément pour gérer les erreurs
+                // Les missions sont déjà filtrées par agent_id dans l'API
                 let missionsResult = { data: [] };
                 try {
                     missionsResult = await apiCall('missions.php');
@@ -5780,20 +5801,16 @@
                     // Continuer avec un tableau vide
                 }
                 
-                const demandes = demandesResult.data || [];
-                const signalements = signalementsResult.data || [];
-                const missions = missionsResult.data || [];
+                // Les données sont déjà filtrées côté serveur, pas besoin de filtrer à nouveau
+                const demandesAgent = demandesResult.data || [];
+                const signalementsAgent = signalementsResult.data || [];
+                const missionsAgent = missionsResult.data || [];
                 
-                // Mettre à jour le cache des demandes
-                if (demandes.length > 0) {
-                    demandesCache = demandes;
+                // Mettre à jour le cache des demandes (seulement celles de l'agent)
+                if (demandesAgent.length > 0) {
+                    demandesCache = demandesAgent;
                     demandesCacheTime = Date.now();
                 }
-                
-                // Filtrer les données pour l'agent connecté
-                const demandesAgent = demandes.filter(d => d.agent_assigné_id == currentUser.id);
-                const signalementsAgent = signalements.filter(s => s.agent_assigné_id == currentUser.id);
-                const missionsAgent = missions.filter(m => m.agent_id == currentUser.id);
                 
                 // Calculer les statistiques
                 const demandesAssignees = demandesAgent.filter(d => d.statut !== 'valide' && d.statut !== 'rejete' && d.statut !== 'annule').length;
@@ -5849,8 +5866,24 @@
                 // Mettre à jour la liste des missions
                 updateAgentMissionsList(missionsAgent.filter(m => m.statut === 'planifiee' || m.statut === 'en_cours'));
                 
+                // Masquer l'indicateur de chargement
+                if (agentDashboardEl) {
+                    const loadingIndicator = agentDashboardEl.querySelector('.loading-indicator');
+                    if (loadingIndicator) {
+                        loadingIndicator.classList.add('hidden');
+                    }
+                }
+                
             } catch (error) {
                 console.error('Erreur chargement données agent:', error);
+                
+                // Masquer l'indicateur de chargement même en cas d'erreur
+                if (agentDashboardEl) {
+                    const loadingIndicator = agentDashboardEl.querySelector('.loading-indicator');
+                    if (loadingIndicator) {
+                        loadingIndicator.classList.add('hidden');
+                    }
+                }
             }
         }
         

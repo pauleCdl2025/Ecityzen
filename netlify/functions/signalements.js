@@ -95,11 +95,22 @@ exports.handler = async (event, context) => {
   if (event.httpMethod === 'GET') {
     
     try {
+      const queryParams = event.queryStringParameters || {};
+      const agentId = queryParams.agent_id ? parseInt(queryParams.agent_id) : null;
+      
       let query = supabase.from('signalements').select('*');
       
       if (userRole === 'agent' || userRole === 'manager' || userRole === 'superadmin') {
-        // Les agents/managers voient tous les signalements
-        query = query.order('date_signalement', { ascending: false }).limit(50);
+        // Optimisation : si agent_id est spécifié et que c'est un agent, filtrer directement
+        if (agentId && userRole === 'agent') {
+          // Agent : charger seulement ses signalements assignés (beaucoup plus rapide)
+          query = query.eq('agent_assigné_id', agentId)
+                       .order('date_signalement', { ascending: false })
+                       .limit(100);
+        } else {
+          // Manager/Superadmin ou agent sans filtre : voir tous les signalements
+          query = query.order('date_signalement', { ascending: false }).limit(50);
+        }
       } else {
         // Les citoyens voient seulement leurs signalements
         if (!userId) {

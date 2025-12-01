@@ -107,10 +107,22 @@ exports.handler = async (event, context) => {
   if (event.httpMethod === 'GET') {
     
     try {
+      const queryParams = event.queryStringParameters || {};
+      const agentId = queryParams.agent_id ? parseInt(queryParams.agent_id) : null;
+      
       let query = supabase.from('demandes').select('*');
       
       if (userRole === 'agent' || userRole === 'manager' || userRole === 'superadmin') {
-        query = query.order('date_creation', { ascending: false }).limit(50);
+        // Optimisation : si agent_id est spécifié et que c'est un agent, filtrer directement
+        if (agentId && userRole === 'agent') {
+          // Agent : charger seulement ses demandes assignées (beaucoup plus rapide)
+          query = query.eq('agent_assigné_id', agentId)
+                       .order('date_creation', { ascending: false })
+                       .limit(100);
+        } else {
+          // Manager/Superadmin ou agent sans filtre : voir toutes les demandes
+          query = query.order('date_creation', { ascending: false }).limit(50);
+        }
       } else {
         if (!userId) {
           return {
