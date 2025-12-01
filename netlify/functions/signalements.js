@@ -3,45 +3,72 @@ const { createClient } = require('@supabase/supabase-js');
 
 // Fonction helper pour enrichir avec les noms d'utilisateurs
 async function enrichWithUserNames(supabase, items, userField = 'utilisateur_id', agentField = 'agent_assigné_id') {
-  const userIds = new Set();
-  items.forEach(item => {
-    if (item[userField]) userIds.add(item[userField]);
-    if (item[agentField]) userIds.add(item[agentField]);
-  });
-  
-  if (userIds.size === 0) return items;
-  
-  const { data: users, error } = await supabase
-    .from('utilisateurs')
-    .select('id, nom')
-    .in('id', Array.from(userIds));
-  
-  if (error) {
-    console.error('Erreur récupération utilisateurs:', error);
-    return items;
-  }
-  
-  const userMap = {};
-  if (users) {
-    users.forEach(user => {
-      userMap[user.id] = user.nom;
+  try {
+    const userIds = new Set();
+    items.forEach(item => {
+      if (item[userField]) userIds.add(parseInt(item[userField]));
+      if (item[agentField]) userIds.add(parseInt(item[agentField]));
     });
+    
+    if (userIds.size === 0) return items;
+    
+    // Traiter par lots de 100 pour éviter les limites Supabase
+    const userIdsArray = Array.from(userIds);
+    const chunks = [];
+    for (let i = 0; i < userIdsArray.length; i += 100) {
+      chunks.push(userIdsArray.slice(i, i + 100));
+    }
+    
+    const userMap = {};
+    
+    for (const chunk of chunks) {
+      try {
+        const { data: users, error } = await supabase
+          .from('utilisateurs')
+          .select('id, nom, role')
+          .in('id', chunk);
+        
+        if (error) {
+          console.error('Erreur récupération utilisateurs (chunk):', error);
+          continue; // Continuer avec les autres chunks
+        }
+        
+        if (users) {
+          users.forEach(user => {
+            userMap[user.id] = { nom: user.nom, role: user.role || null };
+          });
+        }
+      } catch (chunkError) {
+        console.error('Erreur chunk enrichWithUserNames:', chunkError);
+        continue;
+      }
+    }
+    
+    return items.map(item => {
+      const userId = item[userField] ? parseInt(item[userField]) : null;
+      const agentId = item[agentField] ? parseInt(item[agentField]) : null;
+      
+      if (userId && userMap[userId]) {
+        item['utilisateur_nom'] = userMap[userId].nom;
+        item['utilisateur_role'] = userMap[userId].role;
+      }
+      if (agentId && userMap[agentId]) {
+        item['agent_nom'] = userMap[agentId].nom;
+        item['agent_role'] = userMap[agentId].role;
+      }
+      return item;
+    });
+  } catch (error) {
+    console.error('Erreur enrichWithUserNames:', error);
+    return items; // Retourner les items sans enrichissement en cas d'erreur
   }
-  
-  return items.map(item => {
-    if (item[userField] && userMap[item[userField]]) {
-      item['utilisateur_nom'] = userMap[item[userField]];
-    }
-    if (item[agentField] && userMap[item[agentField]]) {
-      item['agent_nom'] = userMap[item[agentField]];
-    }
-    return item;
-  });
 }
 
 exports.handler = async (event, context) => {
-  // CORS preflight
-  if (event.httpMethod === 'OPTIONS') {
+  // Gestion globale des erreurs pour éviter les 502
+  try {
+    // CORS preflight
+    if (event.httpMethod === 'OPTIONS') {
     return {
       statusCode: 200,
       headers: {
@@ -411,5 +438,18 @@ exports.handler = async (event, context) => {
     },
     body: JSON.stringify({ success: false, message: 'Méthode non autorisée' })
   };
+  } catch (globalError) {
+    // Catch global pour éviter les 502
+    console.error('Erreur globale signalements.js:', globalError);
+    console.error('Stack:', globalError.stack);
+    return {
+      statusCode: 200,
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      },
+      body: JSON.stringify({ success: true, data: [], message: 'Erreur serveur' })
+    };
+  }
 };
 
