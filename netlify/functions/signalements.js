@@ -124,117 +124,117 @@ exports.handler = async (event, context) => {
       try {
         const queryParams = event.queryStringParameters || {};
         const agentId = queryParams.agent_id ? parseInt(queryParams.agent_id) : null;
-    
-      // Construire la requête de base
-      let query = supabase.from('signalements').select('*');
-      
-      if (userRole === 'agent' || userRole === 'manager' || userRole === 'superadmin') {
-        // Optimisation : si agent_id est spécifié et que c'est un agent, filtrer directement
-        if (agentId && userRole === 'agent') {
-          // Agent : charger seulement ses signalements assignés (beaucoup plus rapide)
-          query = query.eq('agent_assigné_id', agentId)
-                       .order('date_signalement', { ascending: false })
-                       .limit(100);
+        
+        // Construire la requête de base
+        let query = supabase.from('signalements').select('*');
+        
+        if (userRole === 'agent' || userRole === 'manager' || userRole === 'superadmin') {
+          // Optimisation : si agent_id est spécifié et que c'est un agent, filtrer directement
+          if (agentId && userRole === 'agent') {
+            // Agent : charger seulement ses signalements assignés (beaucoup plus rapide)
+            query = query.eq('agent_assigné_id', agentId)
+                         .order('date_signalement', { ascending: false })
+                         .limit(100);
+          } else {
+            // Manager/Superadmin ou agent sans filtre : voir tous les signalements
+            query = query.order('date_signalement', { ascending: false }).limit(50);
+          }
         } else {
-          // Manager/Superadmin ou agent sans filtre : voir tous les signalements
-        query = query.order('date_signalement', { ascending: false }).limit(50);
+          // Les citoyens voient seulement leurs signalements
+          if (!userId) {
+            return {
+              statusCode: 200,
+              headers: {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+              },
+              body: JSON.stringify({ success: true, data: [], message: 'Non authentifié' })
+            };
+          }
+          query = query.eq('utilisateur_id', parseInt(userId)).order('date_signalement', { ascending: false });
         }
-      } else {
-        // Les citoyens voient seulement leurs signalements
-        if (!userId) {
+        
+        // Exécuter la requête avec timeout
+        let signalements = [];
+        let queryError = null;
+        
+        try {
+          // Timeout de 8 secondes pour éviter les 502
+          const queryPromise = query;
+          const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Timeout')), 8000)
+          );
+          
+          const result = await Promise.race([queryPromise, timeoutPromise]);
+          signalements = result.data || [];
+          queryError = result.error;
+        } catch (err) {
+          console.error('Erreur requête Supabase signalements:', err.message || err);
+          queryError = err;
+        }
+        
+        if (queryError) {
+          console.error('Erreur Supabase query signalements:', queryError);
+          // Retourner un tableau vide plutôt qu'une erreur 500 pour éviter les 502
           return {
             statusCode: 200,
             headers: {
               'Content-Type': 'application/json',
               'Access-Control-Allow-Origin': '*'
             },
-            body: JSON.stringify({ success: true, data: [], message: 'Non authentifié' })
+            body: JSON.stringify({ success: true, data: [], message: 'Aucun signalement disponible' })
           };
         }
-        query = query.eq('utilisateur_id', parseInt(userId)).order('date_signalement', { ascending: false });
-      }
-      
-      // Exécuter la requête avec timeout
-      let signalements = [];
-      let queryError = null;
-      
-      try {
-        // Timeout de 8 secondes pour éviter les 502
-        const queryPromise = query;
-        const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Timeout')), 8000)
-        );
         
-        const result = await Promise.race([queryPromise, timeoutPromise]);
-        signalements = result.data || [];
-        queryError = result.error;
-      } catch (err) {
-        console.error('Erreur requête Supabase signalements:', err.message || err);
-        queryError = err;
-      }
-      
-      if (queryError) {
-        console.error('Erreur Supabase query signalements:', queryError);
-        // Retourner un tableau vide plutôt qu'une erreur 500 pour éviter les 502
+        // Enrichir avec les noms (avec gestion d'erreur)
+        let enriched = signalements || [];
+        try {
+          enriched = await enrichWithUserNames(supabase, signalements || []);
+        } catch (err) {
+          console.error('Erreur enrichissement signalements:', err);
+          enriched = signalements || []; // Retourner sans enrichissement en cas d'erreur
+        }
+        
+        // Formater les données
+        const formatted = enriched.map(sig => {
+          // Gérer les différents noms de champs de date
+          const dateField = sig.date_signalement || sig.date_creation || new Date().toISOString();
+          let year;
+          try {
+            year = new Date(dateField).getFullYear();
+          } catch (e) {
+            year = new Date().getFullYear();
+          }
+          
+          // S'assurer que date_creation et date_signalement existent
+          const dateValue = sig.date_signalement || sig.date_creation || new Date().toISOString();
+          
+          return {
+            ...sig,
+            id_formate: 'SIG' + year + '-' + String(sig.id).padStart(6, '0'),
+            date_creation: dateValue,
+            date_signalement: dateValue,
+            // Mapper photo_url vers photo pour compatibilité frontend
+            photo: sig.photo_url || sig.photo || null,
+            photo_url: sig.photo_url || sig.photo || null,
+            // S'assurer que tous les champs essentiels existent
+            statut: sig.statut || 'en_attente',
+            type: sig.type || 'Autre',
+            sous_type: sig.sous_type || sig.type || 'Autre',
+            description: sig.description || '',
+            localisation: sig.localisation || null
+          };
+        });
+        
         return {
           statusCode: 200,
           headers: {
             'Content-Type': 'application/json',
             'Access-Control-Allow-Origin': '*'
           },
-          body: JSON.stringify({ success: true, data: [], message: 'Aucun signalement disponible' })
+          body: JSON.stringify({ success: true, data: formatted, message: 'Signalements récupérés' })
         };
-      }
-      
-      // Enrichir avec les noms (avec gestion d'erreur)
-      let enriched = signalements || [];
-      try {
-        enriched = await enrichWithUserNames(supabase, signalements || []);
-      } catch (err) {
-        console.error('Erreur enrichissement signalements:', err);
-        enriched = signalements || []; // Retourner sans enrichissement en cas d'erreur
-      }
-      
-      // Formater les données
-      const formatted = enriched.map(sig => {
-        // Gérer les différents noms de champs de date
-        const dateField = sig.date_signalement || sig.date_creation || new Date().toISOString();
-        let year;
-        try {
-          year = new Date(dateField).getFullYear();
-        } catch (e) {
-          year = new Date().getFullYear();
-        }
-        
-        // S'assurer que date_creation et date_signalement existent
-        const dateValue = sig.date_signalement || sig.date_creation || new Date().toISOString();
-        
-        return {
-          ...sig,
-          id_formate: 'SIG' + year + '-' + String(sig.id).padStart(6, '0'),
-          date_creation: dateValue,
-          date_signalement: dateValue,
-          // Mapper photo_url vers photo pour compatibilité frontend
-          photo: sig.photo_url || sig.photo || null,
-          photo_url: sig.photo_url || sig.photo || null,
-          // S'assurer que tous les champs essentiels existent
-          statut: sig.statut || 'en_attente',
-          type: sig.type || 'Autre',
-          sous_type: sig.sous_type || sig.type || 'Autre',
-          description: sig.description || '',
-          localisation: sig.localisation || null
-        };
-      });
-      
-      return {
-        statusCode: 200,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*'
-        },
-        body: JSON.stringify({ success: true, data: formatted, message: 'Signalements récupérés' })
-      };
-    } catch (error) {
+      } catch (error) {
       console.error('Erreur récupération signalements:', error);
       console.error('Détails erreur:', error.message, error.stack);
       // Retourner un tableau vide plutôt qu'une erreur 500 pour éviter les 502
