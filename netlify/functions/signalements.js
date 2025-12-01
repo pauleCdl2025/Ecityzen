@@ -265,16 +265,32 @@ exports.handler = async (event, context) => {
   // POST: Créer un signalement (peut être fait sans connexion)
   if (event.httpMethod === 'POST') {
     try {
-      const data = JSON.parse(event.body);
-      
-      if (!data.type || !data.sous_type || !data.description) {
+      let data;
+      try {
+        data = typeof event.body === 'string' ? JSON.parse(event.body) : event.body;
+      } catch (parseError) {
+        console.error('Erreur parsing body signalement:', parseError);
         return {
           statusCode: 400,
           headers: {
             'Content-Type': 'application/json',
             'Access-Control-Allow-Origin': '*'
           },
-          body: JSON.stringify({ success: false, message: 'Champs manquants' })
+          body: JSON.stringify({ success: false, message: 'Données JSON invalides' })
+        };
+      }
+      
+      console.log('Données signalement reçues:', { type: data.type, sous_type: data.sous_type, has_description: !!data.description });
+      
+      if (!data.type || !data.sous_type || !data.description) {
+        console.error('Champs manquants:', { type: data.type, sous_type: data.sous_type, description: data.description });
+        return {
+          statusCode: 400,
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
+          },
+          body: JSON.stringify({ success: false, message: 'Champs manquants: type, sous_type, description' })
         };
       }
       
@@ -295,13 +311,32 @@ exports.handler = async (event, context) => {
         date_signalement: new Date().toISOString()
       };
       
+      console.log('Insertion signalement dans Supabase:', signalementData);
+      
       const { data: newSignalement, error } = await supabase
         .from('signalements')
         .insert(signalementData)
         .select()
         .single();
       
-      if (error) throw error;
+      if (error) {
+        console.error('Erreur Supabase insertion signalement:', error);
+        throw error;
+      }
+      
+      if (!newSignalement) {
+        console.error('Erreur: Supabase a retourné success mais newSignalement est null');
+        return {
+          statusCode: 500,
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
+          },
+          body: JSON.stringify({ success: false, message: 'Erreur: signalement créé mais données non retournées' })
+        };
+      }
+      
+      console.log('Signalement créé avec succès:', newSignalement.id);
       
       // Enrichir avec les noms
       const enriched = await enrichWithUserNames(supabase, [newSignalement]);

@@ -8,13 +8,8 @@
 
 require_once '../config/supabase.php';
 
-header('Content-Type: application/json; charset=utf-8');
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, POST, PUT');
-header('Access-Control-Allow-Headers: Content-Type');
-header('Access-Control-Allow-Credentials: true');
-
-session_start();
+setupCORS('GET, POST, PUT, OPTIONS');
+startSecureSession();
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     // Récupérer les signalements
@@ -114,16 +109,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     
 } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Créer un signalement (peut être fait sans connexion)
-    $data = json_decode(file_get_contents('php://input'), true);
-    
-    $required = ['type', 'sous_type', 'description'];
-    foreach ($required as $field) {
-        if (!isset($data[$field]) || empty($data[$field])) {
-            sendJSONResponse(false, null, "Champ manquant: $field", 400);
-        }
-    }
-    
     try {
+        $rawInput = file_get_contents('php://input');
+        error_log("Raw input signalement: " . substr($rawInput, 0, 200)); // Log les 200 premiers caractères
+        
+        $data = json_decode($rawInput, true);
+        
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            error_log("Erreur parsing JSON signalement: " . json_last_error_msg());
+            sendJSONResponse(false, null, 'Données JSON invalides: ' . json_last_error_msg(), 400);
+        }
+        
+        if (!$data || !is_array($data)) {
+            error_log("Données signalement invalides ou vides");
+            sendJSONResponse(false, null, 'Données invalides', 400);
+        }
+        
+        $required = ['type', 'sous_type', 'description'];
+        foreach ($required as $field) {
+            if (!isset($data[$field]) || empty($data[$field])) {
+                error_log("Champ manquant signalement: $field");
+                sendJSONResponse(false, null, "Champ manquant: $field", 400);
+            }
+        }
+        
+        error_log("Création signalement - Type: " . $data['type'] . ", Sous-type: " . $data['sous_type']);
         // Gérer l'upload de photo si présent
         $photoUrl = null;
         if (isset($data['photo']) && !empty($data['photo'])) {
@@ -151,11 +161,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         $signalementData['agent_assigné_id'] = null;
         
         // Créer le signalement dans Supabase
+        error_log("Données envoyées à Supabase: " . json_encode($signalementData));
         $result = supabaseCall('signalements', 'POST', $signalementData);
         
-        if (!$result['success'] || empty($result['data'])) {
-            error_log("Erreur création signalement Supabase: " . ($result['error'] ?? 'Erreur inconnue'));
-            sendJSONResponse(false, null, 'Erreur lors de la création du signalement', 500);
+        error_log("Résultat Supabase: " . json_encode(['success' => $result['success'] ?? false, 'error' => $result['error'] ?? null, 'data_count' => isset($result['data']) ? count($result['data']) : 0]));
+        
+        if (!$result['success']) {
+            $errorMsg = $result['error'] ?? 'Erreur inconnue';
+            error_log("Erreur création signalement Supabase: " . $errorMsg);
+            sendJSONResponse(false, null, 'Erreur lors de la création du signalement: ' . $errorMsg, 500);
+        }
+        
+        if (empty($result['data'])) {
+            error_log("Erreur: Supabase a retourné success=true mais data est vide");
+            sendJSONResponse(false, null, 'Erreur: signalement créé mais données non retournées', 500);
         }
         
         $signalement = $result['data'][0];

@@ -6834,7 +6834,16 @@
                     photo: photoBase64
                 };
                 
+                console.log('Envoi signalement:', signalementData);
                 const result = await apiCall('signalements.php', 'POST', signalementData);
+                console.log('Résultat création signalement:', result);
+                
+                if (!result || !result.success) {
+                    const errorMsg = result?.message || 'Erreur lors de l\'enregistrement du signalement';
+                    console.error('Erreur création signalement:', errorMsg, result);
+                    showNotification(errorMsg, 'error');
+                    return;
+                }
                 
                 closeModal('signalementModal');
                 
@@ -6842,7 +6851,8 @@
                 document.getElementById('signalementForm').reset();
                 document.getElementById('signalementSousType').innerHTML = '<option value="">Choisir d\'abord le type...</option>';
                 
-                showNotification(`Signalement ${result.data.id_formate || result.data.id} enregistré avec succès !`, 'success');
+                const signalementId = result.data?.id_formate || result.data?.id || 'N/A';
+                showNotification(`Signalement ${signalementId} enregistré avec succès !`, 'success');
                 
                 // Recharger les données si connecté
                 if (currentUser && currentProfile === 'citoyen') {
