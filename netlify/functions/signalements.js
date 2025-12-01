@@ -69,60 +69,60 @@ exports.handler = async (event, context) => {
   try {
     // CORS preflight
     if (event.httpMethod === 'OPTIONS') {
-    return {
-      statusCode: 200,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, POST, PUT, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-        'Access-Control-Allow-Credentials': 'true'
-      },
-      body: ''
-    };
-  }
-
-  const supabaseUrl = process.env.SUPABASE_URL || 'https://srbzvjrqbhtuyzlwdghn.supabase.co';
-  const supabaseKey = process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNyYnp2anJxYmh0dXl6bHdkZ2huIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQwNTg3NzQsImV4cCI6MjA3OTYzNDc3NH0.5KOkXAANWV_WLWPx02ozeC_xPCINd6boVtm3ia9iSmM';
-  
-  if (!supabaseUrl || !supabaseKey) {
-    console.error('Configuration Supabase manquante');
-    return {
-      statusCode: 200,
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*'
-      },
-      body: JSON.stringify({ success: true, data: [], message: 'Configuration manquante' })
-    };
-  }
-
-  const supabase = createClient(supabaseUrl, supabaseKey);
-  
-  // Récupérer l'utilisateur depuis les query params (GET) ou le body (POST/PUT)
-  let userId = null;
-  let userRole = null;
-  
-  // Pour GET, récupérer d'abord depuis query string
-  if (event.httpMethod === 'GET' && event.queryStringParameters) {
-    userId = event.queryStringParameters._user_id || null;
-    userRole = event.queryStringParameters._user_role || null;
-  }
-  
-  // Sinon, essayer depuis le body (pour POST/PUT)
-  if (!userId && event.body) {
-    try {
-      const body = JSON.parse(event.body);
-      userId = body._user_id || null;
-      userRole = body._user_role || null;
-    } catch (e) {
-      // Ignorer
+      return {
+        statusCode: 200,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'GET, POST, PUT, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+          'Access-Control-Allow-Credentials': 'true'
+        },
+        body: ''
+      };
     }
-  }
 
-  // GET: Récupérer les signalements
-  if (event.httpMethod === 'GET') {
+    const supabaseUrl = process.env.SUPABASE_URL || 'https://srbzvjrqbhtuyzlwdghn.supabase.co';
+    const supabaseKey = process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNyYnp2anJxYmh0dXl6bHdkZ2huIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQwNTg3NzQsImV4cCI6MjA3OTYzNDc3NH0.5KOkXAANWV_WLWPx02ozeC_xPCINd6boVtm3ia9iSmM';
     
-    try {
+    if (!supabaseUrl || !supabaseKey) {
+      console.error('Configuration Supabase manquante');
+      return {
+        statusCode: 200,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        },
+        body: JSON.stringify({ success: true, data: [], message: 'Configuration manquante' })
+      };
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseKey);
+    
+    // Récupérer l'utilisateur depuis les query params (GET) ou le body (POST/PUT)
+    let userId = null;
+    let userRole = null;
+    
+    // Pour GET, récupérer d'abord depuis query string
+    if (event.httpMethod === 'GET' && event.queryStringParameters) {
+      userId = event.queryStringParameters._user_id || null;
+      userRole = event.queryStringParameters._user_role || null;
+    }
+    
+    // Sinon, essayer depuis le body (pour POST/PUT)
+    if (!userId && event.body) {
+      try {
+        const body = JSON.parse(event.body);
+        userId = body._user_id || null;
+        userRole = body._user_role || null;
+      } catch (e) {
+        // Ignorer
+      }
+    }
+
+    // GET: Récupérer les signalements
+    if (event.httpMethod === 'GET') {
+      
+      try {
       const queryParams = event.queryStringParameters || {};
       const agentId = queryParams.agent_id ? parseInt(queryParams.agent_id) : null;
       
