@@ -26,6 +26,19 @@ exports.handler = async (event, context) => {
     };
   }
 
+  // BLOQUER TOUTES LES INSCRIPTIONS TEMPORAIREMENT
+  return {
+    statusCode: 503,
+    headers: {
+      'Content-Type': 'application/json',
+      'Access-Control-Allow-Origin': '*'
+    },
+    body: JSON.stringify({ 
+      success: false, 
+      message: 'Les inscriptions sont temporairement désactivées. Veuillez réessayer plus tard.' 
+    })
+  };
+
   try {
     const data = JSON.parse(event.body);
     
