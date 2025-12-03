@@ -1387,23 +1387,7 @@
             
             <!-- Formulaire de Connexion -->
             <div id="loginFormContainer">
-                <!-- Message de blocage des connexions -->
-                <div class="bg-red-50 border-l-4 border-red-400 p-4 mb-4">
-                    <div class="flex">
-                        <div class="flex-shrink-0">
-                            <i class="fas fa-ban text-red-400 text-xl"></i>
-                        </div>
-                        <div class="ml-3">
-                            <p class="text-sm text-red-700 font-semibold">
-                                🚫 Connexions temporairement désactivées
-                            </p>
-                            <p class="text-sm text-red-600 mt-1">
-                                Les connexions sont momentanément suspendues. Veuillez réessayer plus tard.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-                <form id="loginForm" class="space-y-4 opacity-50 pointer-events-none">
+                <form id="loginForm" class="space-y-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">
                             <i class="fas fa-phone mr-2"></i>Numéro de téléphone
@@ -1418,8 +1402,8 @@
                         <input type="password" id="loginPassword" required class="input-modern w-full" placeholder="••••••••">
                     </div>
                     
-                    <button type="submit" class="w-full py-4 px-6 rounded-lg bg-gray-400 text-lg font-semibold relative cursor-not-allowed" disabled>
-                        <i class="fas fa-ban mr-2"></i> CONNEXIONS DÉSACTIVÉES
+                    <button type="submit" class="w-full py-4 px-6 rounded-lg btn-gabon text-lg font-semibold btn-animated relative">
+                        <i class="fas fa-sign-in-alt mr-2"></i> SE CONNECTER
                 </button>
                 </form>
                 
@@ -1434,23 +1418,7 @@
             
             <!-- Formulaire d'Inscription -->
             <div id="registerFormContainer" class="hidden">
-                <!-- Message de blocage des inscriptions -->
-                <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
-                    <div class="flex">
-                        <div class="flex-shrink-0">
-                            <i class="fas fa-exclamation-triangle text-yellow-400 text-xl"></i>
-                        </div>
-                        <div class="ml-3">
-                            <p class="text-sm text-yellow-700 font-semibold">
-                                ⚠️ Inscriptions temporairement désactivées
-                            </p>
-                            <p class="text-sm text-yellow-600 mt-1">
-                                Les inscriptions sont momentanément suspendues. Veuillez réessayer plus tard.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-                <form id="registerForm" class="space-y-4 opacity-50 pointer-events-none">
+                <form id="registerForm" class="space-y-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">
                             <i class="fas fa-user mr-2"></i>Nom
@@ -1536,8 +1504,8 @@
                         <input type="text" id="registerEntreprise" class="input-modern w-full" placeholder="Nom de votre entreprise">
                     </div>
                     
-                    <button type="submit" class="w-full py-4 px-6 rounded-lg bg-gray-400 text-lg font-semibold relative cursor-not-allowed" disabled>
-                        <i class="fas fa-ban mr-2"></i> INSCRIPTIONS DÉSACTIVÉES
+                    <button type="submit" class="w-full py-4 px-6 rounded-lg btn-gabon text-lg font-semibold btn-animated relative">
+                        <i class="fas fa-user-plus mr-2"></i> CRÉER MON COMPTE
                 </button>
                 </form>
             </div>
@@ -5043,10 +5011,6 @@
         document.getElementById('loginForm')?.addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            // BLOQUER TOUTES LES CONNEXIONS TEMPORAIREMENT
-            showNotification('Les connexions sont temporairement désactivées. Veuillez réessayer plus tard.', 'error');
-            return;
-            
             const telephone = document.getElementById('loginTelephone').value.trim();
             const password = document.getElementById('loginPassword').value;
             
@@ -5120,10 +5084,6 @@
         // Gestion du formulaire d'inscription
         document.getElementById('registerForm')?.addEventListener('submit', async function(e) {
             e.preventDefault();
-            
-            // BLOQUER TOUTES LES INSCRIPTIONS TEMPORAIREMENT
-            showNotification('Les inscriptions sont temporairement désactivées. Veuillez réessayer plus tard.', 'error');
-            return;
             
             const nom = document.getElementById('registerNom').value.trim();
             const prenom = document.getElementById('registerPrenom').value.trim();
