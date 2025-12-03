@@ -274,10 +274,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                 ]);
             } else {
                 // Manager/Superadmin ou agent sans filtre : voir toutes les demandes
-                $result = supabaseCall('demandes', 'GET', null, [], [
-                    'order' => ['date_creation' => 'desc'],
-                    'limit' => 50
-                ]);
+            $result = supabaseCall('demandes', 'GET', null, [], [
+                'order' => ['date_creation' => 'desc'],
+                'limit' => 50
+            ]);
             }
             $demandes = $result['success'] ? $result['data'] : [];
         } else {

@@ -17,9 +17,6 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     sendJSONResponse(false, null, 'Méthode non autorisée', 405);
 }
 
-// BLOQUER TOUTES LES CONNEXIONS TEMPORAIREMENT
-sendJSONResponse(false, null, 'Les connexions sont temporairement désactivées. Veuillez réessayer plus tard.', 503);
-
 $data = json_decode(file_get_contents('php://input'), true);
 
 // Validation des données

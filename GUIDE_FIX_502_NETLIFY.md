@@ -86,3 +86,5 @@ Les fonctions Netlify utilisent maintenant des valeurs par défaut pour Supabase
 - Erreur non capturée dans le code
 - Problème de connexion à Supabase
 
+
+

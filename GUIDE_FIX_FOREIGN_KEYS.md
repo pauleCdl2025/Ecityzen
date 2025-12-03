@@ -114,3 +114,5 @@ WHERE tc.constraint_type = 'FOREIGN KEY'
 
 Toutes les contraintes devraient avoir `delete_rule = 'SET NULL'`.
 
+
+

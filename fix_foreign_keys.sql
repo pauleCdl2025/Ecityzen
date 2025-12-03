@@ -111,3 +111,5 @@ WHERE tc.constraint_type = 'FOREIGN KEY'
     AND ccu.table_name = 'utilisateurs'
 ORDER BY tc.table_name, kcu.column_name;
 
+
+

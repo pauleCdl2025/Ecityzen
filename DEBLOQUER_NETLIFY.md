@@ -72,3 +72,5 @@ Si rien ne fonctionne :
 2. Vérifiez les logs Supabase
 3. Vérifiez que votre compte Netlify n'est pas en limite
 
+
+

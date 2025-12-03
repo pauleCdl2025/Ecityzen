@@ -98,3 +98,5 @@ Dans Netlify Functions logs, cherchez :
 - `Erreur bcrypt` → Problème avec la vérification du mot de passe
 - `Erreur login` → Erreur générale (voir le stack trace)
 
+
+

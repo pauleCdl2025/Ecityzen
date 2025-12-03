@@ -1,84 +1,7 @@
-<?php
-/**
- * API des paiements avec Supabase
- * GET: /api/paiements.php - Liste des paiements
- * POST: /api/paiements.php - Créer un paiement
- */
 
-require_once '../config/supabase.php';
 
-setupCORS('GET, POST, OPTIONS');
-startSecureSession();
 
-if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-    // Récupérer les paiements
-    $userId = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : null;
-    $role = isset($_SESSION['user_role']) ? $_SESSION['user_role'] : null;
-    
-    // Paramètres de pagination et filtres
-    $limit = isset($_GET['limit']) ? min(intval($_GET['limit']), 100) : 50; // Max 100, défaut 50
-    $offset = isset($_GET['offset']) ? max(0, intval($_GET['offset'])) : 0;
-    $statut = isset($_GET['statut']) ? $_GET['statut'] : null;
-    $date_debut = isset($_GET['date_debut']) ? $_GET['date_debut'] : null;
-    $date_fin = isset($_GET['date_fin']) ? $_GET['date_fin'] : null;
-    
-    try {
-        // Construire les filtres
-        $filters = [];
-        
-        // Gestion des rôles
-        if ($role === 'manager' || $role === 'superadmin' || $role === 'hopital') {
-            // Les managers, superadmins et hôpitaux voient tous les paiements
-            // Pas de filtre utilisateur_id
-        } else {
-            // Les autres utilisateurs voient seulement leurs paiements
-            if (!$userId) {
-                sendJSONResponse(false, null, 'Non authentifié', 401);
-            }
-            $filters['utilisateur_id'] = $userId;
-        }
-        
-        // Filtres optionnels
-        if ($statut) {
-            $filters['statut'] = $statut;
-        }
-        
-        // Options de requête
-        $options = [
-            'order' => ['date_paiement' => 'desc'],
-            'limit' => $limit
-        ];
-        
-        // Appel Supabase optimisé
-        $result = supabaseCall('paiements', 'GET', null, $filters, $options);
-        $paiements = $result['success'] ? $result['data'] : [];
-        
-        // Filtrer par date côté PHP (plus simple que via Supabase pour les plages de dates)
-        if ($date_debut && !empty($paiements)) {
-            $paiements = array_filter($paiements, function($p) use ($date_debut) {
-                $datePaiement = substr($p['date_paiement'] ?? '', 0, 10);
-                return $datePaiement >= $date_debut;
-            });
-            $paiements = array_values($paiements);
-        }
-        if ($date_fin && !empty($paiements)) {
-            $paiements = array_filter($paiements, function($p) use ($date_fin) {
-                $datePaiement = substr($p['date_paiement'] ?? '', 0, 10);
-                return $datePaiement <= $date_fin;
-            });
-            $paiements = array_values($paiements);
-        }
-        
-        // Appliquer la pagination après filtres
-        if ($offset > 0) {
-            $paiements = array_slice($paiements, $offset);
-        }
-        $paiements = array_slice($paiements, 0, $limit);
-        
-        // Enrichir avec les noms d'utilisateurs (optimisé avec requête groupée)
-        if (count($paiements) > 0) {
-            $paiements = enrichWithUserNames($paiements, 'utilisateur_id');
-        }
+
         
         // Formater les références
         foreach ($paiements as &$paiement) {
@@ -105,7 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             ], 'Paiements récupérés');
         } else {
             // Format simple pour compatibilité avec le frontend existant
-            sendJSONResponse(true, $paiements, 'Paiements récupérés');
+        sendJSONResponse(true, $paiements, 'Paiements récupérés');
         }
         
     } catch (Exception $e) {
